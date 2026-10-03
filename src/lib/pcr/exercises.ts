@@ -69,16 +69,16 @@ export function describeExercise(e: Exercise): string[] {
 
 /** Papeles que identificamos en un programa para compararlo con la referencia. */
 interface Roles {
-  rt?: Step;
-  initial?: Step;
-  touchdown?: Stage;
-  cycling?: Stage;
-  denat?: Step;
-  anneal?: Step;
-  ext?: Step;
+  rt?: Step | undefined;
+  initial?: Step | undefined;
+  touchdown?: Stage | undefined;
+  cycling?: Stage | undefined;
+  denat?: Step | undefined;
+  anneal?: Step | undefined;
+  ext?: Step | undefined;
   melt: boolean;
-  finalExt?: Step;
-  hold?: Step;
+  finalExt?: Step | undefined;
+  hold?: Step | undefined;
 }
 
 /** Extrae los papeles (desnaturalización inicial, ciclado, etc.) de un programa. */
@@ -87,9 +87,9 @@ function extractRoles(p: Program): Roles {
   const stages = p.stages;
   // Etapa de ciclado principal = la de más repeticiones (sin touchdown).
   const cyclingIdx = stages.reduce((best, s, i) =>
-    s.repeats > 1 && !s.steps.some((x) => x.deltaPerCycle) && (best < 0 || s.repeats > stages[best].repeats) ? i : best, -1);
+    s.repeats > 1 && !s.steps.some((x) => x.deltaPerCycle) && (best < 0 || s.repeats > stages[best]!.repeats) ? i : best, -1);
   if (cyclingIdx >= 0) {
-    const c = stages[cyclingIdx];
+    const c = stages[cyclingIdx]!;
     r.cycling = c;
     const sorted = [...c.steps].sort((a, b) => b.temp - a.temp);
     r.denat = sorted[0];

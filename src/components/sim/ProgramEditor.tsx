@@ -27,7 +27,7 @@ export function ProgramEditor({ program, onChange, allowGradient = true }: Props
   const updateStep = (si: number, pi: number, patch: Partial<Step>) =>
     updateStage(si, (s) => ({ ...s, steps: s.steps.map((x, i) => (i === pi ? { ...x, ...patch } : x)) }));
   const removeStep = (si: number, pi: number) => {
-    const st = program.stages[si];
+    const st = program.stages[si]!;
     if (st.steps.length === 1) onChange({ ...program, stages: program.stages.filter((_, i) => i !== si) });
     else updateStage(si, (s) => ({ ...s, steps: s.steps.filter((_, i) => i !== pi) }));
   };

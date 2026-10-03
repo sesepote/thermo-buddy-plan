@@ -20,9 +20,9 @@ export interface Step {
    * Variación de temperatura por ciclo (°C). Se usa en PCR touchdown,
    * p. ej. -1 baja un grado en cada repetición de la etapa.
    */
-  deltaPerCycle?: number;
+  deltaPerCycle?: number | undefined;
   /** Gradiente opcional a lo largo del bloque (12 columnas). */
-  gradient?: { low: number; high: number };
+  gradient?: { low: number; high: number } | undefined;
 }
 
 /** Una etapa: grupo de pasos que se repite `repeats` veces. */
