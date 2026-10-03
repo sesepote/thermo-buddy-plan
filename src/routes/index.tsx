@@ -65,12 +65,8 @@ function MainMenu() {
         SIM-PCR · MENÚ
       </p>
 
-      <nav
-        className={`flex w-full max-w-6xl flex-col items-center justify-center gap-10 sm:gap-14 lg:flex-row lg:gap-16 ${
-          /* En pantallas estrechas el termociclador queda entre los otros dos. */
-          ""
-        }`}
-      >
+      {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
+      <nav className="flex w-full max-w-6xl flex-col items-center justify-center gap-10 sm:gap-14 lg:flex-row lg:gap-16">
         {SPHERES.map(({ to, icon: Icon, code, title, center }) => (
           <Link
             key={to}
