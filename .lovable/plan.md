@@ -1,6 +1,13 @@
 # Simulador de Termociclador
 
-App educativa en español con menú principal y tres módulos. Sin backend: todo funciona en el navegador (progreso de entrenamiento guardado localmente).
+App educativa en español con menú principal y tres módulos, pensada para un terminal de pantalla táctil / kiosco de laboratorio.
+
+## Requisitos generales
+- Funciona 100 % sin internet: sin servidores ni servicios externos, fuentes e iconos incluidos en la app, datos guardados en el propio equipo.
+- Instalable como app de pantalla completa (PWA) que, tras la primera carga, arranca sin conexión.
+- Diseño táctil: botones grandes (mín. 48 px), teclado numérico en pantalla para introducir valores, sin depender de ratón ni teclado físico ni de efectos hover.
+- Bloques de código principales con comentarios explicativos en español (cálculos, simulación, evaluación).
+- Uso de librerías open source cuando existan para la tarea (gráficas, PWA, validación, fuentes, iconos).
 
 ## Menú principal (`/`)
 Pantalla de inicio con tres tarjetas grandes: Termociclador, Calculadora de protocolos, Zona de entrenamiento. Estética de equipo de laboratorio: panel oscuro, pantalla LCD verde/ámbar, tipografía monoespaciada para valores.
@@ -41,5 +48,7 @@ Salida:
 - Rutas TanStack: `/`, `/termociclador`, `/calculadora`, `/entrenamiento`, cada una con su head().
 - Lógica pura y testeable en `src/lib/pcr/`: modelo de programa, cálculo de Tm, reglas por polimerasa, generador de protocolo, motor de simulación (rampas), evaluador de ejercicios.
 - Base de datos de reactivos/polimerasas/ejercicios como datos estáticos en TS.
-- Gráfica con Recharts; estado compartido (programa activo) con un store ligero + localStorage.
+- Gráfica con Recharts (MIT); estado compartido con Zustand (MIT) + persistencia en localStorage; validación con Zod (MIT).
+- Offline: vite-plugin-pwa / Workbox (MIT) precachea toda la app; fuentes vía @fontsource (OFL) e iconos lucide-react (ISC), nada cargado de CDN.
+- Comentarios JSDoc en `src/lib/pcr/*` y componentes clave, explicando fórmulas y decisiones.
 - Antes de construir se propondrán 3 direcciones visuales para elegir.
