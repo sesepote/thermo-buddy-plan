@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { profilePoints, type Segment } from "@/lib/pcr/simulation";
 
-export function TempChart({ segments, currentMin }: { segments: Segment[]; currentMin?: number }) {
+export function TempChart({ segments, currentMin }: { segments: Segment[]; currentMin?: number | undefined }) {
   const data = useMemo(() => profilePoints(segments), [segments]);
   return (
     <ResponsiveContainer width="100%" height="100%">

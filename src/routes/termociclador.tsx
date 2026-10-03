@@ -48,7 +48,7 @@ function Thermocycler() {
     const iv = setInterval(() => {
       setSimTime((t) => t + 0.1 * speedRef.current);
       // La tapa se calienta antes que el bloque (≈1 °C/s).
-      setLid((l) => Math.min(program.lidTemp, l + 0.1 * speedRef.current));
+      setLid((l) => Math.min(program?.lidTemp ?? 105, l + 0.1 * speedRef.current));
     }, 100);
     return () => clearInterval(iv);
   }, [status, program?.lidTemp]);

@@ -77,7 +77,7 @@ export function calcTm(seq: string, opts: TmOptions = {}): number {
   // 1) Suma de contribuciones de cada par de bases vecinas.
   let dH = 0, dS = 0;
   for (let i = 0; i < s.length - 1; i++) {
-    const [h, e] = NN[ALIAS[s.slice(i, i + 2)]];
+    const [h, e] = NN[ALIAS[s.slice(i, i + 2)]!]!;
     dH += h;
     dS += e;
   }
