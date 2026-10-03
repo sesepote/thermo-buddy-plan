@@ -81,16 +81,16 @@ export function stateAt(segs: Segment[], t: number): SimState {
   let lo = 0, hi = segs.length - 1;
   while (lo < hi) {
     const mid = (lo + hi + 1) >> 1;
-    if (segs[mid].start <= t) lo = mid; else hi = mid - 1;
+    if (segs[mid]!.start <= t) lo = mid; else hi = mid - 1;
   }
-  const seg = segs[lo];
+  const seg = segs[lo]!;
   const local = Math.max(t - seg.start, 0);
   const temp = seg.kind === "ramp"
     ? seg.fromTemp + (seg.toTemp - seg.fromTemp) * Math.min(local / seg.duration, 1)
     : seg.toTemp;
   // Tiempo restante del paso = resto de la rampa + meseta completa.
   let remaining = seg.duration - local;
-  if (seg.kind === "ramp" && segs[lo + 1]) remaining += segs[lo + 1].duration;
+  if (seg.kind === "ramp" && segs[lo + 1]) remaining += segs[lo + 1]!.duration;
   const finished = !Number.isFinite(seg.duration) && seg.step.time === 0;
   return { temp, segment: seg, stepRemaining: remaining, finished };
 }

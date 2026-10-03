@@ -64,8 +64,8 @@ const round5 = (s: number) => Math.max(5, Math.round(s / 5) * 5);
 
 /** Genera el programa a partir de las entradas. `programId` permite ids estables. */
 export function generateProtocol(input: CalcInput, programId = "calc"): CalcResult {
-  const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0];
-  const tpl = TEMPLATES.find((t) => t.id === input.template) ?? TEMPLATES[0];
+  const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0]!;
+  const tpl = TEMPLATES.find((t) => t.id === input.template) ?? TEMPLATES[0]!;
   const explanations: string[] = [];
   const warnings: string[] = [];
 
@@ -203,7 +203,7 @@ export function generateProtocol(input: CalcInput, programId = "calc"): CalcResu
 
 /** Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL, con 10 % extra. */
 export function masterMix(input: CalcInput, volume: number, samples: number) {
-  const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0];
+  const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0]!;
   const factor = samples * 1.1;
   const per = {
     buffer: volume / pol.bufferX,
