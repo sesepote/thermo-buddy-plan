@@ -27,8 +27,8 @@ export const useThermocyclerSession = create<Session>((set) => ({
   speed: 5,
   lid: AMBIENT,
   run: () => set((s) => {
-    if (s.status === "paused") return { status: s.lid < (useApp.getState().programs.find(p => p.id === useApp.getState().activeId)?.lidTemp ?? 105) - 0.5 ? "preheating" : "running" };
     const program = useApp.getState().programs.find(p => p.id === useApp.getState().activeId);
+    if (s.status === "paused") return { status: program?.lidHeatingEnabled !== false && s.lid < (program?.lidTemp ?? 105) - 0.5 ? "preheating" : "running" };
     return { status: program?.lidHeatingEnabled === false ? "running" : "preheating", simTime: 0, lid: AMBIENT };
   }),
   pause: () => set((s) => s.status === "running" || s.status === "preheating" ? { status: "paused" } : s),
