@@ -7,7 +7,7 @@ import { Repeat2, Flame } from "lucide-react";
 
 export interface StepPosition { si: number; pi: number }
 export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onGradient, locked }: {
-  program: Program; selected: StepPosition; current?: StepPosition; cycle?: number;
+  program: Program; selected: StepPosition; current?: StepPosition | undefined; cycle?: number | undefined;
   onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onGradient: (p: StepPosition) => void; locked: boolean;
 }) {
   const steps = program.stages.flatMap((stage, si) => stage.steps.map((step, pi) => ({ stage, step, si, pi })));
@@ -29,10 +29,12 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
           {steps.map(({stage, si, pi}, i) => {
             if (pi !== 0 || stage.repeats <= 1) return null;
             const n = stage.steps.length;
-            return <g key={stage.id}><rect x={pts[i].x1 - 5} y="25" width={pts[i + n - 1].x2 - pts[i].x1 + 10} height="286" fill="var(--amber)" fillOpacity="0.045" stroke="var(--amber)" strokeOpacity="0.35" strokeDasharray="4 4" rx="5" /><text x={(pts[i].x1 + pts[i+n-1].x2)/2} y="18" textAnchor="middle" fill="var(--amber)" fontSize="12">{stage.repeats}× CICLOS</text></g>;
+            const first = pts[i], last = pts[i + n - 1];
+            if (!first || !last) return null;
+            return <g key={stage.id}><rect x={first.x1 - 5} y="25" width={last.x2 - first.x1 + 10} height="286" fill="var(--amber)" fillOpacity="0.045" stroke="var(--amber)" strokeOpacity="0.35" strokeDasharray="4 4" rx="5" /><text x={(first.x1 + last.x2)/2} y="18" textAnchor="middle" fill="var(--amber)" fontSize="12">{stage.repeats}× CICLOS</text></g>;
           })}
           <path d={path} fill="none" stroke="var(--lcd-foreground)" strokeWidth="3" strokeLinejoin="round" />
-          {steps.map(({step, si, pi}, i) => { const p = pts[i]; const active = current?.si === si && current?.pi === pi; const chosen = selected.si === si && selected.pi === pi;
+          {steps.map(({step, si, pi}, i) => { const p = pts[i]; if (!p) return null; const active = current?.si === si && current?.pi === pi; const chosen = selected.si === si && selected.pi === pi;
             return <g key={step.id} onClick={() => onSelect({ si, pi })} className="cursor-pointer">
               <rect x={left + i * span} y="30" width={span} height="285" fill="transparent" />
               {chosen && <rect x={p.x1 - 7} y={p.y - 11} width={p.x2 - p.x1 + 14} height="22" rx="4" fill="var(--ice)" fillOpacity="0.24" stroke="var(--ice)" />}

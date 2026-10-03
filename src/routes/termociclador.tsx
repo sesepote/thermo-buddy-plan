@@ -34,6 +34,7 @@ const FACTORY = [
 ];
 function factoryProgram(index: number): Program {
   const preset = FACTORY[index] ?? FACTORY[0];
+  if (!preset) throw new Error("No hay programas de fábrica");
   const step = (label: string, temp: number, time: number, extra: Partial<Step> = {}): Step => ({ id: uid(), label, temp, time, ...extra });
   const initial = preset.rt ? [step("Síntesis cDNA (RT)", 50, 900), step("Inactivación RT", 95, 120)] : [step(preset.name.includes("COLONY") ? "Lisis bacteriana" : "Desnaturalización inicial", preset.name.includes("COLONY") ? 98 : 95, preset.name.includes("COLONY") ? 600 : 180)];
   const cycles = [step("Desnaturalización", 95, preset.twoStep ? 5 : 30), step("Anillamiento", preset.anneal, 30, { ...(preset.gradient ? { gradient: { low: 50, high: 60 } } : {}), ...(preset.delta ? { deltaPerCycle: preset.delta } : {}) }), ...(!preset.twoStep ? [step("Extensión", 72, 60)] : [])];
