@@ -60,7 +60,7 @@ function fromOriginal(raw: z.infer<typeof originalSchema>): Program {
   for (let i = 0; i < steps.length;) {
     const loop = raw.loops.find(l => l.startStepIndex === i && l.endStepIndex >= i && l.endStepIndex < steps.length);
     if (loop) { stages.push({ id: uid(), repeats: Math.max(1,Math.min(99,loop.repeatCount)), steps: steps.slice(i,loop.endStepIndex + 1) }); i = loop.endStepIndex + 1; }
-    else { stages.push({ id: uid(), repeats: 1, steps: [steps[i]] }); i++; }
+    else { const step = steps[i]; if (step) stages.push({ id: uid(), repeats: 1, steps: [step] }); i++; }
   }
   return { id: uid(), name: raw.name, description: raw.description, lidTemp: raw.lidTemperature, lidHeatingEnabled: raw.lidHeatingEnabled, sampleVolume: raw.sampleVolume, rampRate: 3.5, stages };
 }
@@ -182,7 +182,7 @@ function Thermocycler() {
           {metric("Tiempo restante", active ? formatTime(Math.max(0.01, remaining)) : formatTime(total), `Transcurrido ${active ? formatTime(Math.max(0.01,simTime)) : "00:00"}`)}
         </section>
         <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex gap-1 border-b border-border"><Button variant="ghost" className={cn("h-12 rounded-none border-b-2 px-3", view === "profile" ? "border-ice text-ice" : "border-transparent text-muted-foreground")} onClick={() => setView("profile")}><Activity /> Perfil térmico</Button><Button variant="ghost" className={cn("h-12 rounded-none border-b-2 px-3", view === "plate" ? "border-ice text-ice" : "border-transparent text-muted-foreground")} onClick={() => setView("plate")}><Grid3X3 /> Placa 96</Button></div><span className="font-mono text-[11px] text-muted-foreground">{view === "plate" ? "8 FILAS · 12 COLUMNAS" : "TEMPERATURA · PASOS · CICLOS"}</span></div>
-        {view === "profile" ? <ThermalProfile program={program} selected={selected} current={current} cycle={active ? seg?.cycle : undefined} onSelect={setSelected} onCycles={openCycles} onGradient={openGradient} locked={locked} /> : displayStep && <Plate96 step={displayStep} temperature={active ? temp : displayStep.temp} />}
+        {view === "profile" ? <ThermalProfile program={program} selected={selected} current={current} cycle={active ? seg?.cycle : undefined} onSelect={setSelected} onCycles={openCycles} onGradient={openGradient} onTemperature={p => editValue("temp",p)} onTime={p => editValue("time",p)} locked={locked} /> : displayStep && <Plate96 step={displayStep} temperature={active ? temp : displayStep.temp} />}
         {!locked && chosen && <section className="flex flex-wrap items-end gap-3 border-b border-border pb-4" aria-label="Ajustes del paso seleccionado">
           <label className="min-w-[160px] flex-1 text-xs text-muted-foreground">Nombre del paso<input className="mt-1 h-11 w-full rounded-sm border border-input bg-background px-3 text-sm text-foreground" value={chosen.label} onChange={e => updateStepAt(selected,{label:e.target.value})} maxLength={48} /></label>
           <Button variant="outline" className="h-11 font-mono" onClick={() => setPad({title:"Rampa del paso",value:chosen.rampRate ?? program.rampRate,unit:"°C/s",allowDecimal:true,min:0.1,max:20,onConfirm:v=>updateStepAt(selected,{rampRate:v})})}>Rampa {chosen.rampRate ?? program.rampRate} °C/s <Pencil /></Button>

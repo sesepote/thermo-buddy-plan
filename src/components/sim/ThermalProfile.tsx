@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import { Repeat2, Flame } from "lucide-react";
 
 export interface StepPosition { si: number; pi: number }
-export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onGradient, locked }: {
+export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onGradient, onTemperature, onTime, locked }: {
   program: Program; selected: StepPosition; current?: StepPosition | undefined; cycle?: number | undefined;
-  onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onGradient: (p: StepPosition) => void; locked: boolean;
+  onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onGradient: (p: StepPosition) => void; onTemperature: (p: StepPosition) => void; onTime: (p: StepPosition) => void; locked: boolean;
 }) {
   const steps = program.stages.flatMap((stage, si) => stage.steps.map((step, pi) => ({ stage, step, si, pi })));
   const w = Math.max(880, steps.length * 128);
@@ -51,7 +51,7 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
     </div>
     <div className="flex gap-2 overflow-x-auto border-t border-border p-3">{steps.map(({step,si,pi},i) => <div key={step.id} className={cn("flex shrink-0 flex-col gap-1 border-l-2 px-2", current?.si === si && current?.pi === pi ? "border-run" : selected.si === si && selected.pi === pi ? "border-ice" : "border-border")}>
       <Button variant="ghost" aria-pressed={selected.si === si && selected.pi === pi} className="h-10 justify-start px-1 font-mono text-xs" onClick={() => onSelect({si,pi})}>#{i+1} {step.label}</Button>
-      <span className="px-1 font-mono text-xs text-muted-foreground">{step.temp}° · {formatTime(step.time)}</span>
+      <div className="flex gap-1"><Button variant="ghost" disabled={locked} className="h-9 px-1 font-mono text-xs text-ice" aria-label={`Temperatura ${step.label}`} onClick={() => onTemperature({si,pi})}>{step.temp}°</Button><Button variant="ghost" disabled={locked} className="h-9 px-1 font-mono text-xs text-ice" aria-label={`Tiempo ${step.label}`} onClick={() => onTime({si,pi})}>{formatTime(step.time)}</Button></div>
       {step.gradient && <Button variant="ghost" disabled={locked} className="h-8 justify-start px-1 text-amber" onClick={() => onGradient({si,pi})}><Flame /> Gradiente</Button>}
     </div>)}</div>
     {cycle && <p className="border-t border-border px-4 py-2 font-mono text-xs text-amber">CICLO {cycle}</p>}
