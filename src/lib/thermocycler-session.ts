@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { useApp } from "./store";
 import { AMBIENT, buildSegments, stateAt } from "./pcr/simulation";
 
-type Status = "idle" | "running" | "paused" | "done";
+type Status = "idle" | "preheating" | "running" | "paused" | "done";
 
 interface Session {
   status: Status;
@@ -17,27 +17,50 @@ interface Session {
   stop: () => void;
   setSpeed: (speed: number) => void;
   tick: (seconds: number) => void;
+  skipPreheat: () => void;
+  advance: () => void;
 }
 
 export const useThermocyclerSession = create<Session>((set) => ({
   status: "idle",
   simTime: 0,
-  speed: 10,
+  speed: 5,
   lid: AMBIENT,
-  run: () => set((s) => ({ status: "running", simTime: s.status === "done" ? 0 : s.simTime, lid: s.status === "done" ? AMBIENT : s.lid })),
-  pause: () => set((s) => s.status === "running" ? { status: "paused" } : s),
+  run: () => set((s) => {
+    if (s.status === "paused") return { status: s.lid < (useApp.getState().programs.find(p => p.id === useApp.getState().activeId)?.lidTemp ?? 105) - 0.5 ? "preheating" : "running" };
+    const program = useApp.getState().programs.find(p => p.id === useApp.getState().activeId);
+    return { status: program?.lidHeatingEnabled === false ? "running" : "preheating", simTime: 0, lid: AMBIENT };
+  }),
+  pause: () => set((s) => s.status === "running" || s.status === "preheating" ? { status: "paused" } : s),
   stop: () => set({ status: "idle", simTime: 0, lid: AMBIENT }),
   setSpeed: (speed) => set({ speed }),
+  skipPreheat: () => set((s) => {
+    const program = useApp.getState().programs.find(p => p.id === useApp.getState().activeId);
+    return s.status === "preheating" ? { status: "running", lid: program?.lidTemp ?? AMBIENT } : s;
+  }),
+  advance: () => set((s) => {
+    const app = useApp.getState();
+    const program = app.programs.find(p => p.id === app.activeId);
+    if (!program || s.status !== "running") return s;
+    const segments = buildSegments(program);
+    const current = stateAt(segments, s.simTime).segment;
+    const next = segments.find(seg => seg.start > s.simTime + 0.001 && (seg.stageIndex !== current?.stageIndex || seg.stepIndex !== current?.stepIndex || seg.cycle !== current?.cycle));
+    return next ? { simTime: next.start } : { status: "done", simTime: Math.max(s.simTime, segments.at(-1)?.start ?? s.simTime) };
+  }),
   tick: (seconds) => set((s) => {
-    if (s.status !== "running") return s;
+    if (s.status !== "running" && s.status !== "preheating") return s;
     const app = useApp.getState();
     const program = app.programs.find((p) => p.id === app.activeId) ?? app.programs[0];
     if (!program) return { status: "idle", simTime: 0, lid: AMBIENT };
+    if (s.status === "preheating") {
+      const lid = Math.min(program.lidTemp, s.lid + seconds * s.speed * 2.5);
+      return { lid, status: lid >= program.lidTemp - 0.5 ? "running" : "preheating" };
+    }
     const simTime = s.simTime + seconds * s.speed;
     const finished = stateAt(buildSegments(program), simTime).finished;
     return {
       simTime,
-      lid: Math.min(program.lidTemp, s.lid + seconds * s.speed),
+      lid: program.lidHeatingEnabled === false ? AMBIENT : program.lidTemp,
       status: finished ? "done" : "running",
     };
   }),

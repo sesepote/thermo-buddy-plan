@@ -43,13 +43,13 @@ export function buildSegments(program: Program): Segment[] {
         const target = stepTempAt(step, c);
         const base = { stageIndex: si, stepIndex: pi, cycle: c, repeats: stage.repeats, step };
         // Rampa hasta la temperatura objetivo.
-        const rampDur = Math.abs(target - temp) / rate;
+        const rampDur = Math.abs(target - temp) / Math.max(step.rampRate ?? rate, 0.1);
         if (rampDur > 0) {
           segs.push({ ...base, kind: "ramp", start: t, duration: rampDur, fromTemp: temp, toTemp: target });
           t += rampDur;
         }
         // Meseta (time 0 = infinito).
-        const holdDur = step.time > 0 ? step.time : Infinity;
+        const holdDur = step.time > 0 ? Math.max(1, step.time + (step.timeIncrement ?? 0) * (c - 1)) : Infinity;
         segs.push({ ...base, kind: "hold", start: t, duration: holdDur, fromTemp: target, toTemp: target });
         t += holdDur;
         temp = target;

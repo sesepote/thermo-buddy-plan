@@ -23,6 +23,10 @@ export interface Step {
   deltaPerCycle?: number | undefined;
   /** Gradiente opcional a lo largo del bloque (12 columnas). */
   gradient?: { low: number; high: number } | undefined;
+  /** Variación de duración en segundos por ciclo para PCR larga. */
+  timeIncrement?: number | undefined;
+  /** Velocidad de rampa individual si difiere de la del programa. */
+  rampRate?: number | undefined;
 }
 
 /** Una etapa: grupo de pasos que se repite `repeats` veces. */
@@ -40,6 +44,10 @@ export interface Program {
   lidTemp: number;
   /** Velocidad de rampa del bloque en °C/s. */
   rampRate: number;
+  /** Opciones del instrumento; los programas antiguos usan los valores por defecto. */
+  lidHeatingEnabled?: boolean | undefined;
+  sampleVolume?: number | undefined;
+  description?: string | undefined;
   stages: Stage[];
 }
 
