@@ -14,11 +14,11 @@ export function StatusBars({ section, menu = false, children }: { section: strin
   const segments = useMemo(() => program ? buildSegments(program) : [], [program]);
   const total = useMemo(() => totalDuration(segments), [segments]);
   const active = status !== "idle";
-  const temp = active ? stateAt(segments, simTime).temp : AMBIENT;
+  const temp = active && status !== "preheating" ? stateAt(segments, simTime).temp : AMBIENT;
   const elapsed = active ? simTime : 0;
   const progress = total > 0 ? Math.min(Math.max(elapsed / total * 100, 0), 100) : 0;
   const displayTime = (seconds: number) => formatTime(Math.max(seconds, 0.01));
-  const statusLabel = { idle: "LISTO", running: "EN EJECUCIÓN", paused: "EN PAUSA", done: "FINALIZADO" }[status];
+  const statusLabel = { idle: "LISTO", preheating: "CALENTANDO TAPA", running: "EN EJECUCIÓN", paused: "EN PAUSA", done: "FINALIZADO" }[status];
 
   return (
     <main className={cn("flex min-h-screen min-w-0 flex-col overflow-x-clip", menu ? "relative items-center bg-menu-bg font-body text-ice-soft" : "bg-background text-foreground")}>
@@ -30,7 +30,7 @@ export function StatusBars({ section, menu = false, children }: { section: strin
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 tabular-nums">
             <span className="whitespace-nowrap">BLOQUE <strong className={cn("ml-1 font-medium", menu ? "text-ice-soft" : "text-foreground")}>{temp.toFixed(1)} °C</strong></span>
             <span className="whitespace-nowrap">TAPA <strong className={cn("ml-1 font-medium", menu ? "text-ice-soft" : "text-foreground")}>{lid.toFixed(1)} °C</strong></span>
-            <span className="flex items-center gap-2 whitespace-nowrap" role="status"><span className={cn("size-2 shrink-0 rounded-full", status === "running" ? "bg-run" : status === "paused" ? "bg-amber" : menu ? "bg-ice/50" : "bg-muted-foreground")} />{statusLabel}</span>
+            <span className="flex items-center gap-2 whitespace-nowrap" role="status"><span className={cn("size-2 shrink-0 rounded-full", status === "running" ? "bg-run" : status === "paused" || status === "preheating" ? "bg-amber" : menu ? "bg-ice/50" : "bg-muted-foreground")} />{statusLabel}</span>
           </div>
         </div>
       </header>

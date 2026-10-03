@@ -1,0 +1,2 @@
+- [x] Integrar el sistema del termociclador de referencia con un único motor Program/Segment y la interfaz de este proyecto.
+- [x] Verificar edición, biblioteca, ajustes, gradiente, placa, importación, corrida y continuidad entre pantallas en escritorio y móvil.

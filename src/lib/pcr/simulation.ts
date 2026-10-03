@@ -43,13 +43,13 @@ export function buildSegments(program: Program): Segment[] {
         const target = stepTempAt(step, c);
         const base = { stageIndex: si, stepIndex: pi, cycle: c, repeats: stage.repeats, step };
         // Rampa hasta la temperatura objetivo.
-        const rampDur = Math.abs(target - temp) / rate;
+        const rampDur = Math.abs(target - temp) / Math.max(step.rampRate ?? rate, 0.1);
         if (rampDur > 0) {
           segs.push({ ...base, kind: "ramp", start: t, duration: rampDur, fromTemp: temp, toTemp: target });
           t += rampDur;
         }
         // Meseta (time 0 = infinito).
-        const holdDur = step.time > 0 ? step.time : Infinity;
+        const holdDur = step.time > 0 ? Math.max(1, step.time + (step.timeIncrement ?? 0) * (c - 1)) : Infinity;
         segs.push({ ...base, kind: "hold", start: t, duration: holdDur, fromTemp: target, toTemp: target });
         t += holdDur;
         temp = target;
@@ -90,8 +90,11 @@ export function stateAt(segs: Segment[], t: number): SimState {
     : seg.toTemp;
   // Tiempo restante del paso = resto de la rampa + meseta completa.
   let remaining = seg.duration - local;
-  if (seg.kind === "ramp" && segs[lo + 1]) remaining += segs[lo + 1]!.duration;
-  const finished = !Number.isFinite(seg.duration) && seg.step.time === 0;
+  const next = segs[lo + 1];
+  if (seg.kind === "ramp" && next?.kind === "hold" && next.stepIndex === seg.stepIndex && next.stageIndex === seg.stageIndex && next.cycle === seg.cycle) remaining += next.duration;
+  // Una conservación infinita concluye la PCR, aunque la temperatura siga visible.
+  // También concluye un programa cuyo último paso sea finito.
+  const finished = (!Number.isFinite(seg.duration) && seg.step.time === 0) || (!next && Number.isFinite(seg.duration) && t >= seg.start + seg.duration);
   return { temp, segment: seg, stepRemaining: remaining, finished };
 }
 
