@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertTriangle, Send, Info } from "lucide-react";
+import { AlertTriangle, Send, Info, ChevronRight, ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
+import { OptionPopup, type PopupContent } from "@/components/sim/OptionPopup";
 import { useApp } from "@/lib/store";
 import { DEFAULT_INPUT, generateProtocol, masterMix, type CalcInput } from "@/lib/pcr/protocol";
 import { POLYMERASES, REACTION_TYPES, TEMPLATES } from "@/lib/pcr/reagents";
@@ -25,7 +26,10 @@ export const Route = createFileRoute("/calculadora")({
 /** Botón de opción seleccionable de tamaño táctil. */
 function Choice({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className={cn("hw-key min-h-12 rounded-md px-3 py-2 text-left text-sm", active && "bg-none bg-amber text-amber-foreground")}>
+    <button
+      onClick={onClick}
+      className={cn("hw-key min-h-12 rounded-md px-3 py-2 text-left text-sm", active && "bg-none bg-amber text-amber-foreground")}
+    >
       {children}
     </button>
   );
@@ -40,11 +44,30 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+/** Fila compacta de configuración: muestra el valor actual y abre una ventana emergente. */
+function Field({ label, value, onClick }: { label: string; value: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="hw-key flex min-h-14 w-full items-center justify-between gap-3 rounded-md px-4 text-left"
+    >
+      <span className="min-w-0">
+        <span className="block text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className="block truncate text-base">{value}</span>
+      </span>
+      <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+    </button>
+  );
+}
+
 function Calculator() {
   const [input, setInput] = useState<CalcInput>(DEFAULT_INPUT);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
+  /** Ventana emergente abierta: título, subtítulo y cuerpo (opciones o campos). */
+  const [popup, setPopup] = useState<PopupContent | null>(null);
   const [volume, setVolume] = useState(50);
   const [samples, setSamples] = useState(8);
+  const [showWhy, setShowWhy] = useState(false);
   const { saveProgram, setActive } = useApp();
   const navigate = useNavigate();
 
@@ -55,10 +78,15 @@ function Calculator() {
   const result = useMemo(() => generateProtocol(input), [input]);
   const mix = useMemo(() => masterMix(input, volume, samples), [input, volume, samples]);
   const pol = POLYMERASES.find((p) => p.id === input.polymeraseId)!;
+  const reaction = REACTION_TYPES.find((r) => r.id === input.reaction)!;
+  const template = TEMPLATES.find((t) => t.id === input.template)!;
 
   /** Campo numérico que abre el teclado táctil. */
   const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
-    <button className="hw-key flex min-h-12 flex-col items-start justify-center rounded-md px-3 py-1" onClick={() => setPad({ title: label, value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}>
+    <button
+      className="hw-key flex min-h-12 flex-col items-start justify-center rounded-md px-3 py-1"
+      onClick={() => setPad({ title: label, value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}
+    >
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="font-mono text-lg">{value} {unit}</span>
     </button>
@@ -90,46 +118,131 @@ function Calculator() {
     );
   };
 
+  /** Resumen compacto de los aditivos para la fila de configuración. */
+  const additiveSummary = [
+    `Mg extra ${input.additives.extraMg} mM`,
+    `DMSO ${input.additives.dmso} %`,
+    `Betaína ${input.additives.betaine} M`,
+    `Formamida ${input.additives.formamide} %`,
+  ].join(" · ");
+
   return (
     <div className="flex min-h-screen flex-col">
-      <ScreenHeader title="Calculadora de protocolos" subtitle="Introduce reactivos y condiciones; el programa se calcula al momento" />
+      <ScreenHeader title="Calculadora de protocolos" subtitle="Toca cada bloque para configurarlo; el programa se calcula al momento" />
       <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ------------------- Entradas ------------------- */}
-        <section className="space-y-5 rounded-xl border bg-panel p-4">
-          <Section title="Tipo de reacción">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {REACTION_TYPES.map((r) => <Choice key={r.id} active={input.reaction === r.id} onClick={() => set({ reaction: r.id })}>{r.name}</Choice>)}
-            </div>
-            <p className="text-sm text-muted-foreground">{REACTION_TYPES.find((r) => r.id === input.reaction)?.desc}</p>
-          </Section>
-          <Section title="Polimerasa">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {POLYMERASES.map((p) => <Choice key={p.id} active={input.polymeraseId === p.id} onClick={() => set({ polymeraseId: p.id })}>{p.name}</Choice>)}
-            </div>
-            <p className="text-sm text-muted-foreground">{pol.note}</p>
-          </Section>
+        <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
+          {/* Cada bloque es una fila que abre su ventana emergente. */}
+          <Field
+            label="Tipo de reacción"
+            value={reaction.name}
+            onClick={() =>
+              setPopup({
+                title: "Tipo de reacción",
+                subtitle: REACTION_TYPES.find((r) => r.id === input.reaction)?.desc,
+                body: (
+                  <div className="space-y-2">
+                    {REACTION_TYPES.map((r) => (
+                      <Choice
+                        key={r.id}
+                        active={input.reaction === r.id}
+                        onClick={() => {
+                          set({ reaction: r.id });
+                          setPopup(null);
+                        }}
+                      >
+                        {r.name}
+                      </Choice>
+                    ))}
+                  </div>
+                ),
+              })
+            }
+          />
+          <Field
+            label="Polimerasa"
+            value={pol.name}
+            onClick={() =>
+              setPopup({
+                title: "Polimerasa",
+                subtitle: pol.note,
+                body: (
+                  <div className="space-y-2">
+                    {POLYMERASES.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          set({ polymeraseId: p.id });
+                          setPopup(null);
+                        }}
+                        className={cn(
+                          "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
+                          input.polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
+                        )}
+                      >
+                        <span className="block text-sm font-medium">{p.name}</span>
+                        <span className={cn("block text-xs text-muted-foreground", input.polymeraseId === p.id && "text-amber-foreground/70")}>
+                          {p.note}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ),
+              })
+            }
+          />
+
+          {/* Cebadores: siguen a la vista porque se escriben a mano. */}
           <Section title="Cebadores">
-            {primer("Directo", "fwdSeq", "fwdTm")}
-            {primer("Reverso", "revSeq", "revTm")}
-          </Section>
-          <Section title="Molde y amplicón">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {TEMPLATES.map((t) => <Choice key={t.id} active={input.template === t.id} onClick={() => set({ template: t.id })}>{t.name}</Choice>)}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {num("Amplicón", input.ampliconBp, "pb", (v) => set({ ampliconBp: Math.round(v) }), { min: 50, max: 40000, allowDecimal: false })}
-              <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>Alto GC (&gt; 65 %)</Choice>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {primer("Directo", "fwdSeq", "fwdTm")}
+              {primer("Reverso", "revSeq", "revTm")}
             </div>
           </Section>
-          <Section title="Tampón y aditivos">
-            <div className="flex flex-wrap gap-2">
-              {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
-              {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
-              {num("DMSO", input.additives.dmso, "%", (v) => setAdd({ dmso: v }), { max: 10 })}
-              {num("Betaína", input.additives.betaine, "M", (v) => setAdd({ betaine: v }), { max: 2.5 })}
-              {num("Formamida", input.additives.formamide, "%", (v) => setAdd({ formamide: v }), { max: 10 })}
-            </div>
-          </Section>
+
+          <Field
+            label="Molde y amplicón"
+            value={`${template.name} · ${input.ampliconBp} pb${input.highGC ? " · alto GC" : ""}`}
+            onClick={() =>
+              setPopup({
+                title: "Molde y amplicón",
+                body: (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      {TEMPLATES.map((t) => (
+                        <Choice key={t.id} active={input.template === t.id} onClick={() => set({ template: t.id })}>
+                          {t.name}
+                        </Choice>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {num("Amplicón", input.ampliconBp, "pb", (v) => set({ ampliconBp: Math.round(v) }), { min: 50, max: 40000, allowDecimal: false })}
+                      <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>Alto GC (&gt; 65 %)</Choice>
+                    </div>
+                  </div>
+                ),
+              })
+            }
+          />
+          <Field
+            label="Tampón y aditivos"
+            value={additiveSummary}
+            onClick={() =>
+              setPopup({
+                title: "Tampón y aditivos",
+                subtitle: `MgCl₂ del tampón ${input.mgMM} mM`,
+                body: (
+                  <div className="flex flex-wrap gap-2">
+                    {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
+                    {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
+                    {num("DMSO", input.additives.dmso, "%", (v) => setAdd({ dmso: v }), { max: 10 })}
+                    {num("Betaína", input.additives.betaine, "M", (v) => setAdd({ betaine: v }), { max: 2.5 })}
+                    {num("Formamida", input.additives.formamide, "%", (v) => setAdd({ formamide: v }), { max: 10 })}
+                  </div>
+                ),
+              })
+            }
+          />
         </section>
 
         {/* ------------------- Resultado ------------------- */}
@@ -171,9 +284,20 @@ function Calculator() {
             </div>
           )}
 
-          <div className="space-y-2 rounded-xl border bg-panel p-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Por qué estos valores</h2>
-            {result.explanations.map((e) => <p key={e} className="flex gap-2 text-sm"><Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />{e}</p>)}
+          {/* Explicaciones plegadas por defecto para despejar la pantalla. */}
+          <div>
+            <button
+              className="hw-key flex min-h-12 w-full items-center justify-between rounded-md px-4 text-sm font-medium"
+              onClick={() => setShowWhy((s) => !s)}
+            >
+              Por qué estos valores ({result.explanations.length})
+              <ChevronDown className={cn("size-5 text-muted-foreground transition-transform", showWhy && "rotate-180")} />
+            </button>
+            {showWhy && (
+              <div className="mt-2 space-y-2 rounded-xl border bg-panel p-4">
+                {result.explanations.map((e) => <p key={e} className="flex gap-2 text-sm"><Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />{e}</p>)}
+              </div>
+            )}
           </div>
 
           <div className="space-y-3 rounded-xl border bg-panel p-4">
@@ -195,6 +319,7 @@ function Calculator() {
         </section>
       </div>
       <NumPad req={pad} onClose={() => setPad(null)} />
+      {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
     </div>
   );
 }
