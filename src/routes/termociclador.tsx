@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Play, Pause, Square, Pencil, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Columns3, Activity, Grid3X3, Settings2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, Pause, Square, Pencil, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Columns3, Activity, Grid3X3, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
@@ -165,7 +165,7 @@ function Thermocycler() {
                   </div>)}
                 </div>
               </section>
-            ) : displayStep ? <section className="min-w-0 py-2" aria-label="Placa de 96 pocillos"><Plate96 step={displayStep} temperature={temp} /></section> : null}
+            ) : displayStep ? <section className="min-w-0 py-2" aria-label="Placa de 96 pocillos"><Plate96 step={displayStep} temperature={active ? temp : displayStep.temp} /></section> : null}
 
             <section className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-4" aria-label="Controles del termociclador">
               <div className="flex flex-wrap gap-2">
