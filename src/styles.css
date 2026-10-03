@@ -46,6 +46,13 @@
   --color-amber-foreground: var(--amber-foreground);
   --color-run: var(--run);
   --color-run-foreground: var(--run-foreground);
+  /* Menú principal: esferas de laboratorio en azul hielo. */
+  --color-ice: var(--ice);
+  --color-ice-soft: var(--ice-soft);
+  --color-bubble: var(--bubble);
+  --color-menu-bg: var(--menu-bg);
+  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-body: "DM Sans", ui-sans-serif, sans-serif;
   --color-panel: var(--panel);
   --color-panel-raised: var(--panel-raised);
   --color-chart-1: var(--chart-1);
@@ -93,6 +100,11 @@
   --amber-foreground: oklch(0.18 0.02 75);
   --run: oklch(0.68 0.17 148);
   --run-foreground: oklch(0.15 0.03 148);
+  /* Paleta del menú: azul hielo sobre carbón casi negro. */
+  --ice: oklch(0.76 0.1 258);
+  --ice-soft: oklch(0.94 0.01 265);
+  --bubble: oklch(0.2 0.01 265);
+  --menu-bg: oklch(0.14 0.005 265);
   --chart-1: oklch(0.88 0.2 145);
   --chart-2: oklch(0.8 0.15 75);
   --chart-3: oklch(0.62 0.21 25);
