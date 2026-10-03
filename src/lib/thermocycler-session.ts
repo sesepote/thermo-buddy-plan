@@ -45,7 +45,8 @@ export const useThermocyclerSession = create<Session>((set) => ({
     const segments = buildSegments(program);
     const current = stateAt(segments, s.simTime).segment;
     const next = segments.find(seg => seg.start > s.simTime + 0.001 && (seg.stageIndex !== current?.stageIndex || seg.stepIndex !== current?.stepIndex || seg.cycle !== current?.cycle));
-    return next ? { simTime: next.start } : { status: "done", simTime: Math.max(s.simTime, segments.at(-1)?.start ?? s.simTime) };
+    const last = segments.at(-1);
+    return next ? { simTime: next.start } : { status: "done", simTime: Math.max(s.simTime, last ? last.start + (Number.isFinite(last.duration) ? last.duration : 0) : s.simTime) };
   }),
   tick: (seconds) => set((s) => {
     if (s.status !== "running" && s.status !== "preheating") return s;
