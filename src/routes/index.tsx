@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Thermometer, Calculator, GraduationCap } from "lucide-react";
+import { Thermometer, Calculator, GraduationCap, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
