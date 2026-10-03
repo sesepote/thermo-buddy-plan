@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Play, Pause, Square, Pencil, FolderOpen, Copy, Trash2, Plus, Save, X } from "lucide-react";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { ProgramEditor } from "@/components/sim/ProgramEditor";
 import { TempChart } from "@/components/sim/TempChart";
 import { useApp } from "@/lib/store";
+import { useThermocyclerSession } from "@/lib/thermocycler-session";
 import { buildSegments, gradientColumns, stateAt, totalDuration, AMBIENT } from "@/lib/pcr/simulation";
 import { cloneProgram, formatTime, uid, type Program } from "@/lib/pcr/types";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,6 @@ export const Route = createFileRoute("/termociclador")({
   component: Thermocycler,
 });
 
-type Status = "idle" | "running" | "paused" | "done";
 const SPEEDS = [1, 10, 60, 300];
 
 function Thermocycler() {
@@ -30,36 +30,12 @@ function Thermocycler() {
 
   const [view, setView] = useState<"run" | "edit" | "library">("run");
   const [draft, setDraft] = useState<Program | null>(null);
-  const [status, setStatus] = useState<Status>("idle");
-  const [simTime, setSimTime] = useState(0);
-  const [speed, setSpeed] = useState(10);
-  const [lid, setLid] = useState(AMBIENT);
+  const { status, simTime, speed, lid, run, pause, stop, setSpeed } = useThermocyclerSession();
 
   // Segmentos del programa activo (se recalculan solo si cambia el programa).
   const segments = useMemo(() => (program ? buildSegments(program) : []), [program]);
   const total = useMemo(() => totalDuration(segments), [segments]);
   const state = stateAt(segments, simTime);
-
-  // Bucle de simulación: cada 100 ms reales avanzan 0,1·speed segundos simulados.
-  const speedRef = useRef(speed);
-  speedRef.current = speed;
-  useEffect(() => {
-    if (status !== "running") return;
-    const iv = setInterval(() => {
-      setSimTime((t) => t + 0.1 * speedRef.current);
-      // La tapa se calienta antes que el bloque (≈1 °C/s).
-      setLid((l) => Math.min(program?.lidTemp ?? 105, l + 0.1 * speedRef.current));
-    }, 100);
-    return () => clearInterval(iv);
-  }, [status, program?.lidTemp]);
-
-  // Al llegar al hold infinito el programa se considera terminado.
-  useEffect(() => {
-    if (status === "running" && state.finished) setStatus("done");
-  }, [status, state.finished]);
-
-  const stop = () => { setStatus("idle"); setSimTime(0); setLid(AMBIENT); };
-  const run = () => { if (status === "done") stop(); setStatus("running"); };
 
   if (!program) return null;
   const seg = state.segment;
@@ -191,7 +167,7 @@ function Thermocycler() {
             <button onClick={run} disabled={view !== "run" || status === "running"} className="flex h-20 flex-col items-center justify-center rounded-md bg-run font-semibold text-run-foreground disabled:opacity-40">
               <Play className="size-6" /> RUN
             </button>
-            <button onClick={() => setStatus("paused")} disabled={status !== "running"} className="flex h-20 flex-col items-center justify-center rounded-md bg-amber font-semibold text-amber-foreground disabled:opacity-40">
+            <button onClick={pause} disabled={status !== "running"} className="flex h-20 flex-col items-center justify-center rounded-md bg-amber font-semibold text-amber-foreground disabled:opacity-40">
               <Pause className="size-6" /> PAUSA
             </button>
             <button onClick={stop} disabled={status === "idle"} className="flex h-20 flex-col items-center justify-center rounded-md bg-destructive font-semibold text-destructive-foreground disabled:opacity-40">

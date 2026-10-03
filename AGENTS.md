@@ -14,3 +14,4 @@
 - No backend: state is a Zustand store persisted to localStorage with `skipHydration`, rehydrated in `__root.tsx` to avoid SSR mismatches.
 - Must work offline on a touch kiosk: fonts via @fontsource, no CDN assets, service worker via vite-plugin-pwa registered only through `src/lib/pwa.ts`.
 - Numeric input goes through the on-screen `NumPad` (touch-first, no hover dependence).
+- Thermocycler execution is a temporary shared Zustand session clocked from the root layout, so the instrument and menu show the same live state across navigation without persisting an interrupted run.

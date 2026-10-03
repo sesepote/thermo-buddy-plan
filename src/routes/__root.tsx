@@ -23,6 +23,7 @@ import "@fontsource/dm-sans/500.css";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useApp } from "../lib/store";
+import { useThermocyclerSession } from "../lib/thermocycler-session";
 import { registerOffline } from "../lib/pwa";
 
 function NotFoundComponent() {
@@ -133,6 +134,17 @@ function RootComponent() {
     void useApp.persist.rehydrate();
     // Activa el modo sin conexión (solo en la versión publicada).
     void registerOffline();
+  }, []);
+
+  useEffect(() => {
+    // El reloj del instrumento sigue avanzando aunque se visite el menú.
+    let previous = performance.now();
+    const timer = window.setInterval(() => {
+      const now = performance.now();
+      useThermocyclerSession.getState().tick((now - previous) / 1000);
+      previous = now;
+    }, 100);
+    return () => window.clearInterval(timer);
   }, []);
 
   return (
