@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Play, Pause, Square, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Flame, Activity, Grid3X3, Settings2, Volume2, VolumeX, Maximize2, Minimize2, SkipForward, Download, Upload, Check, Pencil } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,20 @@ function fromOriginal(raw: z.infer<typeof originalSchema>): Program {
   return { id: uid(), name: raw.name, description: raw.description, lidTemp: raw.lidTemperature, lidHeatingEnabled: raw.lidHeatingEnabled, sampleVolume: raw.sampleVolume, rampRate: 3.5, stages };
 }
 type Modal = "library" | "save" | "settings" | "gradient" | "cycles" | "stop" | "plate" | null;
+/** Beeps sintetizados localmente: no requieren ficheros ni conexión. */
+function beep(kind: "key" | "step" | "done") {
+  try {
+    const ctx = new AudioContext();
+    const oscillator = ctx.createOscillator(), gain = ctx.createGain();
+    oscillator.type = kind === "done" ? "triangle" : "sine";
+    oscillator.frequency.value = kind === "key" ? 1400 : kind === "step" ? 1800 : 2200;
+    gain.gain.setValueAtTime(0.055, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (kind === "done" ? 0.3 : 0.065));
+    oscillator.connect(gain).connect(ctx.destination);
+    oscillator.start(); oscillator.stop(ctx.currentTime + (kind === "done" ? 0.3 : 0.065));
+    oscillator.onended = () => void ctx.close();
+  } catch { /* Los kioscos sin audio pueden continuar normalmente. */ }
+}
 function ModalShell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return <div className="fixed inset-0 z-40 flex items-center justify-center bg-background/90 p-3" role="dialog" aria-modal="true" aria-label={title} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
     <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-md border border-border bg-panel shadow-2xl">
@@ -96,6 +110,7 @@ function Thermocycler() {
   const [cycleStart, setCycleStart] = useState(0);
   const [cycleEnd, setCycleEnd] = useState(0);
   const [importError, setImportError] = useState("");
+  const previousPhase = useRef("");
   const { status, simTime, speed, lid, run, pause, stop, setSpeed, skipPreheat, advance } = useThermocyclerSession();
   const segments = useMemo(() => program ? buildSegments(program) : [], [program]);
   const total = useMemo(() => totalDuration(segments), [segments]);
@@ -109,6 +124,11 @@ function Thermocycler() {
   const temp = active ? state.temp : AMBIENT;
   const remaining = Math.max(0, total - simTime);
   useEffect(() => { if (!program) return; setVolume(program.sampleVolume ?? 25); setLidEnabled(program.lidHeatingEnabled !== false); setLidTarget(program.lidTemp); }, [program?.id]);
+  useEffect(() => {
+    const phase = `${status}:${seg?.stageIndex}:${seg?.stepIndex}:${seg?.cycle}`;
+    if (sound && previousPhase.current && phase !== previousPhase.current) beep(status === "done" ? "done" : "step");
+    previousPhase.current = phase;
+  }, [status, seg?.stageIndex, seg?.stepIndex, seg?.cycle, sound]);
   if (!program) return null;
 
   const updateStepAt = (position: StepPosition, patch: Partial<Step>) => {
@@ -145,7 +165,7 @@ function Thermocycler() {
   const metric = (label: string, value: string, sub: string, accent = false) => <div className="min-w-0 border-b border-border pb-2 sm:border-b-0"><p className="font-mono text-[10px] uppercase text-muted-foreground">{label}</p><strong className={cn("block font-mono text-2xl tabular-nums sm:text-3xl", accent ? "text-lcd-foreground" : "text-foreground")}>{value}</strong><p className="truncate font-mono text-[11px] text-muted-foreground">{sub}</p></div>;
 
   return <StatusBars section="TERMOCICLADOR">
-    <div className={cn("mx-auto flex w-full flex-1 flex-col", chassis ? "max-w-6xl border-x-4 border-panel-raised bg-background shadow-2xl" : "max-w-7xl")}>
+    <div onClickCapture={(e) => { if (sound && (e.target as HTMLElement).closest("button")) beep("key"); }} className={cn("mx-auto flex w-full flex-1 flex-col", chassis ? "max-w-6xl border-x-4 border-panel-raised bg-background shadow-2xl" : "max-w-7xl")}>
       {chassis && <div className="flex items-center justify-between border-b-4 border-panel-raised bg-secondary px-4 py-3 font-mono text-xs font-bold"><span>T5000-96 · GRADIENT THERMAL CYCLER</span><span className="text-run">● POWER <span className="ml-3 text-amber">● LID HEAT</span></span></div>}
       {/* La cabecera y las teclas replican las funciones del instrumento, sin duplicar las barras globales. */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-panel px-4 py-3 sm:px-6">
