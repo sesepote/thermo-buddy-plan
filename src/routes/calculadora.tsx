@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AlertTriangle, Send, Info, ChevronRight, ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
+import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { OptionPopup, type PopupContent } from "@/components/sim/OptionPopup";
 import { useApp } from "@/lib/store";
@@ -18,6 +19,8 @@ export const Route = createFileRoute("/calculadora")({
       { name: "description", content: "Genera protocolos PCR completos según polimerasa, cebadores, amplicón, molde y aditivos." },
       { property: "og:title", content: "Calculadora de protocolos PCR" },
       { property: "og:description", content: "Temperaturas, tiempos, ciclos y master mix calculados automáticamente." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Calculator,
@@ -127,7 +130,7 @@ function Calculator() {
   ].join(" · ");
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <StatusBars section="CALCULADORA">
       <ScreenHeader title="Calculadora de protocolos" subtitle="Toca cada bloque para configurarlo; el programa se calcula al momento" />
       <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ------------------- Entradas ------------------- */}
@@ -320,6 +323,6 @@ function Calculator() {
       </div>
       <NumPad req={pad} onClose={() => setPad(null)} />
       {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
-    </div>
+    </StatusBars>
   );
 }

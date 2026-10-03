@@ -1,10 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Thermometer, Calculator, GraduationCap, type LucideIcon } from "lucide-react";
-import { useMemo } from "react";
-import { useApp } from "@/lib/store";
-import { useThermocyclerSession } from "@/lib/thermocycler-session";
-import { AMBIENT, buildSegments, stateAt, totalDuration } from "@/lib/pcr/simulation";
-import { formatTime } from "@/lib/pcr/types";
+import { StatusBars } from "@/components/sim/StatusBars";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -59,36 +55,13 @@ const SPHERES: Sphere[] = [
 ];
 
 function MainMenu() {
-  const programs = useApp((s) => s.programs);
-  const activeId = useApp((s) => s.activeId);
-  const { status, simTime, lid } = useThermocyclerSession();
-  const program = programs.find((p) => p.id === activeId) ?? programs[0];
-  const segments = useMemo(() => program ? buildSegments(program) : [], [program]);
-  const total = useMemo(() => totalDuration(segments), [segments]);
-  const state = stateAt(segments, simTime);
-  const active = status !== "idle";
-  const displayTime = (seconds: number) => formatTime(Math.max(seconds, 0.01));
-  const statusLabel = { idle: "LISTO", running: "EN EJECUCIÓN", paused: "EN PAUSA", done: "FINALIZADO" }[status];
-
   return (
-    <main className="relative flex min-h-screen flex-col items-center overflow-x-clip bg-menu-bg font-body text-ice-soft">
+    <StatusBars section="MENÚ" menu>
       {/* Línea de horizonte: eje óptico que une las tres esferas */}
       <div
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-0 h-px w-full bg-gradient-to-r from-transparent via-ice/10 to-transparent"
       />
-
-      {/* Franja superior: datos en vivo del bloque y estado de la sesión. */}
-      <header className="z-10 w-full border-b border-ice/15 px-5 py-3 sm:px-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-5 gap-y-2 font-mono text-[11px] uppercase text-ice/75 sm:text-xs">
-          <span className="font-display font-semibold text-ice-soft">SIM-PCR <span className="font-normal text-ice/50">/ MENÚ</span></span>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 tabular-nums">
-            <span className="whitespace-nowrap">BLOQUE <strong className="ml-1 font-medium text-ice-soft">{(active ? state.temp : AMBIENT).toFixed(1)} °C</strong></span>
-            <span className="whitespace-nowrap">TAPA <strong className="ml-1 font-medium text-ice-soft">{lid.toFixed(1)} °C</strong></span>
-            <span className="flex items-center gap-2 whitespace-nowrap" role="status"><span className={`size-2 shrink-0 rounded-full ${status === "running" ? "bg-run" : status === "paused" ? "bg-amber" : "bg-ice/50"}`} />{statusLabel}</span>
-          </div>
-        </div>
-      </header>
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
       <nav className="z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-6 py-4 sm:gap-10 sm:py-8 lg:flex-row lg:gap-16">
@@ -152,20 +125,6 @@ function MainMenu() {
         ))}
       </nav>
 
-      {/* Franja inferior: tiempos simulados, programa y avance sin ocupar el centro. */}
-      <footer className="z-10 w-full border-t border-ice/15 px-5 py-3 sm:px-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-3 font-mono text-[11px] uppercase text-ice/65 sm:text-xs">
-          <p className="min-w-0 truncate">PROGRAMA <span className="ml-1 text-ice-soft">{program?.name ?? "—"}</span></p>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 tabular-nums">
-            <span className="whitespace-nowrap">TRANSCURRIDO <strong className="ml-1 font-medium text-ice-soft">{displayTime(active ? simTime : 0)}</strong></span>
-            <span className="whitespace-nowrap">RESTANTE <strong className="ml-1 font-medium text-ice-soft">{displayTime(Math.max(total - (active ? simTime : 0), 0))}</strong></span>
-            <span className="whitespace-nowrap">TOTAL <strong className="ml-1 font-medium text-ice-soft">{displayTime(total)}</strong></span>
-          </div>
-        </div>
-        <div className="mx-auto mt-3 h-0.5 w-full max-w-7xl overflow-hidden bg-ice/10" role="progressbar" aria-label="Progreso del programa" aria-valuenow={Math.min(Math.round((active ? simTime : 0) / (total || 1) * 100), 100)} aria-valuemin={0} aria-valuemax={100}>
-          <div className="h-full bg-ice transition-[width] duration-300" style={{ width: `${Math.min((active ? simTime : 0) / (total || 1) * 100, 100)}%` }} />
-        </div>
-      </footer>
-    </main>
+    </StatusBars>
   );
 }

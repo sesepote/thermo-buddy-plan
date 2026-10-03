@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Play, Pause, Square, Pencil, FolderOpen, Copy, Trash2, Plus, Save, X } from "lucide-react";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
+import { StatusBars } from "@/components/sim/StatusBars";
 import { ProgramEditor } from "@/components/sim/ProgramEditor";
 import { TempChart } from "@/components/sim/TempChart";
 import { useApp } from "@/lib/store";
@@ -17,6 +18,8 @@ export const Route = createFileRoute("/termociclador")({
       { name: "description", content: "Pantalla de termociclador simulada: programas, ciclos, rampas, tapa calefactada y gradiente." },
       { property: "og:title", content: "Termociclador — Simulador PCR" },
       { property: "og:description", content: "Ejecuta y edita programas PCR en un termociclador virtual." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Thermocycler,
@@ -42,7 +45,7 @@ function Thermocycler() {
   const showStatus = status !== "idle";
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <StatusBars section="TERMOCICLADOR">
       <ScreenHeader title="Termociclador" subtitle={program.name} />
       <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* -------- Zona de pantalla -------- */}
@@ -197,6 +200,6 @@ function Thermocycler() {
           </div>
         </aside>
       </div>
-    </div>
+    </StatusBars>
   );
 }
