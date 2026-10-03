@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Play, Pause, Square, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Flame, Activity, Grid3X3, Settings2, Volume2, VolumeX, Maximize2, Minimize2, SkipForward, Download, Upload, Check, Pencil } from "lucide-react";
+import { Play, Pause, Square, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Flame, Activity, Grid3X3, Settings2, Volume2, VolumeX, Maximize2, Minimize2, SkipForward, Download, Upload, Check, Pencil, ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { StatusBars } from "@/components/sim/StatusBars";
@@ -169,6 +169,7 @@ function Thermocycler() {
       {chassis && <div className="flex items-center justify-between border-b-4 border-panel-raised bg-secondary px-4 py-3 font-mono text-xs font-bold"><span>T5000-96 · GRADIENT THERMAL CYCLER</span><span className="text-run">● POWER <span className="ml-3 text-amber">● LID HEAT</span></span></div>}
       {/* La cabecera y las teclas replican las funciones del instrumento, sin duplicar las barras globales. */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-panel px-4 py-3 sm:px-6">
+        <Button variant="outline" asChild className="h-12"><Link to="/"><ChevronLeft /> Menú</Link></Button>
         <div className="flex min-w-0 items-center gap-2"><Button variant="outline" className="h-12 min-w-0 max-w-[280px] border-ice/40 text-ice" disabled={locked} onClick={() => { setLibraryTab("factory"); setModal("library"); }} title="Biblioteca de protocolos"><FolderOpen /><span className="truncate">{program.name}</span></Button><span className="hidden font-mono text-[11px] text-muted-foreground sm:inline">{program.stages.reduce((n,s)=>n+s.steps.length,0)} pasos · {program.sampleVolume ?? 25} µL</span></div>
         <div className="flex flex-wrap gap-1"><Button variant="ghost" size="icon" className="size-11" title="Ver placa de 96 pocillos" aria-label="Ver placa de 96 pocillos" onClick={() => setModal("plate")}><Grid3X3 /></Button><Button variant="ghost" size="icon" className="size-11" title={sound ? "Silenciar sonido" : "Activar sonido"} aria-label={sound ? "Silenciar sonido" : "Activar sonido"} onClick={() => setSound(!sound)}>{sound ? <Volume2 /> : <VolumeX />}</Button><Button variant="ghost" size="icon" className="size-11" title="Ajustes del equipo" aria-label="Ajustes del equipo" disabled={locked} onClick={() => setModal("settings")}><Settings2 /></Button><Button variant="ghost" size="icon" className="size-11" title={chassis ? "Modo pantalla" : "Modo chasis"} aria-label={chassis ? "Modo pantalla" : "Modo chasis"} onClick={() => setChassis(!chassis)}>{chassis ? <Maximize2 /> : <Minimize2 />}</Button></div>
       </div>
