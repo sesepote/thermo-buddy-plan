@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, AlertTriangle, XCircle, Lightbulb, RotateCcw, ChevronRight, Trophy } from "lucide-react";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
+import { StatusBars } from "@/components/sim/StatusBars";
 import { ProgramEditor } from "@/components/sim/ProgramEditor";
 import { useApp } from "@/lib/store";
 import { EXERCISES, describeExercise, evaluate, type Exercise, type Level } from "@/lib/pcr/exercises";
@@ -15,6 +16,8 @@ export const Route = createFileRoute("/entrenamiento")({
       { name: "description", content: "Ejercicios prácticos: configura el termociclador para cada caso y recibe corrección paso a paso." },
       { property: "og:title", content: "Zona de entrenamiento PCR" },
       { property: "og:description", content: "Practica la programación de termocicladores con casos reales y puntuación." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Training,
@@ -69,7 +72,7 @@ function Training() {
   if (!current || !program) {
     const done = EXERCISES.filter((e) => best(e.id) >= 70).length;
     return (
-      <div className="flex min-h-screen flex-col">
+      <StatusBars section="ENTRENAMIENTO">
         <ScreenHeader title="Zona de entrenamiento" subtitle={`${done}/${EXERCISES.length} ejercicios superados (≥ 70 puntos)`} />
         <div className="space-y-4 p-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -96,7 +99,7 @@ function Training() {
             })}
           </div>
         </div>
-      </div>
+      </StatusBars>
     );
   }
 
@@ -104,7 +107,7 @@ function Training() {
   const icon = { ok: <CheckCircle2 className="size-5 text-run" />, warn: <AlertTriangle className="size-5 text-amber" />, bad: <XCircle className="size-5 text-destructive" /> };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <StatusBars section="ENTRENAMIENTO">
       <ScreenHeader title={current.title} subtitle="Configura el programa y pulsa Verificar" />
       <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-4">
@@ -156,6 +159,6 @@ function Training() {
           )}
         </section>
       </div>
-    </div>
+    </StatusBars>
   );
 }
