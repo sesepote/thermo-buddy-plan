@@ -106,7 +106,7 @@ function Training() {
   return (
     <div className="flex min-h-screen flex-col">
       <ScreenHeader title={current.title} subtitle="Configura el programa y pulsa Verificar" />
-      <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[320px_1fr]">
+      <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-4">
           <div className="lcd space-y-1 rounded-xl p-4 text-sm">
             <p className="lcd-glow mb-2 text-base">CASO PRÁCTICO</p>

@@ -68,7 +68,7 @@ function Thermocycler() {
   return (
     <div className="flex min-h-screen flex-col">
       <ScreenHeader title="Termociclador" subtitle={program.name} />
-      <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[1fr_320px]">
+      <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* -------- Zona de pantalla -------- */}
         <section className="flex min-w-0 flex-col gap-4 rounded-xl border bg-panel p-4">
           {view === "run" && (
