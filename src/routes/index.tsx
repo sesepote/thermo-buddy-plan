@@ -71,7 +71,7 @@ function MainMenu() {
   const statusLabel = { idle: "LISTO", running: "EN EJECUCIÓN", paused: "EN PAUSA", done: "FINALIZADO" }[status];
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center bg-menu-bg font-body text-ice-soft">
+    <main className="relative flex min-h-screen flex-col items-center overflow-x-clip bg-menu-bg font-body text-ice-soft">
       {/* Línea de horizonte: eje óptico que une las tres esferas */}
       <div
         aria-hidden
