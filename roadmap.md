@@ -1,0 +1,2 @@
+- [ ] Integrar el sistema completo del termociclador de referencia en la pantalla del proyecto.
+- [ ] Verificar edición, biblioteca, ajustes, gradiente, corrida y continuidad entre pantallas en escritorio y móvil.
