@@ -199,7 +199,7 @@ function Thermocycler() {
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <button disabled={status === "running" || status === "paused"} onClick={() => { setDraft(cloneProgram(program)); setDraft({ ...program }); setView("edit"); }} className={cn("hw-key flex h-16 items-center justify-center gap-2 rounded-md disabled:opacity-40", view === "edit" && "text-amber")}>
+            <button disabled={status === "running" || status === "paused"} onClick={() => { setDraft(structuredClone(program)); setView("edit"); }} className={cn("hw-key flex h-16 items-center justify-center gap-2 rounded-md disabled:opacity-40", view === "edit" && "text-amber")}>
               <Pencil className="size-5" /> EDITAR
             </button>
             <button disabled={status === "running" || status === "paused"} onClick={() => setView(view === "library" ? "run" : "library")} className={cn("hw-key flex h-16 items-center justify-center gap-2 rounded-md disabled:opacity-40", view === "library" && "text-amber")}>
