@@ -34,7 +34,7 @@ function starterProgram(): Program {
       { id: uid(), repeats: 1, steps: [{ id: uid(), label: "Desnaturalización inicial", temp: 94, time: 60 }] },
       { id: uid(), repeats: 30, steps: [
         { id: uid(), label: "Desnaturalización", temp: 94, time: 30 },
-        { id: uid(), label: "Anillamiento", temp: 55, time: 30 },
+        { id: uid(), label: "Anillamiento", temp: 50, time: 30 },
         { id: uid(), label: "Extensión", temp: 72, time: 60 },
       ] },
       { id: uid(), repeats: 1, steps: [{ id: uid(), label: "Extensión final", temp: 72, time: 300 }] },
@@ -121,7 +121,7 @@ function Training() {
           <button onClick={() => setCurrent(null)} className="hw-key h-12 w-full rounded-md">Volver a ejercicios</button>
         </aside>
 
-        <section className="space-y-4 rounded-xl border bg-panel p-4">
+        <section className="min-w-0 space-y-4 rounded-xl border bg-panel p-4">
           <ProgramEditor program={program} onChange={(p) => { setProgram(p); setResult(null); }} allowGradient={false} />
           <button onClick={check} className="flex h-16 w-full items-center justify-center gap-2 rounded-md bg-run text-xl font-semibold text-run-foreground">
             <CheckCircle2 className="size-6" /> Verificar
