@@ -121,7 +121,7 @@ function Thermocycler() {
   const current = active && seg ? { si: seg.stageIndex, pi: seg.stepIndex } : undefined;
   const chosen = program?.stages[selected.si]?.steps[selected.pi] ?? program?.stages[0]?.steps[0];
   const displayStep = active ? seg?.step ?? chosen : chosen;
-  const temp = active ? state.temp : AMBIENT;
+  const temp = active && status !== "preheating" ? state.temp : AMBIENT;
   const remaining = Math.max(0, total - simTime);
   useEffect(() => { if (!program) return; setVolume(program.sampleVolume ?? 25); setLidEnabled(program.lidHeatingEnabled !== false); setLidTarget(program.lidTemp); }, [program?.id]);
   useEffect(() => {
@@ -177,8 +177,8 @@ function Thermocycler() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3 font-mono text-xs"><div className="flex items-center gap-2"><span className={cn("size-2.5 rounded-full", status === "running" ? "bg-run" : status === "paused" || status === "preheating" ? "bg-amber" : "bg-ice")} /><strong className="text-foreground">{status === "preheating" ? "CALENTANDO TAPA" : status === "running" ? seg?.kind === "ramp" ? "RAMPA TÉRMICA" : "INCUBACIÓN TÉRMICA" : status === "paused" ? "EN PAUSA" : status === "done" ? "CONSERVACIÓN / FINALIZADO" : "LISTO PARA PROGRAMAR"}</strong><span className="hidden text-muted-foreground sm:inline">· {active ? seg?.step.label : chosen?.label}</span></div><span className="text-muted-foreground">{active && seg ? `ETAPA ${seg.stageIndex+1} · CICLO ${seg.cycle}/${seg.repeats}` : `TAPA ${program.lidTemp}°C · ${program.rampRate}°C/s`}</span></div>
         {status === "preheating" && <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-amber bg-amber/10 p-3 font-mono text-sm"><span>Tapa calefactada: {lid.toFixed(1)} / {program.lidTemp} °C</span><Button variant="outline" className="h-11" onClick={skipPreheat}>Saltar precalentamiento</Button></div>}
         <section className="grid grid-cols-2 gap-3 border-b border-border pb-4 sm:grid-cols-4" aria-label="Monitor de ejecución">
-          {metric("Bloque · actual", `${temp.toFixed(1)}°C`, `Objetivo ${displayStep ? stepTempAt(displayStep, active ? seg?.cycle ?? 1 : 1).toFixed(1) : "—"} °C`, true)}
-          {metric("Ciclo actual", active && seg ? `${seg.cycle} / ${seg.repeats}` : "— / —", active && seg ? `Etapa ${seg.stageIndex+1}` : "Sin ejecución")}
+           {metric("Bloque · actual", `${temp.toFixed(1)}°C`, `Objetivo ${displayStep ? stepTempAt(displayStep, active ? seg?.cycle ?? 1 : 1).toFixed(1) : "—"} °C`, true)}
+           {metric("Ciclo actual", active && status !== "preheating" && seg ? `${seg.cycle} / ${seg.repeats}` : "— / —", active && status !== "preheating" && seg ? `Etapa ${seg.stageIndex+1}` : "Sin ejecución")}
            {metric("Tiempo en paso", active && status !== "preheating" ? formatTime(state.stepRemaining) : "—:—", status === "preheating" ? "Calentando tapa" : active ? seg?.kind === "ramp" ? "Rampa" : "Meseta" : chosen?.label ?? "—")}
           {metric("Tiempo restante", active ? formatTime(Math.max(0.01, remaining)) : formatTime(total), `Transcurrido ${active ? formatTime(Math.max(0.01,simTime)) : "00:00"}`)}
         </section>

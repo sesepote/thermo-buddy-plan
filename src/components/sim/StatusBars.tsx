@@ -14,7 +14,7 @@ export function StatusBars({ section, menu = false, children }: { section: strin
   const segments = useMemo(() => program ? buildSegments(program) : [], [program]);
   const total = useMemo(() => totalDuration(segments), [segments]);
   const active = status !== "idle";
-  const temp = active ? stateAt(segments, simTime).temp : AMBIENT;
+  const temp = active && status !== "preheating" ? stateAt(segments, simTime).temp : AMBIENT;
   const elapsed = active ? simTime : 0;
   const progress = total > 0 ? Math.min(Math.max(elapsed / total * 100, 0), 100) : 0;
   const displayTime = (seconds: number) => formatTime(Math.max(seconds, 0.01));
