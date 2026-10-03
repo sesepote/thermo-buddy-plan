@@ -6,8 +6,7 @@ import { X } from "lucide-react";
 
 export interface PopupContent {
   title: string;
-  /** Texto de apoyo bajo el título (descripción de la opción activa, etc.). */
-  subtitle?: string;
+  subtitle?: string | undefined;
   /** Contenido del panel: opciones o campos editables. */
   body: React.ReactNode;
 }
