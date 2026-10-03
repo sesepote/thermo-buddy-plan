@@ -21,7 +21,15 @@ export const Route = createFileRoute("/")({
 });
 
 /** Las tres esferas del menú: la del termociclador ocupa el centro. */
-const SPHERES = [
+interface Sphere {
+  to: "/calculadora" | "/termociclador" | "/entrenamiento";
+  icon: LucideIcon;
+  code: string;
+  title: string[];
+  center?: boolean; // módulo principal: esfera mayor, en el medio
+}
+
+const SPHERES: Sphere[] = [
   {
     to: "/calculadora",
     icon: Calculator,
@@ -33,7 +41,7 @@ const SPHERES = [
     icon: Thermometer,
     code: "01",
     title: ["Termociclador"],
-    center: true, // módulo principal: esfera mayor, en el medio
+    center: true,
   },
   {
     to: "/entrenamiento",
@@ -41,7 +49,7 @@ const SPHERES = [
     code: "03",
     title: ["Zona de", "entrenamiento"],
   },
-] as const;
+];
 
 function MainMenu() {
   return (
