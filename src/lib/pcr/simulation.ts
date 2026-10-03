@@ -90,8 +90,11 @@ export function stateAt(segs: Segment[], t: number): SimState {
     : seg.toTemp;
   // Tiempo restante del paso = resto de la rampa + meseta completa.
   let remaining = seg.duration - local;
-  if (seg.kind === "ramp" && segs[lo + 1]) remaining += segs[lo + 1]!.duration;
-  const finished = !Number.isFinite(seg.duration) && seg.step.time === 0;
+  const next = segs[lo + 1];
+  if (seg.kind === "ramp" && next?.kind === "hold" && next.stepIndex === seg.stepIndex && next.stageIndex === seg.stageIndex && next.cycle === seg.cycle) remaining += next.duration;
+  // Una conservación infinita concluye la PCR, aunque la temperatura siga visible.
+  // También concluye un programa cuyo último paso sea finito.
+  const finished = (!Number.isFinite(seg.duration) && seg.step.time === 0) || (!next && Number.isFinite(seg.duration) && t >= seg.start + seg.duration);
   return { temp, segment: seg, stepRemaining: remaining, finished };
 }
 
