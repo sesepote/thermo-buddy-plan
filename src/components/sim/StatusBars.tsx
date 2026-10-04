@@ -21,8 +21,8 @@ export function StatusBars({ section, menu = false, children }: { section: strin
   const statusLabel = { idle: "LISTO", preheating: "CALENTANDO TAPA", running: "EN EJECUCIÓN", paused: "EN PAUSA", done: "FINALIZADO" }[status];
 
   return (
-    <main className={cn("flex min-h-screen min-w-0 flex-col overflow-x-clip", menu ? "relative items-center bg-menu-bg font-body text-ice-soft" : "bg-background text-foreground")}>
-      <header className={cn("z-10 w-full border-b px-5 py-3 sm:px-8", menu ? "border-ice/15" : "border-border bg-panel")}>
+    <main className={cn("flex h-dvh min-w-0 flex-col overflow-hidden", menu ? "relative items-center bg-menu-bg font-body text-ice-soft" : "bg-background text-foreground")}>
+      <header className={cn("z-20 w-full shrink-0 border-b px-5 py-3 sm:px-8", menu ? "border-ice/15 bg-menu-bg" : "border-border bg-panel")}>
         <div className={cn("mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-5 gap-y-2 font-mono text-[11px] uppercase sm:text-xs", menu ? "text-ice/75" : "text-muted-foreground")}>
           <span className={cn("font-display font-semibold", menu ? "text-ice-soft" : "text-foreground")}>
             SIM-PCR <span className={cn("font-normal", menu ? "text-ice/50" : "text-muted-foreground")}>/ {section}</span>
@@ -35,9 +35,11 @@ export function StatusBars({ section, menu = false, children }: { section: strin
         </div>
       </header>
 
-      {children}
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain">
+        {children}
+      </div>
 
-      <footer className={cn("z-10 w-full border-t px-5 py-3 sm:px-8", menu ? "border-ice/15" : "border-border bg-panel")}>
+      <footer className={cn("z-20 w-full shrink-0 border-t px-5 py-3 sm:px-8", menu ? "border-ice/15 bg-menu-bg" : "border-border bg-panel")}>
         <div className={cn("mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-3 font-mono text-[11px] uppercase sm:text-xs", menu ? "text-ice/65" : "text-muted-foreground")}>
           <p className="min-w-0 truncate">PROGRAMA <span className={cn("ml-1", menu ? "text-ice-soft" : "text-foreground")}>{program?.name ?? "—"}</span></p>
           <div className="flex flex-wrap gap-x-6 gap-y-2 tabular-nums">
