@@ -2,8 +2,7 @@
 import { Button } from "@/components/ui/button";
 import type { Program } from "@/lib/pcr/types";
 import { formatTime } from "@/lib/pcr/types";
-import { cn } from "@/lib/utils";
-import { Repeat2, Flame } from "lucide-react";
+import { Repeat2 } from "lucide-react";
 
 export interface StepPosition { si: number; pi: number }
 export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onGradient, onTemperature, onTime, locked }: {
@@ -56,16 +55,10 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
             {pi === 0 && stage.repeats > 1 && <Button variant="ghost" disabled={locked} aria-label={`Ciclos etapa ${si + 1}: ${stage.repeats}`} className="absolute top-0 h-10 -translate-x-1/2 px-2 font-mono text-base font-bold text-amber" style={{ left: percent((point.x1 + (points[i + stage.steps.length - 1]?.x2 ?? point.x2)) / 2) }} onClick={() => onCycles(si)}>{stage.repeats}× <Repeat2 /></Button>}
             <Button variant="ghost" disabled={locked} aria-label={`Temperatura ${step.label}: ${step.temp.toFixed(1)} grados`} className="absolute h-11 -translate-x-1/2 px-2 font-mono text-xl font-bold tabular-nums text-lcd-foreground" style={{ left: center, top: point.y - 59 }} onClick={() => { onSelect(pos); onTemperature(pos); }}>{step.temp.toFixed(1)}°</Button>
             <Button variant="ghost" disabled={locked} aria-label={`Tiempo ${step.label}: ${formatTime(step.time)}`} className="absolute h-11 -translate-x-1/2 px-2 font-mono text-lg font-semibold tabular-nums text-ice" style={{ left: center, top: point.y + 11 }} onClick={() => { onSelect(pos); onTime(pos); }}>{formatTime(step.time)}</Button>
-            <Button variant="ghost" aria-pressed={selected.si === si && selected.pi === pi} className={cn("absolute top-[344px] h-11 w-[142px] -translate-x-1/2 overflow-hidden px-1 font-mono text-xs", selected.si === si && selected.pi === pi ? "text-ice" : "text-muted-foreground")} style={{ left: center }} onClick={() => onSelect(pos)} title={step.label}>#{i + 1} {step.label.length > 17 ? `${step.label.slice(0, 16)}…` : step.label}</Button>
           </div>;
         })}
       </div>
     </div>
-    <div className="flex gap-2 overflow-x-auto border-t border-border p-3">{steps.map(({step,si,pi},i) => <div key={step.id} className={cn("flex shrink-0 flex-col gap-1 border-l-2 px-2", current?.si === si && current?.pi === pi ? "border-run" : selected.si === si && selected.pi === pi ? "border-ice" : "border-border")}>
-      <Button variant="ghost" aria-pressed={selected.si === si && selected.pi === pi} className="h-10 justify-start px-1 font-mono text-xs" onClick={() => onSelect({si,pi})}>#{i+1} {step.label}</Button>
-      <div className="flex gap-1"><Button variant="ghost" disabled={locked} className="h-9 px-1 font-mono text-xs text-ice" aria-label={`Temperatura ${step.label}`} onClick={() => onTemperature({si,pi})}>{step.temp}°</Button><Button variant="ghost" disabled={locked} className="h-9 px-1 font-mono text-xs text-ice" aria-label={`Tiempo ${step.label}`} onClick={() => onTime({si,pi})}>{formatTime(step.time)}</Button></div>
-      {step.gradient && <Button variant="ghost" disabled={locked} className="h-8 justify-start px-1 text-amber" onClick={() => onGradient({si,pi})}><Flame /> Gradiente</Button>}
-    </div>)}</div>
     {cycle && <p className="border-t border-border px-4 py-2 font-mono text-xs text-amber">CICLO {cycle}</p>}
   </div>;
 }
