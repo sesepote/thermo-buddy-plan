@@ -28,7 +28,7 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
       <div className="flex flex-wrap gap-2">{program.stages.map((st, si) => st.repeats > 1 && <Button key={st.id} variant="outline" className="h-9 border-amber/40 bg-amber/10 text-amber" disabled={locked} onClick={() => onCycles(si)}><Repeat2 /> Etapa {si + 1}: {st.repeats}×</Button>)}</div>
     </div>
     <div className="overflow-x-auto">
-      <div className="relative h-[390px] min-w-[1130px]" style={{ width }}>
+      <div className="relative h-[390px] w-full" style={{ minWidth: width }}>
         <svg viewBox={`0 0 ${width} 390`} className="h-full w-full" preserveAspectRatio="none" role="img" aria-label="Curva de temperaturas por pasos, siete columnas visibles">
           {Array.from({ length: columns }, (_, i) => <line key={`col-${i}`} x1={left + i * span} x2={left + i * span} y1="44" y2="342" stroke="var(--border)" strokeOpacity="0.55" />)}
           {[4, 37, 55, 72, 95, 105].map(t => <g key={t}><line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeDasharray="4 5" /><text x={left - 8} y={y(t) + 5} textAnchor="end" fill="var(--lcd-foreground)" fontSize="15">{t}°</text></g>)}
