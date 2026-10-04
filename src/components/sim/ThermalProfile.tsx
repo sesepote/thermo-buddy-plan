@@ -2,8 +2,7 @@
 import { Button } from "@/components/ui/button";
 import type { Program } from "@/lib/pcr/types";
 import { formatTime } from "@/lib/pcr/types";
-import { cn } from "@/lib/utils";
-import { Repeat2, Flame } from "lucide-react";
+import { Repeat2 } from "lucide-react";
 
 export interface StepPosition { si: number; pi: number }
 export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onGradient, onTemperature, onTime, locked }: {
