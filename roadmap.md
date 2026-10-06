@@ -1,4 +1,4 @@
 - [x] Integrar el sistema del termociclador de referencia con un único motor Program/Segment y la interfaz de este proyecto.
 - [x] Verificar edición, biblioteca, ajustes, gradiente, placa, importación, corrida y continuidad entre pantallas en escritorio y móvil.
 - [x] Hacer editables los valores del gráfico, fijar siete columnas visibles y mantener ambas barras en los bordes de la pantalla.
-- [ ] Permitir redimensionar bucles desde sus bordes y seleccionar todas las columnas con nombres coherentes.
+- [x] Permitir redimensionar bucles desde sus bordes y seleccionar todas las columnas con nombres coherentes.
