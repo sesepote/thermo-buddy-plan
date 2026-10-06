@@ -30,7 +30,8 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
     const rect = graph.current?.getBoundingClientRect();
     const moving = dragRef.current;
     if (!rect || !moving) return;
-    const column = Math.max(0, Math.min(steps.length - 1, Math.floor(((clientX - rect.left) / rect.width * width - left) / span)));
+    const boundary = Math.round(((clientX - rect.left) / rect.width * width - left) / span);
+    const column = Math.max(0, Math.min(steps.length - 1, boundary - (moving.edge === "end" ? 1 : 0)));
     const next = { ...moving, ...(moving.edge === "start" ? { start: Math.min(column, moving.end) } : { end: Math.max(column, moving.start) }) };
     dragRef.current = next; setDrag(next);
   };
