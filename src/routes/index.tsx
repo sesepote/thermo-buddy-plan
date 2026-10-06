@@ -64,7 +64,7 @@ function MainMenu() {
       />
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
-      <nav className="z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-6 py-4 sm:gap-10 sm:py-8 lg:flex-row lg:gap-16">
+      <nav className="z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-6 py-4 sm:gap-10 sm:py-8 lg:flex-row lg:gap-16">
         {SPHERES.map(({ to, icon: Icon, code, title, center }) => (
           <Link
             key={to}
