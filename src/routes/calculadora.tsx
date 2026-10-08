@@ -27,11 +27,11 @@ export const Route = createFileRoute("/calculadora")({
   component: Calculator,
 });
 
-/** Botón de opción seleccionable de tamaño táctil. */
 /** Redondeo y formato a 2 decimales para volúmenes de pipeteo (p. ej. 0,25 µL). */
 const round2 = (v: number) => Math.round(v * 100) / 100;
 const fmt2 = (v: number) => round2(v).toFixed(2);
 
+/** Botón de opción seleccionable de tamaño táctil. */
 function Choice({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
