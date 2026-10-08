@@ -238,6 +238,24 @@ function Calculator() {
   return (
     <StatusBars section="CALCULADORA">
       <ScreenHeader title="Calculadora de protocolos" subtitle="Toca cada bloque para configurarlo; el programa se calcula al momento" />
+      {/* Pestañas táctiles: protocolo completo o solo master mix. */}
+      <div className="flex gap-2 px-4 pt-3">
+        {([["protocolo", "Protocolo PCR"], ["mastermix", "Master mix"]] as const).map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={cn(
+              "hw-key min-h-12 flex-1 rounded-md px-4 text-base font-medium",
+              tab === id && "bg-none bg-amber text-amber-foreground",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === "mastermix" ? (
+        <MasterMixTab />
+      ) : (
       <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ------------------- Entradas ------------------- */}
         <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
