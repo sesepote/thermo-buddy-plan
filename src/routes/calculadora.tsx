@@ -222,6 +222,9 @@ function Calculator() {
 
   // El protocolo se recalcula en vivo con cada cambio de entrada.
   const result = useMemo(() => generateProtocol(input), [input]);
+  // Tiempo total estimado del programa: rampas + mesetas de cada ciclo
+  // (mismo motor de simulación que el termociclador). El hold a 4 °C no cuenta.
+  const totalTime = useMemo(() => totalDuration(buildSegments(result.program)), [result]);
   const mix = useMemo(() => masterMix(input, volume, samples), [input, volume, samples]);
   const pol = POLYMERASES.find((p) => p.id === input.polymeraseId)!;
   const reaction = REACTION_TYPES.find((r) => r.id === input.reaction)!;
