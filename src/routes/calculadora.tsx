@@ -445,6 +445,7 @@ function Calculator() {
           </div>
         </section>
       </div>
+      )}
       <NumPad req={pad} onClose={() => setPad(null)} />
       {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
     </StatusBars>
