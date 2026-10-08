@@ -201,32 +201,53 @@ export function generateProtocol(input: CalcInput, programId = "calc"): CalcResu
   return { program, fwdTm, revTm, ta, extTime, cycles, explanations, warnings };
 }
 
-/** Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL, con 10 % extra. */
-export function masterMix(input: CalcInput, volume: number, samples: number) {
+/** Opciones avanzadas del master mix (todas opcionales; por defecto, las de la polimerasa). */
+export interface MixOptions {
+  /** Volumen de molde por reacción (µL), descontado del agua. */
+  templateUL?: number;
+  /** Stock de enzima (U/µL) y unidades por reacción. */
+  enzymeStockU?: number;
+  enzymeUnits?: number;
+  /** Stock de cada cebador (µM) y concentración final (µM). */
+  primerStockUM?: number;
+  primerFinalUM?: number;
+}
+
+/**
+ * Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL, con 10 % extra.
+ * dNTPs: stock 10 mM de CADA nucleótido (40 mM total) → 0,2 mM finales de cada uno.
+ * Cebadores: V = C_final × V_reacción / C_stock (C1·V1 = C2·V2).
+ */
+export function masterMix(input: CalcInput, volume: number, samples: number, opts: MixOptions = {}) {
   const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0]!;
   const factor = samples * 1.1;
+  const stockU = opts.enzymeStockU ?? pol.stockU;
+  const units = opts.enzymeUnits ?? pol.unitsPer50 * (volume / 50);
+  const pStock = opts.primerStockUM ?? 10;
+  const pFinal = opts.primerFinalUM ?? 0.5;
   const per = {
     buffer: volume / pol.bufferX,
-    dntp: (volume * 0.2) / 10, // stock 10 mM → 200 µM final
-    fwd: (volume * 0.5) / 10, // stock 10 µM → 0,5 µM final
-    rev: (volume * 0.5) / 10,
-    enzyme: (pol.unitsPer50 * (volume / 50)) / pol.stockU,
+    dntp: (volume * 0.2) / 10, // stock 10 mM cada dNTP → 200 µM final de cada uno
+    fwd: (volume * pFinal) / pStock,
+    rev: (volume * pFinal) / pStock,
+    enzyme: units / stockU,
     dmso: (volume * input.additives.dmso) / 100,
-    template: input.template === "colony" ? 0 : 1,
+    template: input.template === "colony" ? 0 : (opts.templateUL ?? 1),
   };
   const used = Object.values(per).reduce((a, b) => a + b, 0);
   const rows = [
     { name: `Tampón ${pol.bufferX}x`, per: per.buffer },
-    { name: "dNTPs 10 mM", per: per.dntp },
-    { name: "Cebador directo 10 µM", per: per.fwd },
-    { name: "Cebador reverso 10 µM", per: per.rev },
+    { name: "dNTPs 10 mM (cada uno)", per: per.dntp },
+    { name: `Cebador directo ${pStock} µM`, per: per.fwd },
+    { name: `Cebador reverso ${pStock} µM`, per: per.rev },
     ...(per.dmso > 0 ? [{ name: "DMSO", per: per.dmso }] : []),
-    { name: `${pol.name} (${pol.stockU} U/µL)`, per: per.enzyme },
+    { name: `${pol.name} (${stockU} U/µL · ${round1(units * 100) / 100} U)`, per: per.enzyme },
     { name: "Agua libre de nucleasas", per: Math.max(volume - used, 0) },
   ];
   return {
     rows: rows.map((r) => ({ ...r, total: r.per * factor })),
     template: per.template,
     factor,
+    overflow: used > volume,
   };
 }

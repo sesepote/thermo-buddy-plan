@@ -27,6 +27,10 @@ export const Route = createFileRoute("/calculadora")({
 });
 
 /** Botón de opción seleccionable de tamaño táctil. */
+/** Redondeo y formato a 2 decimales para volúmenes de pipeteo (p. ej. 0,25 µL). */
+const round2 = (v: number) => Math.round(v * 100) / 100;
+const fmt2 = (v: number) => round2(v).toFixed(2);
+
 function Choice({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
@@ -69,15 +73,27 @@ function Field({ label, value, onClick }: { label: string; value: string; onClic
  * la tabla de volúmenes por reactivo con el 10 % extra habitual.
  */
 function MasterMixTab() {
-  const [polymeraseId, setPolymeraseId] = useState(DEFAULT_INPUT.polymeraseId);
+  const [polymeraseId, setPolymeraseIdRaw] = useState(DEFAULT_INPUT.polymeraseId);
   const [volume, setVolume] = useState(50);
   const [samples, setSamples] = useState(8);
   const [dmso, setDmso] = useState(0);
   const [colony, setColony] = useState(false);
+  const [templateUL, setTemplateUL] = useState(1);
+  const initPol = POLYMERASES.find((p) => p.id === DEFAULT_INPUT.polymeraseId)!;
+  const [enzymeStockU, setEnzymeStockU] = useState(initPol.stockU);
+  const [enzymeUnits, setEnzymeUnits] = useState(initPol.unitsPer50);
+  const [primerStockUM, setPrimerStockUM] = useState(10);
+  const [primerFinalUM, setPrimerFinalUM] = useState(0.5);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
 
-  // Entrada mínima reutilizada por masterMix(): solo importan polimerasa,
-  // DMSO y si el molde es una colonia (no se añade volumen de molde).
+  // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
+  const setPolymeraseId = (id: string) => {
+    const p = POLYMERASES.find((x) => x.id === id)!;
+    setPolymeraseIdRaw(id);
+    setEnzymeStockU(p.stockU);
+    setEnzymeUnits(round2(p.unitsPer50 * (volume / 50)));
+  };
+
   const input: CalcInput = useMemo(
     () => ({
       ...DEFAULT_INPUT,
@@ -87,7 +103,10 @@ function MasterMixTab() {
     }),
     [polymeraseId, dmso, colony],
   );
-  const mix = useMemo(() => masterMix(input, volume, samples), [input, volume, samples]);
+  const mix = useMemo(
+    () => masterMix(input, volume, samples, { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM }),
+    [input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM],
+  );
   const pol = POLYMERASES.find((p) => p.id === polymeraseId)!;
 
   const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
@@ -128,10 +147,23 @@ function MasterMixTab() {
             {num("Volumen por reacción", volume, "µL", (v) => setVolume(v), { min: 5, max: 100 })}
             {num("Nº de muestras", samples, "", (v) => setSamples(Math.round(v)), { min: 1, max: 384, allowDecimal: false })}
             {num("DMSO", dmso, "%", (v) => setDmso(v), { max: 10 })}
+            {!colony && num("Molde por reacción", templateUL, "µL", (v) => setTemplateUL(v), { min: 0, max: 20 })}
           </div>
           <Choice active={colony} onClick={() => setColony((c) => !c)}>
             PCR de colonia (sin molde medido)
           </Choice>
+        </Section>
+        <Section title="Polimerasa: stock y unidades">
+          <div className="flex flex-wrap gap-2">
+            {num("Stock de enzima", enzymeStockU, "U/µL", (v) => setEnzymeStockU(v), { min: 0.1, max: 100 })}
+            {num("Unidades por reacción", enzymeUnits, "U", (v) => setEnzymeUnits(v), { min: 0.1, max: 20 })}
+          </div>
+        </Section>
+        <Section title="Cebadores">
+          <div className="flex flex-wrap gap-2">
+            {num("Stock de cada cebador", primerStockUM, "µM", (v) => setPrimerStockUM(v), { min: 1, max: 1000 })}
+            {num("Concentración final", primerFinalUM, "µM", (v) => setPrimerFinalUM(v), { min: 0.05, max: 5 })}
+          </div>
         </Section>
       </section>
 
@@ -149,16 +181,20 @@ function MasterMixTab() {
             {mix.rows.map((r) => (
               <tr key={r.name} className="border-t">
                 <td className="py-1.5 font-sans">{r.name}</td>
-                <td className="text-right">{round1(r.per)}</td>
-                <td className="text-right">{round1(r.total)}</td>
+                <td className="text-right">{fmt2(r.per)}</td>
+                <td className="text-right">{fmt2(r.total)}</td>
               </tr>
             ))}
           </tbody>
         </table>
+        {mix.overflow && (
+          <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
+        )}
         <p className="text-xs text-muted-foreground">
-          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear.{" "}
+          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock 10 mM de cada nucleótido
+          (40 mM total) → 0,2 mM finales de cada uno.{" "}
           {mix.template
-            ? `Añade ${mix.template} µL de molde por tubo (descontado del agua).`
+            ? `Añade ${fmt2(mix.template)} µL de molde por tubo (descontado del agua).`
             : "Toca la colonia con la punta y resuspende en cada tubo."}
         </p>
       </section>

@@ -50,7 +50,7 @@ export function NumPad({ req, onClose }: { req: NumPadRequest | null; onClose: (
     if (req.time && minutes) v = v * 60;
     if (req.min !== undefined && v < req.min) return setError(`Mínimo ${req.min} ${req.unit}`);
     if (req.max !== undefined && v > req.max) return setError(`Máximo ${req.max} ${req.unit}`);
-    req.onConfirm(Math.round(v * 10) / 10);
+    req.onConfirm(Math.round(v * 100) / 100);
     onClose();
   };
 
