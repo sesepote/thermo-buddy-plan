@@ -9,6 +9,7 @@ import { useApp } from "@/lib/store";
 import { DEFAULT_INPUT, generateProtocol, masterMix, type CalcInput } from "@/lib/pcr/protocol";
 import { POLYMERASES, REACTION_TYPES, TEMPLATES } from "@/lib/pcr/reagents";
 import { calcTm, gcContent, cleanSeq, round1 } from "@/lib/pcr/tm";
+import { buildSegments, totalDuration } from "@/lib/pcr/simulation";
 import { cloneProgram, formatTime } from "@/lib/pcr/types";
 import { cn } from "@/lib/utils";
 
