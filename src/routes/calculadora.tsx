@@ -419,6 +419,12 @@ function Calculator() {
               <p className="lcd-glow text-lg">PROGRAMA CALCULADO</p>
               <p className="text-sm text-lcd-dim">Ta {result.ta} °C · {result.cycles} ciclos · ext {formatTime(result.extTime)}</p>
             </div>
+            {/* Tiempo total estimado, calculado con el mismo motor que la simulación. */}
+            <div className="flex items-center gap-2 border-t border-lcd-dim/30 pt-2 text-sm">
+              <Timer className="size-4 shrink-0 text-lcd-dim" />
+              <span className="font-mono lcd-glow">{formatTime(totalTime)}</span>
+              <span className="text-lcd-dim">tiempo total (rampas incluidas a {result.program.rampRate} °C/s; el hold a 4 °C no cuenta)</span>
+            </div>
             <table className="w-full text-sm">
               <thead className="text-lcd-dim"><tr><th className="py-1 text-left">Etapa</th><th className="text-left">Paso</th><th className="text-right">°C</th><th className="text-right">Tiempo</th></tr></thead>
               <tbody>
