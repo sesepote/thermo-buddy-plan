@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertTriangle, Send, Info, ChevronRight, ChevronDown } from "lucide-react";
+import { AlertTriangle, Send, Info, ChevronRight, ChevronDown, Timer } from "lucide-react";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
