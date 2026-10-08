@@ -63,7 +63,113 @@ function Field({ label, value, onClick }: { label: string; value: string; onClic
   );
 }
 
+/**
+ * Calculadora independiente de master mix: no depende del protocolo.
+ * Solo pide polimerasa, volumen, número de muestras y aditivos, y muestra
+ * la tabla de volúmenes por reactivo con el 10 % extra habitual.
+ */
+function MasterMixTab() {
+  const [polymeraseId, setPolymeraseId] = useState(DEFAULT_INPUT.polymeraseId);
+  const [volume, setVolume] = useState(50);
+  const [samples, setSamples] = useState(8);
+  const [dmso, setDmso] = useState(0);
+  const [colony, setColony] = useState(false);
+  const [pad, setPad] = useState<NumPadRequest | null>(null);
+
+  // Entrada mínima reutilizada por masterMix(): solo importan polimerasa,
+  // DMSO y si el molde es una colonia (no se añade volumen de molde).
+  const input: CalcInput = useMemo(
+    () => ({
+      ...DEFAULT_INPUT,
+      polymeraseId,
+      template: colony ? "colony" : DEFAULT_INPUT.template,
+      additives: { ...DEFAULT_INPUT.additives, dmso },
+    }),
+    [polymeraseId, dmso, colony],
+  );
+  const mix = useMemo(() => masterMix(input, volume, samples), [input, volume, samples]);
+  const pol = POLYMERASES.find((p) => p.id === polymeraseId)!;
+
+  const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
+    <button
+      className="hw-key flex min-h-14 flex-1 flex-col items-start justify-center rounded-md px-4 py-1"
+      onClick={() => setPad({ title: label, value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}
+    >
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="font-mono text-xl">{value} {unit}</span>
+    </button>
+  );
+
+  return (
+    <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      {/* Entradas de la mezcla */}
+      <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
+        <Section title="Polimerasa">
+          <div className="space-y-2">
+            {POLYMERASES.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPolymeraseId(p.id)}
+                className={cn(
+                  "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
+                  polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
+                )}
+              >
+                <span className="block text-sm font-medium">{p.name}</span>
+                <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
+                  Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
+                </span>
+              </button>
+            ))}
+          </div>
+        </Section>
+        <Section title="Reacción">
+          <div className="flex flex-wrap gap-2">
+            {num("Volumen por reacción", volume, "µL", (v) => setVolume(v), { min: 5, max: 100 })}
+            {num("Nº de muestras", samples, "", (v) => setSamples(Math.round(v)), { min: 1, max: 384, allowDecimal: false })}
+            {num("DMSO", dmso, "%", (v) => setDmso(v), { max: 10 })}
+          </div>
+          <Choice active={colony} onClick={() => setColony((c) => !c)}>
+            PCR de colonia (sin molde medido)
+          </Choice>
+        </Section>
+      </section>
+
+      {/* Tabla de volúmenes */}
+      <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
+          <p className="text-sm text-muted-foreground">{samples} muestras + 10 % extra = {round1(mix.factor)}×</p>
+        </div>
+        <table className="w-full font-mono text-sm">
+          <thead className="text-muted-foreground">
+            <tr><th className="py-1 text-left font-sans">Reactivo</th><th className="text-right">1× (µL)</th><th className="text-right">Total (µL)</th></tr>
+          </thead>
+          <tbody>
+            {mix.rows.map((r) => (
+              <tr key={r.name} className="border-t">
+                <td className="py-1.5 font-sans">{r.name}</td>
+                <td className="text-right">{round1(r.per)}</td>
+                <td className="text-right">{round1(r.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="text-xs text-muted-foreground">
+          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear.{" "}
+          {mix.template
+            ? `Añade ${mix.template} µL de molde por tubo (descontado del agua).`
+            : "Toca la colonia con la punta y resuspende en cada tubo."}
+        </p>
+      </section>
+      <NumPad req={pad} onClose={() => setPad(null)} />
+    </div>
+  );
+}
+
 function Calculator() {
+  /** Pestaña activa: protocolo completo o calculadora de master mix. */
+  const [tab, setTab] = useState<"protocolo" | "mastermix">("protocolo");
   const [input, setInput] = useState<CalcInput>(DEFAULT_INPUT);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   /** Ventana emergente abierta: título, subtítulo y cuerpo (opciones o campos). */
@@ -132,6 +238,24 @@ function Calculator() {
   return (
     <StatusBars section="CALCULADORA">
       <ScreenHeader title="Calculadora de protocolos" subtitle="Toca cada bloque para configurarlo; el programa se calcula al momento" />
+      {/* Pestañas táctiles: protocolo completo o solo master mix. */}
+      <div className="flex gap-2 px-4 pt-3">
+        {([["protocolo", "Protocolo PCR"], ["mastermix", "Master mix"]] as const).map(([id, label]) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={cn(
+              "hw-key min-h-12 flex-1 rounded-md px-4 text-base font-medium",
+              tab === id && "bg-none bg-amber text-amber-foreground",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === "mastermix" ? (
+        <MasterMixTab />
+      ) : (
       <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ------------------- Entradas ------------------- */}
         <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
@@ -321,6 +445,7 @@ function Calculator() {
           </div>
         </section>
       </div>
+      )}
       <NumPad req={pad} onClose={() => setPad(null)} />
       {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
     </StatusBars>
