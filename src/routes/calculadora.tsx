@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AlertTriangle, Send, Info, ChevronRight, ChevronDown } from "lucide-react";
+import { AlertTriangle, Send, Info, ChevronRight, ChevronDown, Timer } from "lucide-react";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
@@ -9,6 +9,7 @@ import { useApp } from "@/lib/store";
 import { DEFAULT_INPUT, generateProtocol, masterMix, type CalcInput } from "@/lib/pcr/protocol";
 import { POLYMERASES, REACTION_TYPES, TEMPLATES } from "@/lib/pcr/reagents";
 import { calcTm, gcContent, cleanSeq, round1 } from "@/lib/pcr/tm";
+import { buildSegments, totalDuration } from "@/lib/pcr/simulation";
 import { cloneProgram, formatTime } from "@/lib/pcr/types";
 import { cn } from "@/lib/utils";
 
@@ -221,6 +222,9 @@ function Calculator() {
 
   // El protocolo se recalcula en vivo con cada cambio de entrada.
   const result = useMemo(() => generateProtocol(input), [input]);
+  // Tiempo total estimado del programa: rampas + mesetas de cada ciclo
+  // (mismo motor de simulación que el termociclador). El hold a 4 °C no cuenta.
+  const totalTime = useMemo(() => totalDuration(buildSegments(result.program)), [result]);
   const mix = useMemo(() => masterMix(input, volume, samples), [input, volume, samples]);
   const pol = POLYMERASES.find((p) => p.id === input.polymeraseId)!;
   const reaction = REACTION_TYPES.find((r) => r.id === input.reaction)!;
@@ -414,6 +418,12 @@ function Calculator() {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="lcd-glow text-lg">PROGRAMA CALCULADO</p>
               <p className="text-sm text-lcd-dim">Ta {result.ta} °C · {result.cycles} ciclos · ext {formatTime(result.extTime)}</p>
+            </div>
+            {/* Tiempo total estimado, calculado con el mismo motor que la simulación. */}
+            <div className="flex items-center gap-2 border-t border-lcd-dim/30 pt-2 text-sm">
+              <Timer className="size-4 shrink-0 text-lcd-dim" />
+              <span className="font-mono lcd-glow">{formatTime(totalTime)}</span>
+              <span className="text-lcd-dim">tiempo total (rampas incluidas a {result.program.rampRate} °C/s; el hold a 4 °C no cuenta)</span>
             </div>
             <table className="w-full text-sm">
               <thead className="text-lcd-dim"><tr><th className="py-1 text-left">Etapa</th><th className="text-left">Paso</th><th className="text-right">°C</th><th className="text-right">Tiempo</th></tr></thead>
