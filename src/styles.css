@@ -192,12 +192,24 @@
 .menu-sphere-calculator { grid-column: 1; grid-row: 1; }
 .menu-sphere-exercises { grid-column: 3; grid-row: 1; }
 .menu-sphere-glossary { grid-column: 2; grid-row: 2; width: 158px; }
-.pcr-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; color: var(--ice); opacity: 0.16; }
+.pcr-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; color: var(--ice); opacity: 0.18; }
 .pcr-backdrop svg { width: 100%; height: 100%; }
 .pcr-helix { transform-origin: 250px 450px; animation: dna-breathe 16s ease-in-out infinite; }
 .pcr-trace { stroke-dasharray: 2000; animation: pcr-trace 20s linear infinite; opacity: 0.65; }
 @keyframes dna-breathe { 0%, 100% { transform: translateX(0) scaleX(1); opacity: 0.7; } 50% { transform: translateX(25px) scaleX(0.65); opacity: 1; } }
 @keyframes pcr-trace { from { stroke-dashoffset: 2000; } to { stroke-dashoffset: 0; } }
+/* Hélice del fondo: va a contratiempo de la primera, más despacio. */
+.pcr-helix-echo { transform-box: fill-box; transform-origin: center; animation: dna-echo 26s ease-in-out infinite; opacity: 0.5; }
+@keyframes dna-echo { 0%, 100% { transform: translateX(-14px) scaleX(0.9); opacity: 0.35; } 50% { transform: translateX(16px) scaleX(1.05); opacity: 0.6; } }
+/* Halos: se hinchan y se apagan, muy suave. */
+.pcr-glow { transform-box: fill-box; transform-origin: center; animation: glow-breathe 22s ease-in-out infinite; }
+@keyframes glow-breathe { 0%, 100% { transform: scale(0.94); opacity: 0.55; } 50% { transform: scale(1.07); opacity: 1; } }
+/* Burbujas: cada una sube a su ritmo, definida en el componente. */
+.pcr-bubble { transform-box: fill-box; animation: bubble-rise linear infinite; }
+@keyframes bubble-rise { 0% { transform: translateY(930px); opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.8; } 100% { transform: translateY(-40px); opacity: 0; } }
+/* La guía discontinua de abajo camina despacio hacia la derecha. */
+.pcr-drift { animation: pcr-drift 34s linear infinite; }
+@keyframes pcr-drift { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -300; } }
 @media (max-width: 639px) {
   .menu-spheres { grid-template-columns: 1fr 1fr; gap: 20px 18px; padding: 28px 20px; max-width: 450px; }
   .menu-sphere-primary { grid-column: 1 / -1; grid-row: 1; width: 210px; }
@@ -207,6 +219,6 @@
   .menu-sphere { max-width: 210px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pcr-helix, .pcr-trace, .page-slide-left, .page-slide-right { animation: none; }
+  .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-drift, .page-slide-left, .page-slide-right { animation: none; }
   .menu-sphere { transition: none; }
 }
