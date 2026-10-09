@@ -63,6 +63,9 @@ function MainMenu() {
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
       <nav aria-label="Menú principal" className="menu-spheres">
+        {/* Enlaces moleculares entre las esferas */}
+        <MenuMolecule />
+
         {SPHERES.map(({ to, icon: Icon, title, center }) => (
           <Link
             key={to}
