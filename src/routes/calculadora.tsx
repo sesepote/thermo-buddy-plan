@@ -265,6 +265,7 @@ function MasterMixTab() {
         </p>
       </section>
       <NumPad req={pad} onClose={() => setPad(null)} />
+      {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
     </div>
   );
 }
