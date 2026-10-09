@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CalculadoraRouteImport } from './routes/calculadora'
 import { Route as EntrenamientoRouteImport } from './routes/entrenamiento'
+import { Route as GlosarioRouteImport } from './routes/glosario'
 import { Route as TermocicladorRouteImport } from './routes/termociclador'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const EntrenamientoRoute = EntrenamientoRouteImport.update({
   path: '/entrenamiento',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GlosarioRoute = GlosarioRouteImport.update({
+  id: '/glosario',
+  path: '/glosario',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermocicladorRoute = TermocicladorRouteImport.update({
   id: '/termociclador',
   path: '/termociclador',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/calculadora': typeof CalculadoraRoute
   '/entrenamiento': typeof EntrenamientoRoute
+  '/glosario': typeof GlosarioRoute
   '/termociclador': typeof TermocicladorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calculadora': typeof CalculadoraRoute
   '/entrenamiento': typeof EntrenamientoRoute
+  '/glosario': typeof GlosarioRoute
   '/termociclador': typeof TermocicladorRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,29 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/calculadora': typeof CalculadoraRoute
   '/entrenamiento': typeof EntrenamientoRoute
+  '/glosario': typeof GlosarioRoute
   '/termociclador': typeof TermocicladorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/calculadora' | '/entrenamiento' | '/termociclador'
+  fullPaths:
+    '/' | '/calculadora' | '/entrenamiento' | '/glosario' | '/termociclador'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/calculadora' | '/entrenamiento' | '/termociclador'
-  id: '__root__' | '/' | '/calculadora' | '/entrenamiento' | '/termociclador'
+  to: '/' | '/calculadora' | '/entrenamiento' | '/glosario' | '/termociclador'
+  id:
+    | '__root__'
+    | '/'
+    | '/calculadora'
+    | '/entrenamiento'
+    | '/glosario'
+    | '/termociclador'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CalculadoraRoute: typeof CalculadoraRoute
   EntrenamientoRoute: typeof EntrenamientoRoute
+  GlosarioRoute: typeof GlosarioRoute
   TermocicladorRoute: typeof TermocicladorRoute
 }
 
@@ -92,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrenamientoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/glosario': {
+      id: '/glosario'
+      path: '/glosario'
+      fullPath: '/glosario'
+      preLoaderRoute: typeof GlosarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/termociclador': {
       id: '/termociclador'
       path: '/termociclador'
@@ -106,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CalculadoraRoute: CalculadoraRoute,
   EntrenamientoRoute: EntrenamientoRoute,
+  GlosarioRoute: GlosarioRoute,
   TermocicladorRoute: TermocicladorRoute,
 }
 export const routeTree = rootRouteImport
