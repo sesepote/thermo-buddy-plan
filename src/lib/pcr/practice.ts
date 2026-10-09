@@ -15,7 +15,7 @@ export const PRACTICE_CASES = EXERCISES.filter(e => e.id === "b1" || e.id === "b
   id: `practice-${exercise.id}`,
   title: index === 0 ? "PCR de un plásmido · Taq" : "ADN genómico · Hot-start",
   mix: {
-    input: exercise.input,
+    input: { ...exercise.input, additives: { ...exercise.input.additives, extraMg: index === 0 ? 0 : 0.5 } },
     volume: index === 0 ? 25 : 50,
     samples: index === 0 ? 6 : 8,
     options: {
@@ -30,11 +30,6 @@ export const PRACTICE_CASES = EXERCISES.filter(e => e.id === "b1" || e.id === "b
     },
   } satisfies MasterMixSettings,
 }));
-// El segundo caso requiere suplementar el magnesio para practicar su cálculo.
-PRACTICE_CASES[1]?.mix.input && (PRACTICE_CASES[1].mix.input = {
-  ...PRACTICE_CASES[1].mix.input,
-  additives: { ...DEFAULT_INPUT.additives, extraMg: 0.5 },
-});
 
 export type PracticeCase = typeof PRACTICE_CASES[number];
 export interface PracticeCheck { label: string; correct: boolean; detail: string }
