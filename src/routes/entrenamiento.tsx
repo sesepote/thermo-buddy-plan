@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, FlaskConical, Thermometer, Trophy } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, FlaskConical, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
@@ -10,7 +10,7 @@ import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { useApp } from "@/lib/store";
 import { describeExercise } from "@/lib/pcr/exercises";
 import { PRACTICE_CASES, verifyPractice, type PracticeCase, type MasterMixSettings } from "@/lib/pcr/practice";
-import { formatTime, type Program } from "@/lib/pcr/types";
+import { type Program } from "@/lib/pcr/types";
 import { generateProtocol } from "@/lib/pcr/protocol";
 import { setLoopRange } from "@/lib/pcr/loops";
 import { cn } from "@/lib/utils";
@@ -58,9 +58,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
   const [mix, setMix] = useState<MasterMixSettings | null>(null);
   const [selected, setSelected] = useState<StepPosition>({ si: 0, pi: 0 });
   const [pad, setPad] = useState<NumPadRequest | null>(null);
-  const [tab, setTab] = useState<"program" | "mix">("program");
   const [result, setResult] = useState<ReturnType<typeof verifyPractice> | null>(null);
-  const [showReference, setShowReference] = useState(false);
   const addAttempt = useApp(s => s.addAttempt);
   const updateProgram = (next: Program) => { setProgram(next); setResult(null); };
   // La referencia estable evita volver a notificar cambios en cada render.
@@ -78,35 +76,31 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
     addAttempt({ exerciseId: exercise.id, score: next.score, date: Date.now(), hintsUsed: 0 });
   };
   const target = exercise.mix;
-  const reference = generateProtocol(exercise.input, "reference").program;
   return <div className="space-y-5 p-4 sm:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button><span className="font-mono text-xs text-muted-foreground">{exercise.mix.samples} MUESTRAS · +10 % EXTRA</span></div>
-    <div className="grid gap-6 border-y py-5 lg:grid-cols-2">
-      <section><h2 className="mb-3 font-display text-lg text-ice">Caso práctico</h2><div className="grid gap-2 text-sm sm:grid-cols-2">{describeExercise(exercise).map(line => <p key={line}>{line}</p>)}</div></section>
-      <section><h2 className="mb-3 font-display text-lg text-ice">Preparación de la mezcla</h2><div className="grid gap-2 text-sm sm:grid-cols-2">
-        <p>{target.volume} µL por reacción · {target.samples} muestras</p><p>Molde: {target.options.templateUL} µL / tubo</p>
-        <p>Enzima: {target.options.enzymeStockU} U/µL → {target.options.enzymeUnits} U / tubo</p><p>Cebadores: {target.options.primerStockUM} µM → {target.options.primerFinalUM} µM</p>
-        <p>dNTPs: 10 mM cada uno → 0,2 mM</p><p>Tampón: 1,5 mM Mg²⁺ · extra: {target.input.additives.extraMg} mM</p><p>Stock MgCl₂: 25 mM · sin DMSO</p>
-      </div></section>
-    </div>
-    <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Apartados del ejercicio">
-      <Button role="tab" aria-selected={tab === "program"} variant={tab === "program" ? "default" : "outline"} className="h-12" onClick={() => setTab("program")}><Thermometer /> Termociclador</Button>
-      <Button role="tab" aria-selected={tab === "mix"} variant={tab === "mix" ? "default" : "outline"} className="h-12" onClick={() => setTab("mix")}><FlaskConical /> Master mix</Button>
-      <Button className="ml-auto h-12 bg-run text-run-foreground" disabled={!mix} onClick={verify}><CheckCircle2 /> Verificar ambos</Button>
-    </div>
-    <div role="tabpanel" aria-label="Termociclador" hidden={tab !== "program"}>
-      <ThermalProfile program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onGradient={() => {}} onCycles={si => {
+    <section aria-label="Gráfico del termociclador">
+      <ThermalProfile showHeader={false} program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onGradient={() => {}} onCycles={si => {
         const stage = program.stages[si]; if (!stage) return;
         setPad({ title: "Número de ciclos", value: stage.repeats, unit: "×", min: 2, max: 99, onConfirm: value => updateProgram({ ...program, stages: program.stages.map((s, i) => i === si ? { ...s, repeats: Math.round(value) } : s) }) });
       }} onLoopRange={(si, start, end) => { const stage = program.stages[si]; if (stage) updateProgram(setLoopRange(program, stage.id, start, end, stage.repeats)); }} />
-    </div>
-    <div role="tabpanel" aria-label="Master mix" hidden={tab !== "mix"}><MasterMixCalculator onChange={reportMix} /></div>
+    </section>
+    <section aria-label="Calculadora de master mix" className="border-t pt-5"><MasterMixCalculator onChange={reportMix} /></section>
+    <section aria-labelledby="exercise-statement" className="space-y-5 border-y py-5">
+      <h2 id="exercise-statement" className="font-display text-xl text-ice">Enunciado</h2>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid content-start gap-2 text-sm sm:grid-cols-2">{describeExercise(exercise).map(line => <p key={line}>{line}</p>)}</div>
+        <div className="grid content-start gap-2 text-sm sm:grid-cols-2">
+          <p>{target.volume} µL por reacción · {target.samples} muestras</p><p>Molde: {target.options.templateUL} µL / tubo</p>
+          <p>Enzima: {target.options.enzymeStockU} U/µL → {target.options.enzymeUnits} U / tubo</p><p>Cebadores: {target.options.primerStockUM} µM → {target.options.primerFinalUM} µM</p>
+          <p>dNTPs: 10 mM cada uno → 0,2 mM</p><p>Tampón: 1,5 mM Mg²⁺ · extra: {target.input.additives.extraMg} mM</p><p>Stock MgCl₂: 25 mM · sin DMSO</p>
+        </div>
+      </div>
+    </section>
+    <Button className="h-14 w-full bg-run text-lg text-run-foreground" disabled={!mix} onClick={verify}><CheckCircle2 /> Verificar</Button>
     {result && <section className="space-y-4 border-t pt-5" aria-label="Resultado de la verificación" aria-live="polite">
       <div className="flex flex-wrap items-center gap-4"><Trophy className={cn("size-9", result.correct ? "text-run" : "text-amber")} /><h2 className="font-display text-2xl">{result.score} / 100</h2><p className="text-sm text-muted-foreground">{result.correct ? "¡Correcto! Programa y master mix resueltos." : "Revisa los parámetros marcados y vuelve a verificar."}</p></div>
       <ul className="grid gap-x-8 sm:grid-cols-2">{result.checks.map(check => <li key={check.label} className="flex gap-3 border-b py-3">{check.correct ? <CheckCircle2 className="size-5 shrink-0 text-run" /> : <XCircle className="size-5 shrink-0 text-destructive" />}<div><p className="text-sm font-medium">{check.label}</p><p className="text-xs text-muted-foreground">{check.detail}</p></div></li>)}</ul>
     </section>}
-    <Button variant="outline" className="h-12" aria-expanded={showReference} onClick={() => setShowReference(!showReference)}>{showReference ? "Ocultar" : "Ver"} solución de referencia</Button>
-    {showReference && <section className="space-y-2 border-l-2 border-ice pl-4 font-mono text-sm"><h2 className="font-sans font-semibold">Programa de referencia</h2>{reference.stages.map((stage, si) => <p key={stage.id}>Etapa {si + 1} · {stage.repeats}×: {stage.steps.map(step => `${step.temp} °C · ${formatTime(step.time)}`).join(" → ")}</p>)}</section>}
     <NumPad req={pad} onClose={() => setPad(null)} />
   </div>;
 }

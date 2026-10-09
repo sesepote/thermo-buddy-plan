@@ -6,9 +6,10 @@ import { Repeat2 } from "lucide-react";
 import { useRef, useState } from "react";
 
 export interface StepPosition { si: number; pi: number }
-export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onLoopRange, onGradient, onTemperature, onTime, locked }: {
+export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onLoopRange, onGradient, onTemperature, onTime, locked, showHeader = true }: {
   program: Program; selected: StepPosition; current?: StepPosition | undefined; cycle?: number | undefined;
   onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onLoopRange: (si: number, start: number, end: number) => void; onGradient: (p: StepPosition) => void; onTemperature: (p: StepPosition) => void; onTime: (p: StepPosition) => void; locked: boolean;
+  showHeader?: boolean;
 }) {
   const graph = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ si: number; edge: "start" | "end"; start: number; end: number } | null>(null);
@@ -37,10 +38,10 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
   };
 
   return <div className="min-w-0 overflow-hidden border border-border bg-lcd" aria-label="Perfil térmico">
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 font-mono text-xs">
+    {showHeader && <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 font-mono text-xs">
       <span className="text-lcd-foreground">● PERFIL TÉRMICO <span className="ml-2 text-muted-foreground">{steps.length} PASOS · {program.sampleVolume ?? 25} µL</span></span>
       <div className="flex flex-wrap gap-2">{loops.map(loop => <Button key={loop.stage.id} variant="outline" className="h-9 border-amber/40 bg-amber/10 text-amber" disabled={locked} onClick={() => onCycles(loop.si)}><Repeat2 /> Columnas {loop.start + 1}–{loop.end + 1}: {loop.stage.repeats}×</Button>)}</div>
-    </div>
+    </div>}
     <div className="overflow-x-auto">
       <div ref={graph} className="relative h-[390px] w-full" style={{ minWidth: width }}>
         <svg viewBox={`0 0 ${width} 390`} className="h-full w-full" preserveAspectRatio="none" role="img" aria-label="Curva de temperaturas por pasos, siete columnas visibles">
