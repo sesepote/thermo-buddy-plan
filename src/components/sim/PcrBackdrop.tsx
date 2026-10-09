@@ -12,34 +12,35 @@ type Bond = { a: Atom; b: Atom; double?: boolean };
 
 type Molecule = { atoms: Atom[]; bonds: Bond[] };
 
-// Anillo regular de `n` vértices: átomos en el perímetro y enlaces cerrados.
-function ring(n: number, radius: number): Molecule {
+// Receta de una molécula: sus átomos y qué nodos van unidos.
+type Spec = { atoms: Atom[]; pairs: [number, number, boolean?][] };
+
+// Átomos de un anillo regular de `n` vértices.
+function ringAtoms(n: number, radius: number): Atom[] {
   const atoms: Atom[] = [];
   for (let i = 0; i < n; i++) {
     const ang = ((Math.PI * 2 * i) / n) - Math.PI / 2;
     atoms.push({ x: Math.cos(ang) * radius, y: Math.sin(ang) * radius, r: 2.4 });
   }
-  const bonds: Bond[] = [];
-  for (let i = 0; i < n; i++) {
-    const a = atoms[i];
-    const b = atoms[(i + 1) % n];
-    if (a && b) bonds.push({ a, b });
-  }
-  return { atoms, bonds };
+  return atoms;
 }
 
-const HEXAGON = ring(6, 12);
-const PENTAGON = ring(5, 10.5);
+// Enlaces de un anillo cerrado: cada vértice con el siguiente.
+function ringPairs(n: number): [number, number, boolean?][] {
+  const pairs: [number, number, boolean?][] = [];
+  for (let i = 0; i < n; i++) pairs.push([i, (i + 1) % n]);
+  return pairs;
+}
 
-// Estructuras fijas: átomos unidos por enlaces, como un esquema químico.
-const SHAPES: Molecule[] = [
+// Estructuras fijas, como un esquema químico.
+const SPECS: Spec[] = [
   // Diatómica con doble enlace.
   {
     atoms: [
       { x: -9, y: 0, r: 3.1 },
       { x: 9, y: 0, r: 3.1 },
     ],
-    bonds: [{ a: { x: -9, y: 0, r: 3.1 }, b: { x: 9, y: 0, r: 3.1 }, double: true }],
+    pairs: [[0, 1, true]],
   },
   // Triatómica angular, tipo agua.
   {
@@ -48,7 +49,10 @@ const SHAPES: Molecule[] = [
       { x: -11, y: -6, r: 2.4 },
       { x: 11, y: -6, r: 2.4 },
     ],
-    bonds: [],
+    pairs: [
+      [0, 1],
+      [0, 2],
+    ],
   },
   // Cadena de tres nodos.
   {
@@ -57,7 +61,10 @@ const SHAPES: Molecule[] = [
       { x: 0, y: -5, r: 3.1 },
       { x: 14, y: 6, r: 2.5 },
     ],
-    bonds: [],
+    pairs: [
+      [0, 1],
+      [1, 2],
+    ],
   },
   // Cadena larga de cuatro nodos.
   {
@@ -67,9 +74,14 @@ const SHAPES: Molecule[] = [
       { x: 7, y: 6, r: 2.7 },
       { x: 21, y: -6, r: 2.3 },
     ],
-    bonds: [],
+    pairs: [
+      [0, 1],
+      [1, 2],
+      [2, 3],
+    ],
   },
-  HEXAGON,
+  // Anillo de seis.
+  { atoms: ringAtoms(6, 12), pairs: ringPairs(6) },
   // Núcleo con tres ramas.
   {
     atoms: [
@@ -78,42 +90,26 @@ const SHAPES: Molecule[] = [
       { x: 12, y: 8, r: 2.4 },
       { x: -12, y: 8, r: 2.4 },
     ],
-    bonds: [],
+    pairs: [
+      [0, 1],
+      [0, 2],
+      [0, 3],
+    ],
   },
-  PENTAGON,
+  // Anillo de cinco.
+  { atoms: ringAtoms(5, 10.5), pairs: ringPairs(5) },
 ];
 
-// Los enlaces de las estructuras abiertas se derivan del orden de los átomos:
-// así no se escribe ninguna coordenada dos veces.
-function connect(mol: Molecule, pairs: [number, number, boolean?][]): Molecule {
+// Se resuelven los índices de cada receta sobre sus propios átomos.
+const MOLECULES: Molecule[] = SPECS.map((spec) => {
   const bonds: Bond[] = [];
-  for (const [i, j, double] of pairs) {
-    const a = mol.atoms[i];
-    const b = mol.atoms[j];
+  for (const [i, j, double] of spec.pairs) {
+    const a = spec.atoms[i];
+    const b = spec.atoms[j];
     if (a && b) bonds.push({ a, b, double });
   }
-  return { atoms: mol.atoms, bonds };
-}
-
-// Moléculas definitivas, con sus enlaces ya resueltos.
-const MOLECULES: Molecule[] = (() => {
-  const out: Molecule[] = [];
-  for (const shape of SHAPES) out.push(shape);
-  // Se reescriben las estructuras abiertas con sus enlaces explícitos.
-  const open = SHAPES.map((mol, i) => {
-    if (mol.bonds.length) return mol;
-    const pairs: [number, number, boolean?][] = [];
-    if (i === 1 || i === 5) {
-      // Núcleo central enlazado con el resto de nodos.
-      for (let k = 1; k < mol.atoms.length; k++) pairs.push([0, k]);
-    } else {
-      // Cadena: cada nodo con el siguiente.
-      for (let k = 0; k < mol.atoms.length - 1; k++) pairs.push([k, k + 1]);
-    }
-    return connect(mol, pairs);
-  });
-  return open;
-})();
+  return { atoms: spec.atoms, bonds };
+});
 
 // Segmentos de enlace ya situados en la pantalla; los desdoblados se separan
 // en perpendicular para que se lean como un doble enlace.
