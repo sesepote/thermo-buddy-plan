@@ -92,6 +92,8 @@ function MasterMixTab() {
   const [mgStockMM, setMgStockMM] = useState(25);
   const [extraMg, setExtraMg] = useState(0);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
+  /** Ventana emergente para las polimerasas menos habituales. */
+  const [popup, setPopup] = useState<PopupContent | null>(null);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
