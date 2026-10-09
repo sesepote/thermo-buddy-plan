@@ -137,7 +137,6 @@ function Calculator() {
   const additiveSummary = [
     `MgCl₂ ${round2(input.mgMM + input.additives.extraMg)} mM (tampón ${input.mgMM} + extra ${input.additives.extraMg})`,
     `DMSO ${input.additives.dmso} %`,
-    `Betaína ${input.additives.betaine} M`,
     `Formamida ${input.additives.formamide} %`,
   ].join(" · ");
 
@@ -370,7 +369,6 @@ function Calculator() {
                 {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
                 {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
                 {num("DMSO", input.additives.dmso, "%", (v) => setAdd({ dmso: v }), { max: 10 })}
-                {num("Betaína", input.additives.betaine, "M", (v) => setAdd({ betaine: v }), { max: 2.5 })}
                 {num("Formamida", input.additives.formamide, "%", (v) => setAdd({ formamide: v }), { max: 10 })}
               </div>
             ),
