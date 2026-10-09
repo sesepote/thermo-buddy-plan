@@ -88,7 +88,7 @@ export function generateProtocol(input: CalcInput, programId = "calc"): CalcResu
   const revTm = round1(tmOf(input.revSeq, input.revTm) + shift);
   const lowTm = Math.min(fwdTm, revTm);
   explanations.push(`Tm cebadores: directo ${fwdTm} °C, reverso ${revTm} °C (modelo nearest-neighbor, Mg²⁺ ${mg} mM).`);
-  if (shift !== 0) explanations.push(`Los aditivos bajan la Tm unos ${round1(-shift)} °C (DMSO ≈ 0,6 °C/%, betaína ≈ 2 °C/M).`);
+  if (shift !== 0) explanations.push(`Los aditivos bajan la Tm unos ${round1(-shift)} °C (DMSO ≈ 0,6 °C/%, formamida ≈ 0,65 °C/%).`);
   if (Math.abs(fwdTm - revTm) > 5) warnings.push("Las Tm de los cebadores difieren más de 5 °C: rediseña uno de ellos o usa touchdown.");
   for (const [name, seq] of [["directo", input.fwdSeq], ["reverso", input.revSeq]] as const) {
     if (seq.trim()) {
@@ -118,8 +118,8 @@ export function generateProtocol(input: CalcInput, programId = "calc"): CalcResu
     denatTemp = 98;
     explanations.push("Molde rico en GC: desnaturalización elevada a 98 °C.");
   }
-  if (input.highGC && input.additives.dmso === 0 && input.additives.betaine === 0)
-    warnings.push("Con alto GC se recomienda añadir 3–5 % DMSO o 1 M betaína.");
+  if (input.highGC && input.additives.dmso === 0)
+    warnings.push("Con alto GC se recomienda añadir 3–5 % DMSO.");
   let initialTime = pol.initialTime;
   if (input.reaction === "colony") {
     initialTime = Math.max(initialTime, 300);
