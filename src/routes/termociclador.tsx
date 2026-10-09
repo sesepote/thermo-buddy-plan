@@ -90,6 +90,7 @@ function Thermocycler() {
   const [cycleCount, setCycleCount] = useState(30);
   const [cycleStart, setCycleStart] = useState(0);
   const [cycleEnd, setCycleEnd] = useState(0);
+  const [confirmCycleDelete, setConfirmCycleDelete] = useState(false);
   const [importError, setImportError] = useState("");
   const { status, simTime, speed, lid, run, pause, stop, setSpeed, skipPreheat, advance } = useThermocyclerSession();
   const segments = useMemo(() => program ? buildSegments(program) : [], [program]);
@@ -120,7 +121,7 @@ function Thermocycler() {
   const openCycles = (si = selected.si) => {
     const stage = program.stages[si]; if (!stage || locked) return;
     const start = program.stages.slice(0, si).reduce((n, s) => n + s.steps.length, 0);
-    setCycleStage(si); setCycleCount(stage.repeats); setCycleStart(start); setCycleEnd(start + stage.steps.length - 1); setModal("cycles");
+    setCycleStage(si); setCycleCount(stage.repeats); setCycleStart(start); setCycleEnd(start + stage.steps.length - 1); setConfirmCycleDelete(false); setModal("cycles");
   };
   const changeLoopRange = (si: number, start: number, end: number, repeats?: number) => {
     const stage = program.stages[si]; if (!stage || locked) return;
@@ -130,6 +131,14 @@ function Thermocycler() {
   };
   const applyCycles = () => {
     changeLoopRange(cycleStage, cycleStart, cycleEnd, cycleCount); setModal(null);
+  };
+  /** Elimina la etapa (ciclo) entera del programa; siempre debe quedar al menos una. */
+  const removeCycleStage = () => {
+    if (locked || program.stages.length <= 1) return;
+    const stages = program.stages.filter((_, i) => i !== cycleStage);
+    saveProgram({ ...program, stages });
+    setSelected({ si: Math.min(cycleStage, stages.length - 1), pi: 0 });
+    setModal(null);
   };
   const insertStep = () => { if (locked) return; const st = program.stages[selected.si]; if (!st) return; saveProgram({ ...program, stages: program.stages.map((s, si) => si === selected.si ? { ...s, steps: [...s.steps.slice(0, selected.pi + 1), { id: uid(), label: "Paso nuevo", temp: 72, time: 30 }, ...s.steps.slice(selected.pi + 1)] } : s) }); setSelected({ si: selected.si, pi: selected.pi + 1 }); };
   const removeStep = () => { if (locked) return; const st = program.stages[selected.si]; if (!st || (program.stages.length === 1 && st.steps.length === 1)) return; const stages = st.steps.length > 1 ? program.stages.map((s, si) => si === selected.si ? { ...s, steps: s.steps.filter((_, pi) => pi !== selected.pi) } : s) : program.stages.filter((_, si) => si !== selected.si); saveProgram({ ...program, stages }); setSelected({ si: st.steps.length > 1 ? selected.si : Math.max(0, selected.si - 1), pi: 0 }); };
