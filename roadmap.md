@@ -4,6 +4,6 @@
 - [x] Permitir redimensionar bucles desde sus bordes y seleccionar todas las columnas con nombres coherentes.
 - [x] Añadir los términos del documento INCUAL al glosario, categorizados y buscables.
 - [x] Quitar los números de las esferas del menú principal y comprobar ambas pantallas.
-- [ ] Reorganizar las esferas y añadir un fondo PCR animado con movimiento reducido.
-- [ ] Sustituir entrenamiento por Ejercicios con dos casos, gráfica editable y calculadora master mix compartida.
-- [ ] Verificar correcciones, navegación y pruebas de ambos ejercicios.
+- [x] Reorganizar las esferas y añadir un fondo PCR animado con movimiento reducido.
+- [x] Sustituir entrenamiento por Ejercicios con dos casos, gráfica editable y calculadora master mix compartida.
+- [x] Verificar correcciones, navegación y pruebas de ambos ejercicios.

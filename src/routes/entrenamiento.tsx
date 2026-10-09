@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, FlaskConical, Thermometer, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
@@ -63,9 +63,8 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
   const [showReference, setShowReference] = useState(false);
   const addAttempt = useApp(s => s.addAttempt);
   const updateProgram = (next: Program) => { setProgram(next); setResult(null); };
-  const updateMix = (next: MasterMixSettings) => { setMix(next); setResult(null); };
-  // Stable callback: reporting calculator changes must not cause a render loop.
-  const [reportMix] = useState(() => updateMix);
+  // La referencia estable evita volver a notificar cambios en cada render.
+  const reportMix = useCallback((next: MasterMixSettings) => { setMix(next); setResult(null); }, []);
   const edit = (pos: StepPosition, kind: "temp" | "time") => {
     const step = program.stages[pos.si]?.steps[pos.pi];
     if (!step) return;
@@ -96,7 +95,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
       <Button className="ml-auto h-12 bg-run text-run-foreground" disabled={!mix} onClick={verify}><CheckCircle2 /> Verificar ambos</Button>
     </div>
     <div role="tabpanel" aria-label="Termociclador" hidden={tab !== "program"}>
-      <ThermalProfile program={program} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onGradient={() => {}} onCycles={si => {
+      <ThermalProfile program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onGradient={() => {}} onCycles={si => {
         const stage = program.stages[si]; if (!stage) return;
         setPad({ title: "Número de ciclos", value: stage.repeats, unit: "×", min: 2, max: 99, onConfirm: value => updateProgram({ ...program, stages: program.stages.map((s, i) => i === si ? { ...s, repeats: Math.round(value) } : s) }) });
       }} onLoopRange={(si, start, end) => { const stage = program.stages[si]; if (stage) updateProgram(setLoopRange(program, stage.id, start, end, stage.repeats)); }} />

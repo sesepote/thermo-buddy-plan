@@ -1,6 +1,6 @@
 /** Casos prácticos: las referencias usan los mismos cálculos que la calculadora. */
 import { EXERCISES } from "./exercises";
-import { DEFAULT_INPUT, generateProtocol, masterMix, type CalcInput, type MixOptions } from "./protocol";
+import { generateProtocol, masterMix, type CalcInput, type MixOptions } from "./protocol";
 import { formatTime, type Program } from "./types";
 
 export interface MasterMixSettings {
