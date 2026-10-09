@@ -27,7 +27,6 @@ export const Route = createFileRoute("/")({
 interface Sphere {
   to: "/calculadora" | "/termociclador" | "/entrenamiento" | "/glosario";
   icon: LucideIcon;
-  code: string;
   title: string[];
   center?: boolean; // módulo principal: esfera mayor, en el medio
 }
@@ -36,26 +35,22 @@ const SPHERES: Sphere[] = [
   {
     to: "/calculadora",
     icon: Calculator,
-    code: "02",
     title: ["Calculadora de", "protocolos"],
   },
   {
     to: "/termociclador",
     icon: Thermometer,
-    code: "01",
     title: ["Termociclador"],
     center: true,
   },
   {
     to: "/entrenamiento",
     icon: GraduationCap,
-    code: "03",
     title: ["Zona de", "entrenamiento"],
   },
   {
     to: "/glosario",
     icon: BookOpen,
-    code: "04",
     title: ["Glosario"],
   },
 ];
@@ -71,7 +66,7 @@ function MainMenu() {
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
       <nav className="z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-6 py-4 sm:gap-10 sm:py-8 lg:flex-row lg:flex-wrap lg:gap-10">
-        {SPHERES.map(({ to, icon: Icon, code, title, center }) => (
+        {SPHERES.map(({ to, icon: Icon, title, center }) => (
           <Link
             key={to}
             to={to}
@@ -102,17 +97,8 @@ function MainMenu() {
               className={center ? "size-7 text-ice sm:size-10" : "size-6 text-ice/70 sm:size-8"}
               strokeWidth={1.25}
             />
-            <span
-              className={
-                center
-                  ? "mt-1 font-display text-lg font-bold text-ice sm:mt-3 sm:text-2xl"
-                  : "mt-1 font-display text-base font-light text-ice/80 sm:mt-3 sm:text-xl"
-              }
-            >
-              {code}
-            </span>
             <h2
-              className={`text-center font-display leading-tight uppercase tracking-tight ${
+              className={`mt-3 text-center font-display leading-tight uppercase tracking-tight ${
                 center ? "px-3 text-base font-bold sm:px-8 sm:text-2xl md:text-3xl" : "px-3 text-sm font-medium sm:px-6 sm:text-lg"
               }`}
             >

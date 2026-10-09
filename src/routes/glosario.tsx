@@ -2,15 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ChevronLeft, Search, X } from "lucide-react";
 import { StatusBars } from "@/components/sim/StatusBars";
-import { GLOSSARY, GLOSSARY_CATEGORIES } from "@/lib/pcr/glossary";
+import { GLOSSARY, GLOSSARY_CATEGORIES, GLOSSARY_SOURCE } from "@/lib/pcr/glossary";
 
 export const Route = createFileRoute("/glosario")({
   head: () => ({
     meta: [
       { title: "Glosario PCR — Simulador de Termociclador" },
-      { name: "description", content: "Definiciones ordenadas y por categorías de todos los términos de PCR usados en el simulador." },
+      { name: "description", content: "Glosario de PCR y laboratorio de análisis clínico, con términos de INCUAL ordenados por categorías y buscador." },
       { property: "og:title", content: "Glosario PCR — Simulador de Termociclador" },
-      { property: "og:description", content: "Busca cualquier término de PCR: etapas, reactivos, polimerasas y funciones del equipo." },
+      { property: "og:description", content: "Consulta términos de PCR y análisis clínico: genética, inmunología, calidad, seguridad y funciones del equipo." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -48,6 +48,11 @@ function GlossaryPage() {
           <h1 className="font-display text-2xl font-bold tracking-tight">Glosario</h1>
           <span className="ml-auto font-mono text-sm text-muted-foreground">{count} términos</span>
         </div>
+
+        <p className="text-sm text-muted-foreground">
+          Definiciones de PCR y términos adaptados de {" "}
+          <a href={GLOSSARY_SOURCE.url} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">{GLOSSARY_SOURCE.title}</a>.
+        </p>
 
         <label className="flex h-14 items-center gap-3 rounded-lg border bg-panel px-4">
           <Search className="size-5 shrink-0 text-muted-foreground" />
