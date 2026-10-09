@@ -150,34 +150,7 @@ function MasterMixTab() {
               </button>
             ))}
             <button
-              onClick={() =>
-                setPopup({
-                  title: "Más polimerasas",
-                  subtitle: "Enzimas especiales o de uso menos frecuente.",
-                  body: () => (
-                    <div className="space-y-2">
-                      {POLYMERASES.filter((p) => p.id !== "taq" && p.id !== "hs-taq").map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => {
-                            setPolymeraseId(p.id);
-                            setPopup(null);
-                          }}
-                          className={cn(
-                            "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
-                            polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
-                          )}
-                        >
-                          <span className="block text-sm font-medium">{p.name}</span>
-                          <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
-                            Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  ),
-                })
-              }
+              onClick={() => setPopupOpen(true)}
               className={cn(
                 "hw-key flex min-h-14 w-full items-center justify-between gap-3 rounded-md px-3 text-left",
                 !["taq", "hs-taq"].includes(polymeraseId) && "bg-none bg-amber text-amber-foreground",
