@@ -482,7 +482,105 @@ function Calculator() {
       </div>
       )}
       <NumPad req={pad} onClose={() => setPad(null)} />
-      {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
+      {/* Ventanas emergentes: el cuerpo se construye aquí, en el render, para que
+          los valores y opciones mostrados estén siempre al día. */}
+      {popup === "reaction" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Tipo de reacción",
+            subtitle: REACTION_TYPES.find((r) => r.id === input.reaction)?.desc,
+            body: (
+              <div className="space-y-2">
+                {REACTION_TYPES.map((r) => (
+                  <Choice
+                    key={r.id}
+                    active={input.reaction === r.id}
+                    onClick={() => {
+                      set({ reaction: r.id });
+                      setPopup(null);
+                    }}
+                  >
+                    {r.name}
+                  </Choice>
+                ))}
+              </div>
+            ),
+          }}
+        />
+      )}
+      {popup === "polymerase" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Polimerasa",
+            subtitle: pol.note,
+            body: (
+              <div className="space-y-2">
+                {POLYMERASES.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      set({ polymeraseId: p.id });
+                      setPopup(null);
+                    }}
+                    className={cn(
+                      "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
+                      input.polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
+                    )}
+                  >
+                    <span className="block text-sm font-medium">{p.name}</span>
+                    <span className={cn("block text-xs text-muted-foreground", input.polymeraseId === p.id && "text-amber-foreground/70")}>
+                      {p.note}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ),
+          }}
+        />
+      )}
+      {popup === "template" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Molde y amplicón",
+            body: (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {TEMPLATES.map((t) => (
+                    <Choice key={t.id} active={input.template === t.id} onClick={() => set({ template: t.id })}>
+                      {t.name}
+                    </Choice>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {num("Amplicón", input.ampliconBp, "pb", (v) => set({ ampliconBp: Math.round(v) }), { min: 50, max: 40000, allowDecimal: false })}
+                  <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>Alto GC (&gt; 65 %)</Choice>
+                </div>
+              </div>
+            ),
+          }}
+        />
+      )}
+      {popup === "additives" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Tampón y aditivos",
+            subtitle: `MgCl₂ del tampón ${input.mgMM} mM`,
+            body: (
+              <div className="flex flex-wrap gap-2">
+                {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
+                {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
+                {num("DMSO", input.additives.dmso, "%", (v) => setAdd({ dmso: v }), { max: 10 })}
+                {num("Betaína", input.additives.betaine, "M", (v) => setAdd({ betaine: v }), { max: 2.5 })}
+                {num("Formamida", input.additives.formamide, "%", (v) => setAdd({ formamide: v }), { max: 10 })}
+              </div>
+            ),
+          }}
+        />
+      )}
     </StatusBars>
   );
 }
