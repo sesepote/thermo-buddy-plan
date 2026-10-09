@@ -23,7 +23,7 @@ export function suggestStepLabel(previous: Step | undefined, temp = 72): string 
   const is = (re: RegExp) => re.test(prev);
   if (temp <= 10) return "Conservación";
   if (!prev) return temp >= 90 ? "Desnaturalización inicial" : "Desnaturalización";
-  if (is(/extensión final|curva de fusión|conservación/)) return "Conservación";
+  if (is(/extensión final|curva de fusión|conservación/)) return temp >= 90 ? "Desnaturalización" : temp >= 68 ? "Extensión" : "Anillamiento";
   if (is(/inicial|lisis|retrotranscri|cdna|\brt\b|inactivaci|paso nuevo/)) return temp >= 90 ? "Desnaturalización" : temp >= 68 ? "Extensión" : "Anillamiento";
   if (is(/desnaturaliz/)) return temp >= 68 ? "Extensión" : "Anillamiento";
   if (is(/anillamiento|hibridaz/)) return temp >= 68 ? "Extensión" : "Anillamiento/extensión";

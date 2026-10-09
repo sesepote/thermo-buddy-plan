@@ -18,6 +18,8 @@ describe("suggestStepLabel", () => {
     expect(suggestStepLabel(step("Extensión", 72), 72)).toBe("Extensión final");
     expect(suggestStepLabel(step("Extensión final", 72), 4)).toBe("Conservación");
     expect(suggestStepLabel(step("Desnaturalización", 95), 60)).toBe("Anillamiento");
+    expect(suggestStepLabel(step("Curva de fusión", 95), 72)).toBe("Extensión");
+    expect(suggestStepLabel(step("Conservación", 4), 95)).toBe("Desnaturalización");
   });
 });
 
