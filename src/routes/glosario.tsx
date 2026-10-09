@@ -50,8 +50,8 @@ function GlossaryPage() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Definiciones de PCR y términos adaptados de {" "}
-          <a href={GLOSSARY_SOURCE.url} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">{GLOSSARY_SOURCE.title}</a>.
+          Fuente de datos:{" "}
+          <a href={GLOSSARY_SOURCE.url} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">INCUAL</a>
         </p>
 
         <label className="flex h-14 items-center gap-3 rounded-lg border bg-panel px-4">
