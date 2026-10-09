@@ -1,164 +1,112 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { CheckCircle2, AlertTriangle, XCircle, Lightbulb, RotateCcw, ChevronRight, Trophy } from "lucide-react";
+import { useCallback, useState } from "react";
+import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, FlaskConical, Thermometer, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
-import { ProgramEditor } from "@/components/sim/ProgramEditor";
+import { ThermalProfile, type StepPosition } from "@/components/sim/ThermalProfile";
+import { MasterMixCalculator } from "@/components/sim/MasterMixCalculator";
+import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { useApp } from "@/lib/store";
-import { EXERCISES, describeExercise, evaluate, type Exercise, type Level } from "@/lib/pcr/exercises";
-import { formatTime, uid, type Program } from "@/lib/pcr/types";
+import { describeExercise } from "@/lib/pcr/exercises";
+import { PRACTICE_CASES, verifyPractice, type PracticeCase, type MasterMixSettings } from "@/lib/pcr/practice";
+import { formatTime, type Program } from "@/lib/pcr/types";
+import { generateProtocol } from "@/lib/pcr/protocol";
+import { setLoopRange } from "@/lib/pcr/loops";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/entrenamiento")({
-  head: () => ({
-    meta: [
-      { title: "Zona de entrenamiento PCR — Simulador" },
-      { name: "description", content: "Ejercicios prácticos: configura el termociclador para cada caso y recibe corrección paso a paso." },
-      { property: "og:title", content: "Zona de entrenamiento PCR" },
-      { property: "og:description", content: "Practica la programación de termocicladores con casos reales y puntuación." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: Training,
+  head: () => ({ meta: [
+    { title: "Ejercicios de PCR y master mix — Simulador" },
+    { name: "description", content: "Resuelve dos casos prácticos de PCR: programa el perfil térmico, prepara el master mix y verifica tus respuestas." },
+    { property: "og:title", content: "Ejercicios de PCR y master mix" },
+    { property: "og:description", content: "Practica con Taq y Hot-start: temperaturas, tiempos, ciclos y volúmenes de reacción con corrección por parámetro." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
+  component: Exercises,
 });
 
-const LEVELS: { id: Level; name: string }[] = [
-  { id: "basico", name: "Básico" },
-  { id: "intermedio", name: "Intermedio" },
-  { id: "avanzado", name: "Avanzado" },
-];
-
-/** Programa de partida genérico que el alumno debe ajustar. */
-function starterProgram(): Program {
-  return {
-    id: uid(), name: "Mi programa", lidTemp: 105, rampRate: 3,
-    stages: [
-      { id: uid(), repeats: 1, steps: [{ id: uid(), label: "Desnaturalización inicial", temp: 94, time: 60 }] },
-      { id: uid(), repeats: 30, steps: [
-        { id: uid(), label: "Desnaturalización", temp: 94, time: 30 },
-        { id: uid(), label: "Anillamiento", temp: 50, time: 30 },
-        { id: uid(), label: "Extensión", temp: 72, time: 60 },
-      ] },
-      { id: uid(), repeats: 1, steps: [{ id: uid(), label: "Extensión final", temp: 72, time: 300 }] },
-      { id: uid(), repeats: 1, steps: [{ id: uid(), label: "Conservación", temp: 4, time: 0 }] },
-    ],
-  };
+function Exercises() {
+  const [current, setCurrent] = useState<PracticeCase | null>(null);
+  const attempts = useApp(s => s.attempts);
+  return <StatusBars section="EJERCICIOS">
+    <ScreenHeader title="Ejercicios" subtitle={current ? current.title : "PCR y preparación de master mix"} />
+    {current ? <ExerciseWorkspace key={current.id} exercise={current} onBack={() => setCurrent(null)} /> :
+      <div className="mx-auto w-full max-w-6xl p-6 sm:p-8">
+        <div className="grid gap-5 md:grid-cols-2">
+          {PRACTICE_CASES.map((exercise, index) => {
+            const best = Math.max(-1, ...attempts.filter(a => a.exerciseId === exercise.id).map(a => a.score));
+            return <Button key={exercise.id} variant="outline" onClick={() => setCurrent(exercise)} className="h-auto min-h-60 flex-col items-start gap-5 whitespace-normal rounded-lg bg-panel p-6 text-left">
+              <div className="flex w-full items-center justify-between text-ice"><FlaskConical className="size-7" /><span className="font-mono text-xs">CASO {index + 1}</span></div>
+              <h2 className="text-xl font-display font-semibold">{exercise.title}</h2>
+              <p className="text-sm font-normal text-muted-foreground">{exercise.input.ampliconBp} pb · {exercise.mix.samples} muestras · {exercise.mix.volume} µL / reacción</p>
+              <div className="flex w-full items-center justify-between border-t pt-4"><span className={cn("text-sm", best === 100 ? "text-run" : "text-muted-foreground")}>{best < 0 ? "Sin resolver" : `Mejor resultado: ${best} / 100`}</span><ChevronRight className="size-5" /></div>
+            </Button>;
+          })}
+        </div>
+      </div>}
+  </StatusBars>;
 }
 
-const HINT_COST = 5;
-
-function Training() {
-  const { attempts, addAttempt, resetProgress } = useApp();
-  const [level, setLevel] = useState<Level>("basico");
-  const [current, setCurrent] = useState<Exercise | null>(null);
-  const [program, setProgram] = useState<Program | null>(null);
-  const [hints, setHints] = useState(0);
-  const [result, setResult] = useState<ReturnType<typeof evaluate> | null>(null);
-
-  const best = (id: string) => Math.max(-1, ...attempts.filter((a) => a.exerciseId === id).map((a) => a.score));
-  const open = (e: Exercise) => { setCurrent(e); setProgram(starterProgram()); setHints(0); setResult(null); };
-
-  // Verifica el programa y guarda el intento (descontando pistas usadas).
-  const check = () => {
-    if (!current || !program) return;
-    const r = evaluate(program, current);
-    const score = Math.max(0, r.score - hints * HINT_COST);
-    setResult({ ...r, score });
-    addAttempt({ exerciseId: current.id, score, date: Date.now(), hintsUsed: hints });
+/** El alumno edita una copia local: nunca altera una ejecución del instrumento. */
+function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBack: () => void }) {
+  const [program, setProgram] = useState<Program>(() => {
+    const reference = generateProtocol(exercise.input, `draft-${exercise.id}`).program;
+    return { ...reference, stages: reference.stages.map(stage => ({ ...stage, repeats: stage.repeats > 1 ? 10 : 1, steps: stage.steps.map(step => ({ ...step, temp: step.time === 0 ? 20 : 50, time: step.time === 0 ? 0 : 10 })) })) };
+  });
+  const [mix, setMix] = useState<MasterMixSettings | null>(null);
+  const [selected, setSelected] = useState<StepPosition>({ si: 0, pi: 0 });
+  const [pad, setPad] = useState<NumPadRequest | null>(null);
+  const [tab, setTab] = useState<"program" | "mix">("program");
+  const [result, setResult] = useState<ReturnType<typeof verifyPractice> | null>(null);
+  const [showReference, setShowReference] = useState(false);
+  const addAttempt = useApp(s => s.addAttempt);
+  const updateProgram = (next: Program) => { setProgram(next); setResult(null); };
+  // La referencia estable evita volver a notificar cambios en cada render.
+  const reportMix = useCallback((next: MasterMixSettings) => { setMix(next); setResult(null); }, []);
+  const edit = (pos: StepPosition, kind: "temp" | "time") => {
+    const step = program.stages[pos.si]?.steps[pos.pi];
+    if (!step) return;
+    setPad({ title: `${step.label} · ${kind === "temp" ? "temperatura" : "duración"}`, value: kind === "temp" ? step.temp : step.time, unit: kind === "temp" ? "°C" : "s", time: kind === "time", allowDecimal: kind === "temp", min: kind === "temp" ? 4 : 0, max: kind === "temp" ? 105 : 36000,
+      onConfirm: value => updateProgram({ ...program, stages: program.stages.map((s, si) => si !== pos.si ? s : { ...s, steps: s.steps.map((p, pi) => pi !== pos.pi ? p : { ...p, [kind]: value }) }) }) });
   };
-
-  // ---------------- Lista de ejercicios ----------------
-  if (!current || !program) {
-    const done = EXERCISES.filter((e) => best(e.id) >= 70).length;
-    return (
-      <StatusBars section="ENTRENAMIENTO">
-        <ScreenHeader title="Zona de entrenamiento" subtitle={`${done}/${EXERCISES.length} ejercicios superados (≥ 70 puntos)`} />
-        <div className="space-y-4 p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {LEVELS.map((l) => (
-              <button key={l.id} onClick={() => setLevel(l.id)} className={cn("hw-key h-12 rounded-md px-5", level === l.id && "bg-none bg-amber text-amber-foreground")}>{l.name}</button>
-            ))}
-            <button onClick={resetProgress} className="hw-key ml-auto flex h-12 items-center gap-2 rounded-md px-4 text-sm"><RotateCcw className="size-4" /> Reiniciar progreso</button>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {EXERCISES.filter((e) => e.level === level).map((e) => {
-              const b = best(e.id);
-              return (
-                <button key={e.id} onClick={() => open(e)} className="flex min-h-28 flex-col gap-2 rounded-xl border bg-panel p-4 text-left active:bg-panel-raised">
-                  <div className="flex w-full items-center justify-between">
-                    <span className="text-lg font-semibold">{e.title}</span>
-                    <ChevronRight className="size-5 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">{describeExercise(e).slice(1, 4).join(" · ")}</span>
-                  <span className={cn("font-mono text-sm", b >= 70 ? "text-lcd-foreground" : b >= 0 ? "text-amber" : "text-muted-foreground")}>
-                    {b >= 0 ? `Mejor: ${b} pts` : "Sin intentar"}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </StatusBars>
-    );
-  }
-
-  // ---------------- Ejercicio activo ----------------
-  const icon = { ok: <CheckCircle2 className="size-5 text-run" />, warn: <AlertTriangle className="size-5 text-amber" />, bad: <XCircle className="size-5 text-destructive" /> };
-
-  return (
-    <StatusBars section="ENTRENAMIENTO">
-      <ScreenHeader title={current.title} subtitle="Configura el programa y pulsa Verificar" />
-      <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="space-y-4">
-          <div className="lcd space-y-1 rounded-xl p-4 text-sm">
-            <p className="lcd-glow mb-2 text-base">CASO PRÁCTICO</p>
-            {describeExercise(current).map((l) => <p key={l}>{l}</p>)}
-          </div>
-          <div className="space-y-2 rounded-xl border bg-panel p-4">
-            <button disabled={hints >= current.hints.length} onClick={() => setHints((h) => h + 1)} className="hw-key flex h-12 w-full items-center justify-center gap-2 rounded-md disabled:opacity-40">
-              <Lightbulb className="size-5 text-amber" /> Pista (−{HINT_COST} pts)
-            </button>
-            {current.hints.slice(0, hints).map((h) => <p key={h} className="text-sm text-muted-foreground">• {h}</p>)}
-          </div>
-          <button onClick={() => setCurrent(null)} className="hw-key h-12 w-full rounded-md">Volver a ejercicios</button>
-        </aside>
-
-        <section className="min-w-0 space-y-4 rounded-xl border bg-panel p-4">
-          <ProgramEditor program={program} onChange={(p) => { setProgram(p); setResult(null); }} allowGradient={false} />
-          <button onClick={check} className="flex h-16 w-full items-center justify-center gap-2 rounded-md bg-run text-xl font-semibold text-run-foreground">
-            <CheckCircle2 className="size-6" /> Verificar
-          </button>
-
-          {result && (
-            <div className="space-y-3">
-              <div className="lcd flex items-center gap-4 rounded-lg p-4">
-                <Trophy className="size-10" />
-                <div>
-                  <p className="lcd-glow text-4xl font-bold">{result.score}<span className="text-lg"> / 100</span></p>
-                  <p className="text-sm text-lcd-dim">{result.score >= 90 ? "Excelente, protocolo listo para usar." : result.score >= 70 ? "Superado. Revisa los puntos mejorables." : "No superado. Corrige los errores y vuelve a verificar."}{hints ? ` (−${hints * HINT_COST} por pistas)` : ""}</p>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                {result.checks.map((c) => (
-                  <li key={c.label} className="flex gap-3 rounded-md border p-3">
-                    {icon[c.verdict]}
-                    <div><p className="font-medium">{c.label}</p><p className="text-sm text-muted-foreground">{c.detail}</p></div>
-                  </li>
-                ))}
-              </ul>
-              <details className="rounded-md border p-3">
-                <summary className="min-h-10 cursor-pointer py-2 font-medium">Ver solución de referencia</summary>
-                <div className="mt-2 space-y-1 font-mono text-sm">
-                  {result.reference.program.stages.map((st, si) => (
-                    <p key={st.id}>Etapa {si + 1} ({st.repeats}×): {st.steps.map((s) => `${s.temp}°C ${formatTime(s.time)}${s.deltaPerCycle ? ` Δ${s.deltaPerCycle}` : ""}`).join(" → ")}</p>
-                  ))}
-                </div>
-              </details>
-            </div>
-          )}
-        </section>
-      </div>
-    </StatusBars>
-  );
+  const verify = () => {
+    if (!mix) return;
+    const next = verifyPractice(program, mix, exercise);
+    setResult(next);
+    addAttempt({ exerciseId: exercise.id, score: next.score, date: Date.now(), hintsUsed: 0 });
+  };
+  const target = exercise.mix;
+  const reference = generateProtocol(exercise.input, "reference").program;
+  return <div className="space-y-5 p-4 sm:p-6">
+    <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button><span className="font-mono text-xs text-muted-foreground">{exercise.mix.samples} MUESTRAS · +10 % EXTRA</span></div>
+    <div className="grid gap-6 border-y py-5 lg:grid-cols-2">
+      <section><h2 className="mb-3 font-display text-lg text-ice">Caso práctico</h2><div className="grid gap-2 text-sm sm:grid-cols-2">{describeExercise(exercise).map(line => <p key={line}>{line}</p>)}</div></section>
+      <section><h2 className="mb-3 font-display text-lg text-ice">Preparación de la mezcla</h2><div className="grid gap-2 text-sm sm:grid-cols-2">
+        <p>{target.volume} µL por reacción · {target.samples} muestras</p><p>Molde: {target.options.templateUL} µL / tubo</p>
+        <p>Enzima: {target.options.enzymeStockU} U/µL → {target.options.enzymeUnits} U / tubo</p><p>Cebadores: {target.options.primerStockUM} µM → {target.options.primerFinalUM} µM</p>
+        <p>dNTPs: 10 mM cada uno → 0,2 mM</p><p>Tampón: 1,5 mM Mg²⁺ · extra: {target.input.additives.extraMg} mM</p><p>Stock MgCl₂: 25 mM · sin DMSO</p>
+      </div></section>
+    </div>
+    <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Apartados del ejercicio">
+      <Button role="tab" aria-selected={tab === "program"} variant={tab === "program" ? "default" : "outline"} className="h-12" onClick={() => setTab("program")}><Thermometer /> Termociclador</Button>
+      <Button role="tab" aria-selected={tab === "mix"} variant={tab === "mix" ? "default" : "outline"} className="h-12" onClick={() => setTab("mix")}><FlaskConical /> Master mix</Button>
+      <Button className="ml-auto h-12 bg-run text-run-foreground" disabled={!mix} onClick={verify}><CheckCircle2 /> Verificar ambos</Button>
+    </div>
+    <div role="tabpanel" aria-label="Termociclador" hidden={tab !== "program"}>
+      <ThermalProfile program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onGradient={() => {}} onCycles={si => {
+        const stage = program.stages[si]; if (!stage) return;
+        setPad({ title: "Número de ciclos", value: stage.repeats, unit: "×", min: 2, max: 99, onConfirm: value => updateProgram({ ...program, stages: program.stages.map((s, i) => i === si ? { ...s, repeats: Math.round(value) } : s) }) });
+      }} onLoopRange={(si, start, end) => { const stage = program.stages[si]; if (stage) updateProgram(setLoopRange(program, stage.id, start, end, stage.repeats)); }} />
+    </div>
+    <div role="tabpanel" aria-label="Master mix" hidden={tab !== "mix"}><MasterMixCalculator onChange={reportMix} /></div>
+    {result && <section className="space-y-4 border-t pt-5" aria-label="Resultado de la verificación" aria-live="polite">
+      <div className="flex flex-wrap items-center gap-4"><Trophy className={cn("size-9", result.correct ? "text-run" : "text-amber")} /><h2 className="font-display text-2xl">{result.score} / 100</h2><p className="text-sm text-muted-foreground">{result.correct ? "¡Correcto! Programa y master mix resueltos." : "Revisa los parámetros marcados y vuelve a verificar."}</p></div>
+      <ul className="grid gap-x-8 sm:grid-cols-2">{result.checks.map(check => <li key={check.label} className="flex gap-3 border-b py-3">{check.correct ? <CheckCircle2 className="size-5 shrink-0 text-run" /> : <XCircle className="size-5 shrink-0 text-destructive" />}<div><p className="text-sm font-medium">{check.label}</p><p className="text-xs text-muted-foreground">{check.detail}</p></div></li>)}</ul>
+    </section>}
+    <Button variant="outline" className="h-12" aria-expanded={showReference} onClick={() => setShowReference(!showReference)}>{showReference ? "Ocultar" : "Ver"} solución de referencia</Button>
+    {showReference && <section className="space-y-2 border-l-2 border-ice pl-4 font-mono text-sm"><h2 className="font-sans font-semibold">Programa de referencia</h2>{reference.stages.map((stage, si) => <p key={stage.id}>Etapa {si + 1} · {stage.repeats}×: {stage.steps.map(step => `${step.temp} °C · ${formatTime(step.time)}`).join(" → ")}</p>)}</section>}
+    <NumPad req={pad} onClose={() => setPad(null)} />
+  </div>;
 }

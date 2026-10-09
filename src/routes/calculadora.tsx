@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AlertTriangle, Send, Info, ChevronRight, ChevronDown, Timer } from "lucide-react";
+import { MasterMixCalculator } from "@/components/sim/MasterMixCalculator";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
@@ -68,211 +69,6 @@ function Field({ label, value, onClick }: { label: string; value: string; onClic
   );
 }
 
-/**
- * Calculadora independiente de master mix: no depende del protocolo.
- * Solo pide polimerasa, volumen, número de muestras y aditivos, y muestra
- * la tabla de volúmenes por reactivo con el 10 % extra habitual.
- */
-function MasterMixTab() {
-  const [polymeraseId, setPolymeraseIdRaw] = useState(DEFAULT_INPUT.polymeraseId);
-  const [volume, setVolume] = useState(50);
-  const [samples, setSamples] = useState(8);
-  const [dmso, setDmso] = useState(0);
-  const [colony, setColony] = useState(false);
-  const [templateUL, setTemplateUL] = useState(1);
-  const initPol = POLYMERASES.find((p) => p.id === DEFAULT_INPUT.polymeraseId)!;
-  const [enzymeStockU, setEnzymeStockU] = useState(initPol.stockU);
-  const [enzymeUnits, setEnzymeUnits] = useState(initPol.unitsPer50);
-  const [primerStockUM, setPrimerStockUM] = useState(10);
-  const [primerFinalUM, setPrimerFinalUM] = useState(0.5);
-  // dNTPs (mM de cada nucleótido) y MgCl2 (mM).
-  const [dntpStockMM, setDntpStockMM] = useState(10);
-  const [dntpFinalMM, setDntpFinalMM] = useState(0.2);
-  const [bufferMg, setBufferMg] = useState(DEFAULT_INPUT.mgMM);
-  const [mgStockMM, setMgStockMM] = useState(25);
-  const [extraMg, setExtraMg] = useState(0);
-  const [pad, setPad] = useState<NumPadRequest | null>(null);
-  /** Ventana emergente para las polimerasas menos habituales. */
-  const [popupOpen, setPopupOpen] = useState(false);
-
-  // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
-  const setPolymeraseId = (id: string) => {
-    const p = POLYMERASES.find((x) => x.id === id)!;
-    setPolymeraseIdRaw(id);
-    setEnzymeStockU(p.stockU);
-    setEnzymeUnits(round2(p.unitsPer50 * (volume / 50)));
-  };
-
-  const input: CalcInput = useMemo(
-    () => ({
-      ...DEFAULT_INPUT,
-      polymeraseId,
-      mgMM: bufferMg,
-      template: colony ? "colony" : DEFAULT_INPUT.template,
-      additives: { ...DEFAULT_INPUT.additives, dmso, extraMg },
-    }),
-    [polymeraseId, dmso, colony, bufferMg, extraMg],
-  );
-  const opts = { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM };
-  const mix = useMemo(() => masterMix(input, volume, samples, opts), [input, volume, samples, ...Object.values(opts)]);
-  const pol = POLYMERASES.find((p) => p.id === polymeraseId)!;
-
-  const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
-    <button
-      className="hw-key flex min-h-14 flex-1 flex-col items-start justify-center rounded-md px-4 py-1"
-      onClick={() => setPad({ title: label, value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}
-    >
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="font-mono text-xl">{value} {unit}</span>
-    </button>
-  );
-
-  return (
-    <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      {/* Entradas de la mezcla */}
-      <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
-        <Section title="Polimerasa">
-          <div className="space-y-2">
-            {/* Polimerasas habituales directamente; las demás en "Más polimerasas…". */}
-            {POLYMERASES.filter((p) => p.id === "taq" || p.id === "hs-taq").map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setPolymeraseId(p.id)}
-                className={cn(
-                  "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
-                  polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
-                )}
-              >
-                <span className="block text-sm font-medium">{p.name}</span>
-                <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
-                  Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
-                </span>
-              </button>
-            ))}
-            <button
-              onClick={() => setPopupOpen(true)}
-              className={cn(
-                "hw-key flex min-h-14 w-full items-center justify-between gap-3 rounded-md px-3 text-left",
-                !["taq", "hs-taq"].includes(polymeraseId) && "bg-none bg-amber text-amber-foreground",
-              )}
-            >
-              <span className="min-w-0">
-                <span className="block text-sm font-medium">Más polimerasas…</span>
-                <span className={cn("block truncate text-xs text-muted-foreground", !["taq", "hs-taq"].includes(polymeraseId) && "text-amber-foreground/70")}>
-                  {pol.name}
-                </span>
-              </span>
-              <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
-            </button>
-          </div>
-        </Section>
-        <Section title="Reacción">
-          <div className="flex flex-wrap gap-2">
-            {num("Volumen por reacción", volume, "µL", (v) => setVolume(v), { min: 5, max: 100 })}
-            {num("Nº de muestras", samples, "", (v) => setSamples(Math.round(v)), { min: 1, max: 384, allowDecimal: false })}
-            {num("DMSO", dmso, "%", (v) => setDmso(v), { max: 10 })}
-            {!colony && num("Molde por reacción", templateUL, "µL", (v) => setTemplateUL(v), { min: 0, max: 20 })}
-          </div>
-          <Choice active={colony} onClick={() => setColony((c) => !c)}>
-            PCR de colonia (sin molde medido)
-          </Choice>
-        </Section>
-        <Section title="Polimerasa: stock y unidades">
-          <div className="flex flex-wrap gap-2">
-            {num("Stock de enzima", enzymeStockU, "U/µL", (v) => setEnzymeStockU(v), { min: 0.1, max: 100 })}
-            {num("Unidades por reacción", enzymeUnits, "U", (v) => setEnzymeUnits(v), { min: 0.1, max: 20 })}
-          </div>
-        </Section>
-        <Section title="Cebadores">
-          <div className="flex flex-wrap gap-2">
-            {num("Stock de cada cebador", primerStockUM, "µM", (v) => setPrimerStockUM(v), { min: 1, max: 1000 })}
-            {num("Concentración final", primerFinalUM, "µM", (v) => setPrimerFinalUM(v), { min: 0.05, max: 5 })}
-          </div>
-        </Section>
-        <Section title="dNTPs (cada nucleótido)">
-          <div className="flex flex-wrap gap-2">
-            {num("Stock de cada dNTP", dntpStockMM, "mM", (v) => setDntpStockMM(v), { min: 0.5, max: 100 })}
-            {num("Concentración final", dntpFinalMM, "mM", (v) => setDntpFinalMM(v), { min: 0.01, max: 2 })}
-          </div>
-        </Section>
-        <Section title="Cloruro de magnesio (MgCl₂)">
-          <div className="flex flex-wrap gap-2">
-            {num("Mg²⁺ del tampón", bufferMg, "mM", (v) => setBufferMg(v), { max: 10 })}
-            {num("MgCl₂ extra a añadir", extraMg, "mM", (v) => setExtraMg(v), { max: 5 })}
-            {num("Stock de MgCl₂", mgStockMM, "mM", (v) => setMgStockMM(v), { min: 1, max: 1000 })}
-          </div>
-          <p className="text-xs text-muted-foreground">Mg²⁺ final: {round2(bufferMg + extraMg)} mM (óptimo habitual 1,5–2,5 mM).</p>
-        </Section>
-      </section>
-
-      {/* Tabla de volúmenes */}
-      <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
-          <p className="text-sm text-muted-foreground">{samples} muestras + 10 % extra = {round1(mix.factor)}×</p>
-        </div>
-        <table className="w-full font-mono text-sm">
-          <thead className="text-muted-foreground">
-            <tr><th className="py-1 text-left font-sans">Reactivo</th><th className="text-right">1× (µL)</th><th className="text-right">Total (µL)</th></tr>
-          </thead>
-          <tbody>
-            {mix.rows.map((r) => (
-              <tr key={r.name} className="border-t">
-                <td className="py-1.5 font-sans">{r.name}</td>
-                <td className="text-right">{fmt2(r.per)}</td>
-                <td className="text-right">{fmt2(r.total)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {mix.overflow && (
-          <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
-        )}
-        <p className="text-xs text-muted-foreground">
-          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock {dntpStockMM} mM de cada
-          nucleótido ({round2(dntpStockMM * 4)} mM total) → {dntpFinalMM} mM finales de cada uno. Mg²⁺ final{" "}
-          {round2(bufferMg + extraMg)} mM.{" "}
-          {mix.template
-            ? `Añade ${fmt2(mix.template)} µL de molde por tubo (descontado del agua).`
-            : "Toca la colonia con la punta y resuspende en cada tubo."}
-        </p>
-      </section>
-      <NumPad req={pad} onClose={() => setPad(null)} />
-      {popupOpen && (
-        /* El cuerpo se construye en cada render para que la selección resaltada esté al día. */
-        <OptionPopup
-          onClose={() => setPopupOpen(false)}
-          content={{
-            title: "Más polimerasas",
-            subtitle: "Enzimas especiales o de uso menos frecuente.",
-            body: (
-              <div className="space-y-2">
-                {POLYMERASES.filter((p) => p.id !== "taq" && p.id !== "hs-taq").map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => {
-                      setPolymeraseId(p.id);
-                      setPopupOpen(false);
-                    }}
-                    className={cn(
-                      "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
-                      polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
-                    )}
-                  >
-                    <span className="block text-sm font-medium">{p.name}</span>
-                    <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
-                      Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
-                    </span>
-                  </button>
-                ))}
-              </div>
-            ),
-          }}
-        />
-      )}
-    </div>
-  );
-}
 
 function Calculator() {
   /** Pestaña activa: protocolo completo o calculadora de master mix. */
@@ -364,7 +160,7 @@ function Calculator() {
         ))}
       </div>
       {tab === "mastermix" ? (
-        <MasterMixTab />
+        <MasterMixCalculator />
       ) : (
       <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ------------------- Entradas ------------------- */}

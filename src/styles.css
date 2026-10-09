@@ -105,6 +105,8 @@
   --ice-soft: oklch(0.94 0.01 265);
   --bubble: oklch(0.2 0.01 265);
   --menu-bg: oklch(0.14 0.005 265);
+  --sphere-shadow: inset 0 0 35px oklch(0.76 0.1 258 / 0.06);
+  --sphere-primary-shadow: inset 0 0 50px oklch(0.76 0.1 258 / 0.1), 0 0 55px oklch(0.76 0.1 258 / 0.08);
   --chart-1: oklch(0.88 0.2 145);
   --chart-2: oklch(0.8 0.15 75);
   --chart-3: oklch(0.62 0.21 25);
@@ -180,3 +182,31 @@
 @keyframes page-in-right { from { transform: translateX(-12%); opacity: 0; } to { transform: none; opacity: 1; } }
 .page-slide-left { animation: page-in-left 260ms ease-out; }
 .page-slide-right { animation: page-in-right 260ms ease-out; }
+
+/* Composition scientifique : trois accès principaux et le glosario en dessous. */
+.menu-spheres { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1.35fr 1fr; grid-template-rows: auto auto; align-items: center; justify-items: center; gap: 28px 36px; width: min(100%, 1100px); margin: auto; padding: 42px 32px; }
+.menu-sphere { display: flex; position: relative; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1; width: min(100%, 230px); border-radius: 50%; border: 1px solid color-mix(in oklch, var(--ice) 25%, transparent); background: var(--bubble); box-shadow: var(--sphere-shadow); transition: transform 180ms, border-color 180ms; }
+.menu-sphere:active { transform: scale(0.96); }
+.menu-sphere:focus-visible { outline: 2px solid var(--ice); outline-offset: 6px; }
+.menu-sphere-primary { grid-column: 2; grid-row: 1; width: min(100%, 335px); border: 2px solid color-mix(in oklch, var(--ice) 45%, transparent); box-shadow: var(--sphere-primary-shadow); }
+.menu-sphere-calculator { grid-column: 1; grid-row: 1; }
+.menu-sphere-exercises { grid-column: 3; grid-row: 1; }
+.menu-sphere-glossary { grid-column: 2; grid-row: 2; width: 158px; }
+.pcr-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; color: var(--ice); opacity: 0.16; }
+.pcr-backdrop svg { width: 100%; height: 100%; }
+.pcr-helix { transform-origin: 250px 450px; animation: dna-breathe 16s ease-in-out infinite; }
+.pcr-trace { stroke-dasharray: 2000; animation: pcr-trace 20s linear infinite; opacity: 0.65; }
+@keyframes dna-breathe { 0%, 100% { transform: translateX(0) scaleX(1); opacity: 0.7; } 50% { transform: translateX(25px) scaleX(0.65); opacity: 1; } }
+@keyframes pcr-trace { from { stroke-dashoffset: 2000; } to { stroke-dashoffset: 0; } }
+@media (max-width: 639px) {
+  .menu-spheres { grid-template-columns: 1fr 1fr; gap: 20px 18px; padding: 28px 20px; max-width: 450px; }
+  .menu-sphere-primary { grid-column: 1 / -1; grid-row: 1; width: 210px; }
+  .menu-sphere-calculator { grid-column: 1; grid-row: 2; }
+  .menu-sphere-exercises { grid-column: 2; grid-row: 2; }
+  .menu-sphere-glossary { grid-column: 1 / -1; grid-row: 3; width: 125px; }
+  .menu-sphere { max-width: 210px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pcr-helix, .pcr-trace, .page-slide-left, .page-slide-right { animation: none; }
+  .menu-sphere { transition: none; }
+}
