@@ -47,8 +47,8 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   const [colony, setColony] = useState(false);
   const [templateUL, setTemplateUL] = useState(1);
   const initPol = (POLYMERASES.find((p) => p.id === DEFAULT_INPUT.polymeraseId) ?? POLYMERASES[0]);
-  const [enzymeStockU, setEnzymeStockU] = useState(initPol.stockU);
-  const [enzymeUnits, setEnzymeUnits] = useState(initPol.unitsPer50);
+  const [enzymeStockU, setEnzymeStockU] = useState(initPol?.stockU ?? 5);
+  const [enzymeUnits, setEnzymeUnits] = useState(initPol?.unitsPer50 ?? 1.25);
   const [primerStockUM, setPrimerStockUM] = useState(10);
   const [primerFinalUM, setPrimerFinalUM] = useState(0.5);
   // dNTPs (mM de cada nucleótido) y MgCl2 (mM).
@@ -88,6 +88,8 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
     onChange?.({ input, volume, samples, options: { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM } });
   }, [onChange, input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM]);
 
+  if (!pol) return null;
+
   const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
     <Button variant="outline"
       className="hw-key flex min-h-14 flex-1 flex-col items-start justify-center rounded-md px-4 py-1"
@@ -101,7 +103,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   return (
     <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       {/* Entradas de la mezcla */}
-      <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
+      <section className="min-w-0 space-y-3 self-start p-1">
         <Section title="Polimerasa">
           <div className="space-y-2">
             {/* Polimerasas habituales directamente; las demás en "Más polimerasas…". */}
@@ -110,7 +112,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
                 key={p.id}
                 onClick={() => setPolymeraseId(p.id)}
                 className={cn(
-                  "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
+                  "hw-key min-h-14 w-full flex-col items-start justify-center rounded-md px-3 py-2 text-left",
                   polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
                 )}
               >
@@ -177,7 +179,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
       </section>
 
       {/* Tabla de volúmenes */}
-      <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
+      <section className="min-w-0 space-y-3 self-start border-t pt-4 xl:border-t-0 xl:border-l xl:pl-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
           <p className="text-sm text-muted-foreground">{samples} muestras + 10 % extra = {round1(mix.factor)}×</p>
