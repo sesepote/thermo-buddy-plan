@@ -75,7 +75,7 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
             <div className="absolute top-[349px] px-1 text-center" style={{ left: percent(left + i * span), width: percent(span) }}>
               <span className="block font-mono text-[11px] leading-none text-muted-foreground">Col. {i + 1}</span>
               {onRename
-                ? <button type="button" aria-label={`Cambiar el nombre de la columna ${i + 1}: ${step.label}`} className="mt-1 line-clamp-2 block w-full cursor-pointer font-mono text-[12px] leading-tight text-lcd-foreground underline decoration-dotted decoration-border underline-offset-4" onClick={() => onRename(pos)}>{step.label}</button>
+                ? <button type="button" aria-label={`Cambiar el nombre de la columna ${i + 1}: ${step.label}`} className="mt-1 line-clamp-2 block w-full cursor-pointer font-mono text-[12px] leading-tight text-lcd-foreground" onClick={() => onRename(pos)}>{step.label}</button>
                 : <span className="mt-1 line-clamp-2 block font-mono text-[12px] leading-tight text-lcd-foreground">{step.label}</span>}
             </div>
             {pi === 0 && stage.repeats > 1 && <Button variant="ghost" disabled={locked} aria-label={`Ciclos etapa ${si + 1}: ${stage.repeats}`} className="absolute top-0 h-10 -translate-x-1/2 px-2 font-mono text-base font-bold text-amber" style={{ left: percent((point.x1 + (points[i + stage.steps.length - 1]?.x2 ?? point.x2)) / 2) }} onClick={() => onCycles(si)}>{stage.repeats}× <Repeat2 /></Button>}
