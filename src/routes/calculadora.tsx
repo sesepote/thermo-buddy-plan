@@ -92,6 +92,8 @@ function MasterMixTab() {
   const [mgStockMM, setMgStockMM] = useState(25);
   const [extraMg, setExtraMg] = useState(0);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
+  /** Ventana emergente para las polimerasas menos habituales. */
+  const [popup, setPopup] = useState<PopupContent | null>(null);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
@@ -131,7 +133,8 @@ function MasterMixTab() {
       <section className="space-y-3 self-start rounded-xl border bg-panel p-4">
         <Section title="Polimerasa">
           <div className="space-y-2">
-            {POLYMERASES.map((p) => (
+            {/* Polimerasas habituales directamente; las demás en "Más polimerasas…". */}
+            {POLYMERASES.filter((p) => p.id === "taq" || p.id === "hs-taq").map((p) => (
               <button
                 key={p.id}
                 onClick={() => setPolymeraseId(p.id)}
@@ -146,6 +149,48 @@ function MasterMixTab() {
                 </span>
               </button>
             ))}
+            <button
+              onClick={() =>
+                setPopup({
+                  title: "Más polimerasas",
+                  subtitle: "Enzimas especiales o de uso menos frecuente.",
+                  body: (
+                    <div className="space-y-2">
+                      {POLYMERASES.filter((p) => p.id !== "taq" && p.id !== "hs-taq").map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => {
+                            setPolymeraseId(p.id);
+                            setPopup(null);
+                          }}
+                          className={cn(
+                            "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
+                            polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
+                          )}
+                        >
+                          <span className="block text-sm font-medium">{p.name}</span>
+                          <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
+                            Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ),
+                })
+              }
+              className={cn(
+                "hw-key flex min-h-14 w-full items-center justify-between gap-3 rounded-md px-3 text-left",
+                !["taq", "hs-taq"].includes(polymeraseId) && "bg-none bg-amber text-amber-foreground",
+              )}
+            >
+              <span className="min-w-0">
+                <span className="block text-sm font-medium">Más polimerasas…</span>
+                <span className={cn("block truncate text-xs text-muted-foreground", !["taq", "hs-taq"].includes(polymeraseId) && "text-amber-foreground/70")}>
+                  {pol.name}
+                </span>
+              </span>
+              <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+            </button>
           </div>
         </Section>
         <Section title="Reacción">
@@ -220,6 +265,7 @@ function MasterMixTab() {
         </p>
       </section>
       <NumPad req={pad} onClose={() => setPad(null)} />
+      {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
     </div>
   );
 }
