@@ -8,11 +8,11 @@ export interface PopupContent {
   title: string;
   subtitle?: string | undefined;
   /**
-   * Contenido del panel como función: se evalúa en cada render para que los
-   * campos numéricos muestren siempre el valor actual, no el del momento en
-   * que se abrió la ventana.
+   * Contenido del panel. Debe construirse en el render del componente que
+   * abre la ventana (no guardarse ya montado en el estado), para que los
+   * valores mostrados se actualicen con cada cambio.
    */
-  body: () => React.ReactNode;
+  body: React.ReactNode;
 }
 
 export function OptionPopup({ content, onClose }: { content: PopupContent; onClose: () => void }) {
@@ -32,7 +32,7 @@ export function OptionPopup({ content, onClose }: { content: PopupContent; onClo
             <X className="size-5" />
           </button>
         </div>
-        {content.body()}
+        {content.body}
         <button className="hw-key flex min-h-12 items-center justify-center rounded-md text-base font-medium" onClick={onClose}>
           Hecho
         </button>
