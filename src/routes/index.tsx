@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Thermometer, Calculator, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { StatusBars } from "@/components/sim/StatusBars";
+import { PcrBackdrop } from "@/components/sim/PcrBackdrop";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,7 +47,7 @@ const SPHERES: Sphere[] = [
   {
     to: "/entrenamiento",
     icon: GraduationCap,
-    title: ["Zona de", "entrenamiento"],
+     title: ["Ejercicios"],
   },
   {
     to: "/glosario",
@@ -58,22 +59,16 @@ const SPHERES: Sphere[] = [
 function MainMenu() {
   return (
     <StatusBars section="MENÚ" menu>
-      {/* Línea de horizonte: eje óptico que une las tres esferas */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-1/2 left-0 h-px w-full bg-gradient-to-r from-transparent via-ice/10 to-transparent"
-      />
+      <PcrBackdrop />
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
-      <nav className="z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-6 py-4 sm:gap-10 sm:py-8 lg:flex-row lg:flex-wrap lg:gap-10">
+      <nav aria-label="Menú principal" className="menu-spheres">
         {SPHERES.map(({ to, icon: Icon, title, center }) => (
           <Link
             key={to}
             to={to}
             className={
-              center
-                ? "group relative z-10 flex aspect-square w-44 flex-col items-center justify-center rounded-full border-2 border-ice/40 bg-bubble shadow-[0_0_60px_oklch(0.76_0.1_258/0.15),inset_0_0_40px_oklch(0.76_0.1_258/0.08)] transition-all duration-700 active:scale-95 sm:w-64 md:w-80 lg:w-96 lg:hover:border-ice"
-                : "group relative flex aspect-square w-36 flex-col items-center justify-center rounded-full border border-ice/20 bg-bubble shadow-[inset_0_0_30px_oklch(0.76_0.1_258/0.05)] transition-all duration-500 active:scale-95 sm:w-52 md:w-56 lg:w-60 lg:hover:border-ice/50"
+              `menu-sphere ${center ? "menu-sphere-primary" : ""} ${to === "/glosario" ? "menu-sphere-glossary" : ""} ${to === "/calculadora" ? "menu-sphere-calculator" : ""} ${to === "/entrenamiento" ? "menu-sphere-exercises" : ""}`
             }
           >
             {/* Resplandor interior de la esfera */}
@@ -89,7 +84,7 @@ function MainMenu() {
             {center && (
               <div
                 aria-hidden
-                className="absolute inset-4 rounded-full border border-dashed border-ice/10 animate-[spin_20s_linear_infinite]"
+                className="absolute inset-4 rounded-full border border-dashed border-ice/10 motion-safe:animate-[spin_40s_linear_infinite]"
               />
             )}
 
@@ -98,7 +93,7 @@ function MainMenu() {
               strokeWidth={1.25}
             />
             <h2
-              className={`mt-3 text-center font-display leading-tight uppercase tracking-tight ${
+              className={`mt-3 text-center font-display leading-tight uppercase ${
                 center ? "px-3 text-base font-bold sm:px-8 sm:text-2xl md:text-3xl" : "px-3 text-sm font-medium sm:px-6 sm:text-lg"
               }`}
             >
