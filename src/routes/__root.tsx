@@ -169,9 +169,9 @@ function RootComponent() {
     const onEnd = (x: number, y: number) => {
       if (!start) return;
       const dx = x - start.x, dy = y - start.y;
-      const fast = Date.now() - start.t < 600;
+      const fast = Date.now() - start.t < 1200;
       start = null;
-      if (fast && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
+      if (fast && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
         const to = swipeTarget(window.location.pathname, dx);
         if (to) void router.navigate({ to });
       }
@@ -187,15 +187,35 @@ function RootComponent() {
       onBegin(e.clientX, e.clientY, e.target as Element);
     };
     const onMouseUp = (e: MouseEvent) => onEnd(e.clientX, e.clientY);
+    // Panel táctil (dos dedos en horizontal): se acumula el desplazamiento lateral.
+    let acc = 0, lastWheel = 0, cooldown = 0;
+    const onWheel = (e: WheelEvent) => {
+      const now = Date.now();
+      if (now < cooldown) return;
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) * 1.5) { acc = 0; return; }
+      if (bloqueado(e.target as Element)) return;
+      if (now - lastWheel > 250) acc = 0;
+      lastWheel = now;
+      acc += e.deltaX;
+      if (Math.abs(acc) > 120) {
+        // deltaX positivo = dedos hacia la izquierda = avanzar (como dx negativo).
+        const to = swipeTarget(window.location.pathname, -acc);
+        acc = 0;
+        cooldown = now + 900;
+        if (to) void router.navigate({ to });
+      }
+    };
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchend", onTouchEnd, { passive: true });
     window.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("wheel", onWheel, { passive: true });
     return () => {
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("wheel", onWheel);
     };
   }, [router]);
 
