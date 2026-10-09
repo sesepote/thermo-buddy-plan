@@ -211,12 +211,18 @@ export interface MixOptions {
   /** Stock de cada cebador (µM) y concentración final (µM). */
   primerStockUM?: number;
   primerFinalUM?: number;
+  /** Stock de cada dNTP (mM) y concentración final de cada uno (mM). */
+  dntpStockMM?: number;
+  dntpFinalMM?: number;
+  /** Stock de MgCl2 (mM). El MgCl2 añadido es `input.additives.extraMg` (mM finales). */
+  mgStockMM?: number;
 }
 
 /**
  * Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL, con 10 % extra.
- * dNTPs: stock 10 mM de CADA nucleótido (40 mM total) → 0,2 mM finales de cada uno.
- * Cebadores: V = C_final × V_reacción / C_stock (C1·V1 = C2·V2).
+ * Todos los reactivos siguen C1·V1 = C2·V2 → V = C_final × V_reacción / C_stock.
+ * dNTPs: por defecto stock 10 mM de CADA nucleótido → 0,2 mM finales de cada uno.
+ * MgCl2: por defecto stock 25 mM; solo se añade el Mg extra sobre el del tampón.
  */
 export function masterMix(input: CalcInput, volume: number, samples: number, opts: MixOptions = {}) {
   const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0]!;
@@ -225,9 +231,13 @@ export function masterMix(input: CalcInput, volume: number, samples: number, opt
   const units = opts.enzymeUnits ?? pol.unitsPer50 * (volume / 50);
   const pStock = opts.primerStockUM ?? 10;
   const pFinal = opts.primerFinalUM ?? 0.5;
+  const dStock = opts.dntpStockMM ?? 10;
+  const dFinal = opts.dntpFinalMM ?? 0.2;
+  const mgStock = opts.mgStockMM ?? 25;
   const per = {
     buffer: volume / pol.bufferX,
-    dntp: (volume * 0.2) / 10, // stock 10 mM cada dNTP → 200 µM final de cada uno
+    dntp: (volume * dFinal) / dStock,
+    mg: (volume * input.additives.extraMg) / mgStock,
     fwd: (volume * pFinal) / pStock,
     rev: (volume * pFinal) / pStock,
     enzyme: units / stockU,
@@ -236,8 +246,9 @@ export function masterMix(input: CalcInput, volume: number, samples: number, opt
   };
   const used = Object.values(per).reduce((a, b) => a + b, 0);
   const rows = [
-    { name: `Tampón ${pol.bufferX}x`, per: per.buffer },
-    { name: "dNTPs 10 mM (cada uno)", per: per.dntp },
+    { name: `Tampón ${pol.bufferX}x (aporta ${input.mgMM} mM Mg²⁺)`, per: per.buffer },
+    { name: `dNTPs ${dStock} mM (cada uno) → ${dFinal} mM`, per: per.dntp },
+    ...(per.mg > 0 ? [{ name: `MgCl₂ ${mgStock} mM → +${input.additives.extraMg} mM`, per: per.mg }] : []),
     { name: `Cebador directo ${pStock} µM`, per: per.fwd },
     { name: `Cebador reverso ${pStock} µM`, per: per.rev },
     ...(per.dmso > 0 ? [{ name: "DMSO", per: per.dmso }] : []),

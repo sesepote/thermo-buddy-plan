@@ -85,6 +85,12 @@ function MasterMixTab() {
   const [enzymeUnits, setEnzymeUnits] = useState(initPol.unitsPer50);
   const [primerStockUM, setPrimerStockUM] = useState(10);
   const [primerFinalUM, setPrimerFinalUM] = useState(0.5);
+  // dNTPs (mM de cada nucleótido) y MgCl2 (mM).
+  const [dntpStockMM, setDntpStockMM] = useState(10);
+  const [dntpFinalMM, setDntpFinalMM] = useState(0.2);
+  const [bufferMg, setBufferMg] = useState(DEFAULT_INPUT.mgMM);
+  const [mgStockMM, setMgStockMM] = useState(25);
+  const [extraMg, setExtraMg] = useState(0);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
@@ -99,15 +105,14 @@ function MasterMixTab() {
     () => ({
       ...DEFAULT_INPUT,
       polymeraseId,
+      mgMM: bufferMg,
       template: colony ? "colony" : DEFAULT_INPUT.template,
-      additives: { ...DEFAULT_INPUT.additives, dmso },
+      additives: { ...DEFAULT_INPUT.additives, dmso, extraMg },
     }),
-    [polymeraseId, dmso, colony],
+    [polymeraseId, dmso, colony, bufferMg, extraMg],
   );
-  const mix = useMemo(
-    () => masterMix(input, volume, samples, { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM }),
-    [input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM],
-  );
+  const opts = { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM };
+  const mix = useMemo(() => masterMix(input, volume, samples, opts), [input, volume, samples, ...Object.values(opts)]);
   const pol = POLYMERASES.find((p) => p.id === polymeraseId)!;
 
   const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
@@ -166,6 +171,20 @@ function MasterMixTab() {
             {num("Concentración final", primerFinalUM, "µM", (v) => setPrimerFinalUM(v), { min: 0.05, max: 5 })}
           </div>
         </Section>
+        <Section title="dNTPs (cada nucleótido)">
+          <div className="flex flex-wrap gap-2">
+            {num("Stock de cada dNTP", dntpStockMM, "mM", (v) => setDntpStockMM(v), { min: 0.5, max: 100 })}
+            {num("Concentración final", dntpFinalMM, "mM", (v) => setDntpFinalMM(v), { min: 0.01, max: 2 })}
+          </div>
+        </Section>
+        <Section title="Cloruro de magnesio (MgCl₂)">
+          <div className="flex flex-wrap gap-2">
+            {num("Mg²⁺ del tampón", bufferMg, "mM", (v) => setBufferMg(v), { max: 10 })}
+            {num("MgCl₂ extra a añadir", extraMg, "mM", (v) => setExtraMg(v), { max: 5 })}
+            {num("Stock de MgCl₂", mgStockMM, "mM", (v) => setMgStockMM(v), { min: 1, max: 1000 })}
+          </div>
+          <p className="text-xs text-muted-foreground">Mg²⁺ final: {round2(bufferMg + extraMg)} mM (óptimo habitual 1,5–2,5 mM).</p>
+        </Section>
       </section>
 
       {/* Tabla de volúmenes */}
@@ -192,8 +211,9 @@ function MasterMixTab() {
           <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
         )}
         <p className="text-xs text-muted-foreground">
-          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock 10 mM de cada nucleótido
-          (40 mM total) → 0,2 mM finales de cada uno.{" "}
+          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock {dntpStockMM} mM de cada
+          nucleótido ({round2(dntpStockMM * 4)} mM total) → {dntpFinalMM} mM finales de cada uno. Mg²⁺ final{" "}
+          {round2(bufferMg + extraMg)} mM.{" "}
           {mix.template
             ? `Añade ${fmt2(mix.template)} µL de molde por tubo (descontado del agua).`
             : "Toca la colonia con la punta y resuspende en cada tubo."}
@@ -269,7 +289,7 @@ function Calculator() {
 
   /** Resumen compacto de los aditivos para la fila de configuración. */
   const additiveSummary = [
-    `Mg extra ${input.additives.extraMg} mM`,
+    `MgCl₂ ${round2(input.mgMM + input.additives.extraMg)} mM (tampón ${input.mgMM} + extra ${input.additives.extraMg})`,
     `DMSO ${input.additives.dmso} %`,
     `Betaína ${input.additives.betaine} M`,
     `Formamida ${input.additives.formamide} %`,
