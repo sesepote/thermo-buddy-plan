@@ -154,7 +154,7 @@ function MasterMixTab() {
                 setPopup({
                   title: "Más polimerasas",
                   subtitle: "Enzimas especiales o de uso menos frecuente.",
-                  body: (
+                  body: () => (
                     <div className="space-y-2">
                       {POLYMERASES.filter((p) => p.id !== "taq" && p.id !== "hs-taq").map((p) => (
                         <button
@@ -373,7 +373,7 @@ function Calculator() {
               setPopup({
                 title: "Tipo de reacción",
                 subtitle: REACTION_TYPES.find((r) => r.id === input.reaction)?.desc,
-                body: (
+                body: () => (
                   <div className="space-y-2">
                     {REACTION_TYPES.map((r) => (
                       <Choice
@@ -399,7 +399,7 @@ function Calculator() {
               setPopup({
                 title: "Polimerasa",
                 subtitle: pol.note,
-                body: (
+                body: () => (
                   <div className="space-y-2">
                     {POLYMERASES.map((p) => (
                       <button
@@ -439,7 +439,7 @@ function Calculator() {
             onClick={() =>
               setPopup({
                 title: "Molde y amplicón",
-                body: (
+                body: () => (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       {TEMPLATES.map((t) => (
@@ -464,7 +464,7 @@ function Calculator() {
               setPopup({
                 title: "Tampón y aditivos",
                 subtitle: `MgCl₂ del tampón ${input.mgMM} mM`,
-                body: (
+                body: () => (
                   <div className="flex flex-wrap gap-2">
                     {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
                     {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
