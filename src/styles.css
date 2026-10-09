@@ -204,9 +204,11 @@
 /* Halos: se hinchan y se apagan, muy suave. */
 .pcr-glow { transform-box: fill-box; transform-origin: center; animation: glow-breathe 22s ease-in-out infinite; }
 @keyframes glow-breathe { 0%, 100% { transform: scale(0.94); opacity: 0.55; } 50% { transform: scale(1.07); opacity: 1; } }
-/* Burbujas: cada una sube a su ritmo, definida en el componente. */
+/* Moléculas: cada una sube a su ritmo y gira sobre sí misma, apenas. */
 .pcr-bubble { transform-box: fill-box; animation: bubble-rise linear infinite; }
 @keyframes bubble-rise { 0% { transform: translateY(930px); opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.8; } 100% { transform: translateY(-40px); opacity: 0; } }
+.pcr-mol { transform-box: fill-box; transform-origin: center; animation: mol-spin linear infinite; }
+@keyframes mol-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 /* La guía discontinua de abajo camina despacio hacia la derecha. */
 .pcr-drift { animation: pcr-drift 34s linear infinite; }
 @keyframes pcr-drift { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -300; } }
@@ -219,6 +221,6 @@
   .menu-sphere { max-width: 210px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-drift, .page-slide-left, .page-slide-right { animation: none; }
+  .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-mol, .pcr-drift, .page-slide-left, .page-slide-right { animation: none; }
   .menu-sphere { transition: none; }
 }
