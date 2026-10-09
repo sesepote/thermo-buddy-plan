@@ -66,9 +66,11 @@ export function MenuMolecule() {
     return () => ro.disconnect();
   }, []);
 
-  if (!listo) return null;
+  // El contenedor siempre está montado: el ref se necesita para medir al padre.
   return (
     <div ref={ref} aria-hidden className="menu-molecule">
+      {!listo ? null : (
+
       <svg width="100%" height="100%" viewBox={`0 0 ${1000} ${1000}`} preserveAspectRatio="none" style={{ overflow: "visible" }}>
         {bonds.map((b, i) => {
           // Desdoblamiento perpendicular para el doble enlace.
