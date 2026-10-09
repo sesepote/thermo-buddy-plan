@@ -211,8 +211,9 @@ function MasterMixTab() {
           <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
         )}
         <p className="text-xs text-muted-foreground">
-          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock 10 mM de cada nucleótido
-          (40 mM total) → 0,2 mM finales de cada uno.{" "}
+          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock {dntpStockMM} mM de cada
+          nucleótido ({round2(dntpStockMM * 4)} mM total) → {dntpFinalMM} mM finales de cada uno. Mg²⁺ final{" "}
+          {round2(bufferMg + extraMg)} mM.{" "}
           {mix.template
             ? `Añade ${fmt2(mix.template)} µL de molde por tubo (descontado del agua).`
             : "Toca la colonia con la punta y resuspende en cada tubo."}
@@ -288,7 +289,7 @@ function Calculator() {
 
   /** Resumen compacto de los aditivos para la fila de configuración. */
   const additiveSummary = [
-    `Mg extra ${input.additives.extraMg} mM`,
+    `MgCl₂ ${round2(input.mgMM + input.additives.extraMg)} mM (tampón ${input.mgMM} + extra ${input.additives.extraMg})`,
     `DMSO ${input.additives.dmso} %`,
     `Betaína ${input.additives.betaine} M`,
     `Formamida ${input.additives.formamide} %`,
