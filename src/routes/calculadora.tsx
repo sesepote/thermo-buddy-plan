@@ -279,8 +279,8 @@ function Calculator() {
   const [tab, setTab] = useState<"protocolo" | "mastermix">("protocolo");
   const [input, setInput] = useState<CalcInput>(DEFAULT_INPUT);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
-  /** Ventana emergente abierta: título, subtítulo y cuerpo (opciones o campos). */
-  const [popup, setPopup] = useState<PopupContent | null>(null);
+  /** Ventana emergente abierta: qué bloque se está configurando. */
+  const [popup, setPopup] = useState<null | "reaction" | "polymerase" | "template" | "additives">(null);
   const [volume, setVolume] = useState(50);
   const [samples, setSamples] = useState(8);
   const [showWhy, setShowWhy] = useState(false);
@@ -373,28 +373,7 @@ function Calculator() {
           <Field
             label="Tipo de reacción"
             value={reaction.name}
-            onClick={() =>
-              setPopup({
-                title: "Tipo de reacción",
-                subtitle: REACTION_TYPES.find((r) => r.id === input.reaction)?.desc,
-                body: () => (
-                  <div className="space-y-2">
-                    {REACTION_TYPES.map((r) => (
-                      <Choice
-                        key={r.id}
-                        active={input.reaction === r.id}
-                        onClick={() => {
-                          set({ reaction: r.id });
-                          setPopup(null);
-                        }}
-                      >
-                        {r.name}
-                      </Choice>
-                    ))}
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("reaction")}
           />
           <Field
             label="Polimerasa"
