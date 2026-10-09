@@ -18,12 +18,16 @@ export function PcrBackdrop() {
 
   // Posiciones fijas, nunca aleatorias: así lo que pinta el servidor
   // y lo que pinta el navegador son exactamente iguales.
-  const bubbles = Array.from({ length: 16 }, (_, i) => ({
-    x: 40 + ((i * 197) % 1120),
-    r: 3 + (i % 4) * 1.9,
-    delay: (i % 8) * 3.1,
-    duration: 26 + (i % 6) * 7,
-  }));
+  const bubbles = Array.from({ length: 16 }, (_, i) => {
+    const duration = 26 + (i % 6) * 7;
+    return {
+      x: 40 + ((i * 197) % 1120),
+      r: 3 + (i % 4) * 1.9,
+      duration,
+      // Retardo negativo: todas arrancan ya en marcha y repartidas por la pantalla.
+      delay: -((i * 6.7) % duration),
+    };
+  });
 
   return (
     <div className="pcr-backdrop" aria-hidden="true">
