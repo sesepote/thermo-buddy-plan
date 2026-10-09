@@ -13,6 +13,8 @@ import { PRACTICE_CASES, verifyPractice, type PracticeCase, type MasterMixSettin
 import { type Program } from "@/lib/pcr/types";
 import { generateProtocol } from "@/lib/pcr/protocol";
 import { setLoopRange } from "@/lib/pcr/loops";
+import { StepNameDialog } from "@/components/sim/StepNameDialog";
+import { suggestionFor } from "@/lib/pcr/step-names";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/entrenamiento")({
@@ -58,6 +60,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
   const [mix, setMix] = useState<MasterMixSettings | null>(null);
   const [selected, setSelected] = useState<StepPosition>({ si: 0, pi: 0 });
   const [pad, setPad] = useState<NumPadRequest | null>(null);
+  const [renaming, setRenaming] = useState<StepPosition | null>(null);
   const [result, setResult] = useState<ReturnType<typeof verifyPractice> | null>(null);
   const addAttempt = useApp(s => s.addAttempt);
   const updateProgram = (next: Program) => { setProgram(next); setResult(null); };
@@ -69,6 +72,8 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
     setPad({ title: `${step.label} · ${kind === "temp" ? "temperatura" : "duración"}`, value: kind === "temp" ? step.temp : step.time, unit: kind === "temp" ? "°C" : "s", time: kind === "time", allowDecimal: kind === "temp", min: kind === "temp" ? 4 : 0, max: kind === "temp" ? 105 : 36000,
       onConfirm: value => updateProgram({ ...program, stages: program.stages.map((s, si) => si !== pos.si ? s : { ...s, steps: s.steps.map((p, pi) => pi !== pos.pi ? p : { ...p, [kind]: value }) }) }) });
   };
+  /** Cambia el nombre del paso elegido sin tocar temperatura ni duración. */
+  const renameTo = (label: string) => { if (!renaming) return; updateProgram({ ...program, stages: program.stages.map((s, si) => si !== renaming.si ? s : { ...s, steps: s.steps.map((p, pi) => pi !== renaming.pi ? p : { ...p, label }) }) }); setRenaming(null); };
   const verify = () => {
     if (!mix) return;
     const next = verifyPractice(program, mix, exercise);
@@ -79,7 +84,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
   return <div className="space-y-5 p-4 sm:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button><span className="font-mono text-xs text-muted-foreground">{exercise.mix.samples} MUESTRAS · +10 % EXTRA</span></div>
     <section aria-label="Gráfico del termociclador">
-      <ThermalProfile showHeader={false} program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onCycles={si => {
+      <ThermalProfile showHeader={false} program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onRename={setRenaming} onCycles={si => {
         const stage = program.stages[si]; if (!stage) return;
         setPad({ title: "Número de ciclos", value: stage.repeats, unit: "×", min: 2, max: 99, onConfirm: value => updateProgram({ ...program, stages: program.stages.map((s, i) => i === si ? { ...s, repeats: Math.round(value) } : s) }) });
       }} onLoopRange={(si, start, end) => { const stage = program.stages[si]; if (stage) updateProgram(setLoopRange(program, stage.id, start, end, stage.repeats)); }} />
@@ -101,6 +106,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
       <div className="flex flex-wrap items-center gap-4"><Trophy className={cn("size-9", result.correct ? "text-run" : "text-amber")} /><h2 className="font-display text-2xl">{result.score} / 100</h2><p className="text-sm text-muted-foreground">{result.correct ? "¡Correcto! Programa y master mix resueltos." : "Revisa los parámetros marcados y vuelve a verificar."}</p></div>
       <ul className="grid gap-x-8 sm:grid-cols-2">{result.checks.map(check => <li key={check.label} className="flex gap-3 border-b py-3">{check.correct ? <CheckCircle2 className="size-5 shrink-0 text-run" /> : <XCircle className="size-5 shrink-0 text-destructive" />}<div><p className="text-sm font-medium">{check.label}</p><p className="text-xs text-muted-foreground">{check.detail}</p></div></li>)}</ul>
     </section>}
+    {renaming && <StepNameDialog current={program.stages[renaming.si]?.steps[renaming.pi]?.label ?? ""} suggestion={suggestionFor(program, renaming.si, renaming.pi)} onPick={renameTo} onClose={() => setRenaming(null)} />}
     <NumPad req={pad} onClose={() => setPad(null)} />
   </div>;
 }
