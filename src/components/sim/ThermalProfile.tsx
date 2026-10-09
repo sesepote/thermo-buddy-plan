@@ -38,7 +38,7 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
     dragRef.current = next; setDrag(next);
   };
 
-  return <div className="min-w-0 overflow-hidden border border-border bg-lcd" aria-label="Perfil térmico">
+  return <div data-no-swipe className="min-w-0 overflow-hidden border border-border bg-lcd" aria-label="Perfil térmico">
     {showHeader && <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 font-mono text-xs">
       <span className="text-lcd-foreground">● PERFIL TÉRMICO <span className="ml-2 text-muted-foreground">{steps.length} PASOS · {program.sampleVolume ?? 25} µL</span></span>
       <div className="flex flex-wrap gap-2">{loops.map(loop => <Button key={loop.stage.id} variant="outline" className="h-9 border-amber/40 bg-amber/10 text-amber" disabled={locked} onClick={() => onCycles(loop.si)}><Repeat2 /> Columnas {loop.start + 1}–{loop.end + 1}: {loop.stage.repeats}×</Button>)}</div>
