@@ -33,7 +33,7 @@ describe("suggestionFor", () => {
   it("usa el paso anterior aunque pertenezca a otra etapa", () => {
     expect(globalStepIndex(program, 1, 0)).toBe(1);
     expect(suggestionFor(program, 1, 0)).toBe("Desnaturalización");
-    expect(suggestionFor(program, 1, 2)).toBe("Extensión final");
+    expect(suggestionFor(program, 1, 2)).toBe("Extensión");
   });
 
   it("los nombres sugeridos están entre los disponibles", () => {
