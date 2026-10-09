@@ -10,3 +10,4 @@
 - [x] Poner el nombre del paso bajo cada columna del gráfico.
 - [x] Añadir en la ventana de ciclos la opción de eliminar la etapa seleccionada.
 - [x] Nombres automáticos de columna según el paso anterior, con diálogo para elegir nombre al clicar.
+- [x] Animar algo más el fondo del menú: hélice lejana, halos y burbujas que suben despacio.
