@@ -161,15 +161,14 @@ function RootComponent() {
   }
   useEffect(() => {
     let start: { x: number; y: number; t: number } | null = null;
-    const onStart = (e: TouchEvent) => {
-      const el = e.target as Element;
-      // No se interfiere con gráficos, campos, ventanas emergentes ni zonas desplazables en horizontal.
-      if (e.touches.length !== 1 || el.closest("svg, input, textarea, select, [data-no-swipe], .fixed")) { start = null; return; }
-      start = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY, t: Date.now() };
+    // Zonas que no inician el gesto: campos de texto, ventanas emergentes y el gráfico del perfil.
+    const bloqueado = (el: Element) => el.closest("input, textarea, select, [data-no-swipe], .fixed");
+    const onBegin = (x: number, y: number, el: Element) => {
+      start = bloqueado(el) ? null : { x, y, t: Date.now() };
     };
-    const onEnd = (e: TouchEvent) => {
+    const onEnd = (x: number, y: number) => {
       if (!start) return;
-      const dx = e.changedTouches[0]!.clientX - start.x, dy = e.changedTouches[0]!.clientY - start.y;
+      const dx = x - start.x, dy = y - start.y;
       const fast = Date.now() - start.t < 600;
       start = null;
       if (fast && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
@@ -177,9 +176,27 @@ function RootComponent() {
         if (to) void router.navigate({ to });
       }
     };
-    window.addEventListener("touchstart", onStart, { passive: true });
-    window.addEventListener("touchend", onEnd, { passive: true });
-    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) { start = null; return; }
+      onBegin(e.touches[0]!.clientX, e.touches[0]!.clientY, e.target as Element);
+    };
+    const onTouchEnd = (e: TouchEvent) => onEnd(e.changedTouches[0]!.clientX, e.changedTouches[0]!.clientY);
+    // Ratón: el mismo gesto de arrastre con el botón izquierdo también cambia de pantalla.
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) { start = null; return; }
+      onBegin(e.clientX, e.clientY, e.target as Element);
+    };
+    const onMouseUp = (e: MouseEvent) => onEnd(e.clientX, e.clientY);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
   }, [router]);
 
   return (
