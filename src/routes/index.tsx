@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Thermometer, Calculator, GraduationCap, type LucideIcon } from "lucide-react";
+import { Thermometer, Calculator, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { StatusBars } from "@/components/sim/StatusBars";
 
 export const Route = createFileRoute("/")({
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
 
 /** Las tres esferas del menú: la del termociclador ocupa el centro. */
 interface Sphere {
-  to: "/calculadora" | "/termociclador" | "/entrenamiento";
+  to: "/calculadora" | "/termociclador" | "/entrenamiento" | "/glosario";
   icon: LucideIcon;
   code: string;
   title: string[];
@@ -52,6 +52,12 @@ const SPHERES: Sphere[] = [
     code: "03",
     title: ["Zona de", "entrenamiento"],
   },
+  {
+    to: "/glosario",
+    icon: BookOpen,
+    code: "04",
+    title: ["Glosario"],
+  },
 ];
 
 function MainMenu() {
@@ -64,7 +70,7 @@ function MainMenu() {
       />
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
-      <nav className="z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-6 py-4 sm:gap-10 sm:py-8 lg:flex-row lg:gap-16">
+      <nav className="z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center gap-3 px-6 py-4 sm:gap-10 sm:py-8 lg:flex-row lg:flex-wrap lg:gap-10">
         {SPHERES.map(({ to, icon: Icon, code, title, center }) => (
           <Link
             key={to}
@@ -72,7 +78,7 @@ function MainMenu() {
             className={
               center
                 ? "group relative z-10 flex aspect-square w-44 flex-col items-center justify-center rounded-full border-2 border-ice/40 bg-bubble shadow-[0_0_60px_oklch(0.76_0.1_258/0.15),inset_0_0_40px_oklch(0.76_0.1_258/0.08)] transition-all duration-700 active:scale-95 sm:w-64 md:w-80 lg:w-96 lg:hover:border-ice"
-                : "group relative flex aspect-square w-36 flex-col items-center justify-center rounded-full border border-ice/20 bg-bubble shadow-[inset_0_0_30px_oklch(0.76_0.1_258/0.05)] transition-all duration-500 active:scale-95 sm:w-60 md:w-64 lg:w-72 lg:hover:border-ice/50"
+                : "group relative flex aspect-square w-36 flex-col items-center justify-center rounded-full border border-ice/20 bg-bubble shadow-[inset_0_0_30px_oklch(0.76_0.1_258/0.05)] transition-all duration-500 active:scale-95 sm:w-52 md:w-56 lg:w-60 lg:hover:border-ice/50"
             }
           >
             {/* Resplandor interior de la esfera */}

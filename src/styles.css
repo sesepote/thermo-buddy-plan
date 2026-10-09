@@ -174,3 +174,9 @@
     box-shadow: 0 1px 0 oklch(0 0 0 / 0.45);
   }
 }
+
+/* Transición al cambiar de pantalla deslizando. */
+@keyframes page-in-left { from { transform: translateX(12%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes page-in-right { from { transform: translateX(-12%); opacity: 0; } to { transform: none; opacity: 1; } }
+.page-slide-left { animation: page-in-left 260ms ease-out; }
+.page-slide-right { animation: page-in-right 260ms ease-out; }
