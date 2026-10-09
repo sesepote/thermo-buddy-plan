@@ -221,6 +221,6 @@
   .menu-sphere { max-width: 210px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-drift, .page-slide-left, .page-slide-right { animation: none; }
+  .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-mol, .pcr-drift, .page-slide-left, .page-slide-right { animation: none; }
   .menu-sphere { transition: none; }
 }
