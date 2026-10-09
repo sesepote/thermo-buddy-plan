@@ -7,7 +7,11 @@ import { X } from "lucide-react";
 export interface PopupContent {
   title: string;
   subtitle?: string | undefined;
-  /** Contenido del panel: opciones o campos editables. */
+  /**
+   * Contenido del panel. Debe construirse en el render del componente que
+   * abre la ventana (no guardarse ya montado en el estado), para que los
+   * valores mostrados se actualicen con cada cambio.
+   */
   body: React.ReactNode;
 }
 

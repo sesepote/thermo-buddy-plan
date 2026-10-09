@@ -4,7 +4,7 @@ import { AlertTriangle, Send, Info, ChevronRight, ChevronDown, Timer } from "luc
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
-import { OptionPopup, type PopupContent } from "@/components/sim/OptionPopup";
+import { OptionPopup } from "@/components/sim/OptionPopup";
 import { useApp } from "@/lib/store";
 import { DEFAULT_INPUT, generateProtocol, masterMix, type CalcInput } from "@/lib/pcr/protocol";
 import { POLYMERASES, REACTION_TYPES, TEMPLATES } from "@/lib/pcr/reagents";
@@ -93,7 +93,7 @@ function MasterMixTab() {
   const [extraMg, setExtraMg] = useState(0);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   /** Ventana emergente para las polimerasas menos habituales. */
-  const [popup, setPopup] = useState<PopupContent | null>(null);
+  const [popupOpen, setPopupOpen] = useState(false);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
@@ -150,34 +150,7 @@ function MasterMixTab() {
               </button>
             ))}
             <button
-              onClick={() =>
-                setPopup({
-                  title: "Más polimerasas",
-                  subtitle: "Enzimas especiales o de uso menos frecuente.",
-                  body: (
-                    <div className="space-y-2">
-                      {POLYMERASES.filter((p) => p.id !== "taq" && p.id !== "hs-taq").map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => {
-                            setPolymeraseId(p.id);
-                            setPopup(null);
-                          }}
-                          className={cn(
-                            "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
-                            polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
-                          )}
-                        >
-                          <span className="block text-sm font-medium">{p.name}</span>
-                          <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
-                            Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  ),
-                })
-              }
+              onClick={() => setPopupOpen(true)}
               className={cn(
                 "hw-key flex min-h-14 w-full items-center justify-between gap-3 rounded-md px-3 text-left",
                 !["taq", "hs-taq"].includes(polymeraseId) && "bg-none bg-amber text-amber-foreground",
@@ -265,7 +238,38 @@ function MasterMixTab() {
         </p>
       </section>
       <NumPad req={pad} onClose={() => setPad(null)} />
-      {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
+      {popupOpen && (
+        /* El cuerpo se construye en cada render para que la selección resaltada esté al día. */
+        <OptionPopup
+          onClose={() => setPopupOpen(false)}
+          content={{
+            title: "Más polimerasas",
+            subtitle: "Enzimas especiales o de uso menos frecuente.",
+            body: (
+              <div className="space-y-2">
+                {POLYMERASES.filter((p) => p.id !== "taq" && p.id !== "hs-taq").map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setPolymeraseId(p.id);
+                      setPopupOpen(false);
+                    }}
+                    className={cn(
+                      "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
+                      polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
+                    )}
+                  >
+                    <span className="block text-sm font-medium">{p.name}</span>
+                    <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
+                      Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ),
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -275,8 +279,8 @@ function Calculator() {
   const [tab, setTab] = useState<"protocolo" | "mastermix">("protocolo");
   const [input, setInput] = useState<CalcInput>(DEFAULT_INPUT);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
-  /** Ventana emergente abierta: título, subtítulo y cuerpo (opciones o campos). */
-  const [popup, setPopup] = useState<PopupContent | null>(null);
+  /** Ventana emergente abierta: qué bloque se está configurando. */
+  const [popup, setPopup] = useState<null | "reaction" | "polymerase" | "template" | "additives">(null);
   const [volume, setVolume] = useState(50);
   const [samples, setSamples] = useState(8);
   const [showWhy, setShowWhy] = useState(false);
@@ -369,60 +373,12 @@ function Calculator() {
           <Field
             label="Tipo de reacción"
             value={reaction.name}
-            onClick={() =>
-              setPopup({
-                title: "Tipo de reacción",
-                subtitle: REACTION_TYPES.find((r) => r.id === input.reaction)?.desc,
-                body: (
-                  <div className="space-y-2">
-                    {REACTION_TYPES.map((r) => (
-                      <Choice
-                        key={r.id}
-                        active={input.reaction === r.id}
-                        onClick={() => {
-                          set({ reaction: r.id });
-                          setPopup(null);
-                        }}
-                      >
-                        {r.name}
-                      </Choice>
-                    ))}
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("reaction")}
           />
           <Field
             label="Polimerasa"
             value={pol.name}
-            onClick={() =>
-              setPopup({
-                title: "Polimerasa",
-                subtitle: pol.note,
-                body: (
-                  <div className="space-y-2">
-                    {POLYMERASES.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => {
-                          set({ polymeraseId: p.id });
-                          setPopup(null);
-                        }}
-                        className={cn(
-                          "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
-                          input.polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
-                        )}
-                      >
-                        <span className="block text-sm font-medium">{p.name}</span>
-                        <span className={cn("block text-xs text-muted-foreground", input.polymeraseId === p.id && "text-amber-foreground/70")}>
-                          {p.note}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("polymerase")}
           />
 
           {/* Cebadores: siguen a la vista porque se escriben a mano. */}
@@ -436,45 +392,12 @@ function Calculator() {
           <Field
             label="Molde y amplicón"
             value={`${template.name} · ${input.ampliconBp} pb${input.highGC ? " · alto GC" : ""}`}
-            onClick={() =>
-              setPopup({
-                title: "Molde y amplicón",
-                body: (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      {TEMPLATES.map((t) => (
-                        <Choice key={t.id} active={input.template === t.id} onClick={() => set({ template: t.id })}>
-                          {t.name}
-                        </Choice>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {num("Amplicón", input.ampliconBp, "pb", (v) => set({ ampliconBp: Math.round(v) }), { min: 50, max: 40000, allowDecimal: false })}
-                      <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>Alto GC (&gt; 65 %)</Choice>
-                    </div>
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("template")}
           />
           <Field
             label="Tampón y aditivos"
             value={additiveSummary}
-            onClick={() =>
-              setPopup({
-                title: "Tampón y aditivos",
-                subtitle: `MgCl₂ del tampón ${input.mgMM} mM`,
-                body: (
-                  <div className="flex flex-wrap gap-2">
-                    {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
-                    {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
-                    {num("DMSO", input.additives.dmso, "%", (v) => setAdd({ dmso: v }), { max: 10 })}
-                    {num("Betaína", input.additives.betaine, "M", (v) => setAdd({ betaine: v }), { max: 2.5 })}
-                    {num("Formamida", input.additives.formamide, "%", (v) => setAdd({ formamide: v }), { max: 10 })}
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("additives")}
           />
         </section>
 
@@ -559,7 +482,105 @@ function Calculator() {
       </div>
       )}
       <NumPad req={pad} onClose={() => setPad(null)} />
-      {popup && <OptionPopup content={popup} onClose={() => setPopup(null)} />}
+      {/* Ventanas emergentes: el cuerpo se construye aquí, en el render, para que
+          los valores y opciones mostrados estén siempre al día. */}
+      {popup === "reaction" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Tipo de reacción",
+            subtitle: REACTION_TYPES.find((r) => r.id === input.reaction)?.desc,
+            body: (
+              <div className="space-y-2">
+                {REACTION_TYPES.map((r) => (
+                  <Choice
+                    key={r.id}
+                    active={input.reaction === r.id}
+                    onClick={() => {
+                      set({ reaction: r.id });
+                      setPopup(null);
+                    }}
+                  >
+                    {r.name}
+                  </Choice>
+                ))}
+              </div>
+            ),
+          }}
+        />
+      )}
+      {popup === "polymerase" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Polimerasa",
+            subtitle: pol.note,
+            body: (
+              <div className="space-y-2">
+                {POLYMERASES.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      set({ polymeraseId: p.id });
+                      setPopup(null);
+                    }}
+                    className={cn(
+                      "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
+                      input.polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
+                    )}
+                  >
+                    <span className="block text-sm font-medium">{p.name}</span>
+                    <span className={cn("block text-xs text-muted-foreground", input.polymeraseId === p.id && "text-amber-foreground/70")}>
+                      {p.note}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ),
+          }}
+        />
+      )}
+      {popup === "template" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Molde y amplicón",
+            body: (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  {TEMPLATES.map((t) => (
+                    <Choice key={t.id} active={input.template === t.id} onClick={() => set({ template: t.id })}>
+                      {t.name}
+                    </Choice>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {num("Amplicón", input.ampliconBp, "pb", (v) => set({ ampliconBp: Math.round(v) }), { min: 50, max: 40000, allowDecimal: false })}
+                  <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>Alto GC (&gt; 65 %)</Choice>
+                </div>
+              </div>
+            ),
+          }}
+        />
+      )}
+      {popup === "additives" && (
+        <OptionPopup
+          onClose={() => setPopup(null)}
+          content={{
+            title: "Tampón y aditivos",
+            subtitle: `MgCl₂ del tampón ${input.mgMM} mM`,
+            body: (
+              <div className="flex flex-wrap gap-2">
+                {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
+                {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
+                {num("DMSO", input.additives.dmso, "%", (v) => setAdd({ dmso: v }), { max: 10 })}
+                {num("Betaína", input.additives.betaine, "M", (v) => setAdd({ betaine: v }), { max: 2.5 })}
+                {num("Formamida", input.additives.formamide, "%", (v) => setAdd({ formamide: v }), { max: 10 })}
+              </div>
+            ),
+          }}
+        />
+      )}
     </StatusBars>
   );
 }
