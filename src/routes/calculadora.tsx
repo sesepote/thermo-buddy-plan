@@ -378,34 +378,7 @@ function Calculator() {
           <Field
             label="Polimerasa"
             value={pol.name}
-            onClick={() =>
-              setPopup({
-                title: "Polimerasa",
-                subtitle: pol.note,
-                body: () => (
-                  <div className="space-y-2">
-                    {POLYMERASES.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => {
-                          set({ polymeraseId: p.id });
-                          setPopup(null);
-                        }}
-                        className={cn(
-                          "hw-key min-h-14 w-full rounded-md px-3 py-2 text-left",
-                          input.polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
-                        )}
-                      >
-                        <span className="block text-sm font-medium">{p.name}</span>
-                        <span className={cn("block text-xs text-muted-foreground", input.polymeraseId === p.id && "text-amber-foreground/70")}>
-                          {p.note}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("polymerase")}
           />
 
           {/* Cebadores: siguen a la vista porque se escriben a mano. */}
