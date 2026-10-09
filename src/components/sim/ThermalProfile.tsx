@@ -57,7 +57,7 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
             </g>;
           })}
         </svg>
-        {loops.flatMap(loop => (["start", "end"] as const).map(edge => <Button key={`${loop.stage.id}-${edge}`} variant="ghost" disabled={locked} aria-label={`${edge === "start" ? "Inicio" : "Final"} del bucle de columnas ${loop.start + 1} a ${loop.end + 1}`} className="absolute top-[43px] h-[300px] w-12 -translate-x-1/2 touch-none cursor-ew-resize rounded-none p-0 text-amber" style={{ left: percent(left + (edge === "start" ? loop.start : loop.end + 1) * span) }}
+        {loops.flatMap(loop => (["start", "end"] as const).map(edge => <Button key={`${loop.stage.id}-${edge}`} variant="ghost" disabled={locked} aria-label={`${edge === "start" ? "Inicio" : "Final"} del bucle de columnas ${loop.start + 1} a ${loop.end + 1}`} className="absolute top-[43px] z-10 h-[300px] w-12 -translate-x-1/2 touch-none cursor-ew-resize rounded-none p-0 text-amber" style={{ left: percent(left + (edge === "start" ? loop.start : loop.end + 1) * span) }}
           onPointerDown={e => { if (locked) return; e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); const next = { si: loop.si, edge, start: loop.start, end: loop.end }; dragRef.current = next; setDrag(next); }}
           onPointerMove={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) moveEdge(e.clientX); }}
           onPointerUp={e => { const moving = dragRef.current; if (!moving) return; e.currentTarget.releasePointerCapture(e.pointerId); dragRef.current = null; setDrag(null); onLoopRange(moving.si, moving.start, moving.end); }}
