@@ -69,33 +69,32 @@ export function MenuMolecule() {
   // El contenedor siempre está montado: el ref se necesita para medir al padre.
   return (
     <div ref={ref} aria-hidden className="menu-molecule">
-      {!listo ? null : (
-      {/* Coordenadas en píxeles reales del nav, sin viewBox que las estire */}
-      <svg width="100%" height="100%" style={{ overflow: "visible" }}>
-
-        {bonds.map((b, i) => {
-          // Desdoblamiento perpendicular para el doble enlace.
-          const dx = b.x2 - b.x1;
-          const dy = b.y2 - b.y1;
-          const len = Math.hypot(dx, dy) || 1;
-          const nx = (-dy / len) * 3.5;
-          const ny = (dx / len) * 3.5;
-          return (
-            <g key={i}>
-              {b.double ? (
-                <>
-                  <line className="menu-bond" x1={b.x1 + nx} y1={b.y1 + ny} x2={b.x2 + nx} y2={b.y2 + ny} />
-                  <line className="menu-bond" x1={b.x1 - nx} y1={b.y1 - ny} x2={b.x2 - nx} y2={b.y2 - ny} />
-                </>
-              ) : (
-                <line className="menu-bond" x1={b.x1} y1={b.y1} x2={b.x2} y2={b.y2} />
-              )}
-              {/* Átomo compartido en el punto medio del enlace */}
-              <circle className="menu-bond-dot" cx={b.mx} cy={b.my} r={b.double ? 5 : 4} style={{ animationDelay: `${i * 1.3}s` }} />
-            </g>
-          );
-        })}
-      </svg>
+      {listo && (
+        // Coordenadas en píxeles reales del nav, sin viewBox que las estire.
+        <svg width="100%" height="100%" style={{ overflow: "visible" }}>
+          {bonds.map((b, i) => {
+            // Desdoblamiento perpendicular para el doble enlace.
+            const dx = b.x2 - b.x1;
+            const dy = b.y2 - b.y1;
+            const len = Math.hypot(dx, dy) || 1;
+            const nx = (-dy / len) * 3.5;
+            const ny = (dx / len) * 3.5;
+            return (
+              <g key={i}>
+                {b.double ? (
+                  <>
+                    <line className="menu-bond" x1={b.x1 + nx} y1={b.y1 + ny} x2={b.x2 + nx} y2={b.y2 + ny} />
+                    <line className="menu-bond" x1={b.x1 - nx} y1={b.y1 - ny} x2={b.x2 - nx} y2={b.y2 - ny} />
+                  </>
+                ) : (
+                  <line className="menu-bond" x1={b.x1} y1={b.y1} x2={b.x2} y2={b.y2} />
+                )}
+                {/* Átomo compartido en el punto medio del enlace */}
+                <circle className="menu-bond-dot" cx={b.mx} cy={b.my} r={b.double ? 5 : 4} style={{ animationDelay: `${i * 1.3}s` }} />
+              </g>
+            );
+          })}
+        </svg>
       )}
     </div>
   );
