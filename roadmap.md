@@ -8,4 +8,4 @@
 - [x] Sustituir entrenamiento por Ejercicios con dos casos, gráfica editable y calculadora master mix compartida.
 - [x] Verificar correcciones, navegación y pruebas de ambos ejercicios.
 - [x] Poner el nombre del paso bajo cada columna del gráfico.
-- [ ] Añadir en la ventana de ciclos la opción de eliminar la etapa seleccionada.
+- [x] Añadir en la ventana de ciclos la opción de eliminar la etapa seleccionada.
