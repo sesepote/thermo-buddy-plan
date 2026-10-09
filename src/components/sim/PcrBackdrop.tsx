@@ -7,20 +7,29 @@
 // Nodo de una molécula: posición relativa al centro y tamaño del átomo.
 type Atom = { x: number; y: number; r: number };
 
-// Enlace entre dos nodos; el tercer valor desdobla la línea (doble enlace).
-type Bond = [number, number, boolean?];
+// Enlace entre dos átomos; con `double` se desdobla la línea.
+type Bond = { a: Atom; b: Atom; double?: boolean };
 
 type Molecule = { atoms: Atom[]; bonds: Bond[] };
 
-// Anillos de referencia, calculados una sola vez y siempre iguales.
-const HEX: Atom[] = Array.from({ length: 6 }, (_, i) => {
-  const a = (Math.PI / 3) * i - Math.PI / 2;
-  return { x: Math.cos(a) * 12, y: Math.sin(a) * 12, r: 2.4 };
-});
-const PENT: Atom[] = Array.from({ length: 5 }, (_, i) => {
-  const a = ((Math.PI * 2) / 5) * i - Math.PI / 2;
-  return { x: Math.cos(a) * 10.5, y: Math.sin(a) * 10.5, r: 2.4 };
-});
+// Anillo regular de `n` vértices: átomos en el perímetro y enlaces cerrados.
+function ring(n: number, radius: number): Molecule {
+  const atoms: Atom[] = [];
+  for (let i = 0; i < n; i++) {
+    const ang = ((Math.PI * 2 * i) / n) - Math.PI / 2;
+    atoms.push({ x: Math.cos(ang) * radius, y: Math.sin(ang) * radius, r: 2.4 });
+  }
+  const bonds: Bond[] = [];
+  for (let i = 0; i < n; i++) {
+    const a = atoms[i];
+    const b = atoms[(i + 1) % n];
+    if (a && b) bonds.push({ a, b });
+  }
+  return { atoms, bonds };
+}
+
+const HEXAGON = ring(6, 12);
+const PENTAGON = ring(5, 10.5);
 
 // Estructuras fijas: átomos unidos por enlaces, como un esquema químico.
 const SHAPES: Molecule[] = [
@@ -30,7 +39,7 @@ const SHAPES: Molecule[] = [
       { x: -9, y: 0, r: 3.1 },
       { x: 9, y: 0, r: 3.1 },
     ],
-    bonds: [[0, 1, true]],
+    bonds: [{ a: { x: -9, y: 0, r: 3.1 }, b: { x: 9, y: 0, r: 3.1 }, double: true }],
   },
   // Triatómica angular, tipo agua.
   {
@@ -39,10 +48,7 @@ const SHAPES: Molecule[] = [
       { x: -11, y: -6, r: 2.4 },
       { x: 11, y: -6, r: 2.4 },
     ],
-    bonds: [
-      [0, 1],
-      [0, 2],
-    ],
+    bonds: [],
   },
   // Cadena de tres nodos.
   {
@@ -51,10 +57,7 @@ const SHAPES: Molecule[] = [
       { x: 0, y: -5, r: 3.1 },
       { x: 14, y: 6, r: 2.5 },
     ],
-    bonds: [
-      [0, 1],
-      [1, 2],
-    ],
+    bonds: [],
   },
   // Cadena larga de cuatro nodos.
   {
@@ -64,24 +67,9 @@ const SHAPES: Molecule[] = [
       { x: 7, y: 6, r: 2.7 },
       { x: 21, y: -6, r: 2.3 },
     ],
-    bonds: [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-    ],
+    bonds: [],
   },
-  // Anillo de seis.
-  {
-    atoms: HEX,
-    bonds: [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-      [3, 4],
-      [4, 5],
-      [5, 0],
-    ],
-  },
+  HEXAGON,
   // Núcleo con tres ramas.
   {
     atoms: [
@@ -90,36 +78,52 @@ const SHAPES: Molecule[] = [
       { x: 12, y: 8, r: 2.4 },
       { x: -12, y: 8, r: 2.4 },
     ],
-    bonds: [
-      [0, 1],
-      [0, 2],
-      [0, 3],
-    ],
+    bonds: [],
   },
-  // Anillo de cinco.
-  {
-    atoms: PENT,
-    bonds: [
-      [0, 1],
-      [1, 2],
-      [2, 3],
-      [3, 4],
-      [4, 0],
-    ],
-  },
+  PENTAGON,
 ];
+
+// Los enlaces de las estructuras abiertas se derivan del orden de los átomos:
+// así no se escribe ninguna coordenada dos veces.
+function connect(mol: Molecule, pairs: [number, number, boolean?][]): Molecule {
+  const bonds: Bond[] = [];
+  for (const [i, j, double] of pairs) {
+    const a = mol.atoms[i];
+    const b = mol.atoms[j];
+    if (a && b) bonds.push({ a, b, double });
+  }
+  return { atoms: mol.atoms, bonds };
+}
+
+// Moléculas definitivas, con sus enlaces ya resueltos.
+const MOLECULES: Molecule[] = (() => {
+  const out: Molecule[] = [];
+  for (const shape of SHAPES) out.push(shape);
+  // Se reescriben las estructuras abiertas con sus enlaces explícitos.
+  const open = SHAPES.map((mol, i) => {
+    if (mol.bonds.length) return mol;
+    const pairs: [number, number, boolean?][] = [];
+    if (i === 1 || i === 5) {
+      // Núcleo central enlazado con el resto de nodos.
+      for (let k = 1; k < mol.atoms.length; k++) pairs.push([0, k]);
+    } else {
+      // Cadena: cada nodo con el siguiente.
+      for (let k = 0; k < mol.atoms.length - 1; k++) pairs.push([k, k + 1]);
+    }
+    return connect(mol, pairs);
+  });
+  return open;
+})();
 
 // Segmentos de enlace ya situados en la pantalla; los desdoblados se separan
 // en perpendicular para que se lean como un doble enlace.
 function bondLines(mol: Molecule, x: number, scale: number) {
-  return mol.bonds.flatMap(([i, j, double]) => {
-    const a = mol.atoms[i];
-    const b = mol.atoms[j];
-    const x1 = x + a.x * scale;
-    const y1 = a.y * scale;
-    const x2 = x + b.x * scale;
-    const y2 = b.y * scale;
-    if (!double) return [{ x1, y1, x2, y2 }];
+  return mol.bonds.flatMap((bond) => {
+    const x1 = x + bond.a.x * scale;
+    const y1 = bond.a.y * scale;
+    const x2 = x + bond.b.x * scale;
+    const y2 = bond.b.y * scale;
+    if (!bond.double) return [{ x1, y1, x2, y2 }];
     const len = Math.hypot(x2 - x1, y2 - y1) || 1;
     const ox = (-(y2 - y1) / len) * 2.3;
     const oy = ((x2 - x1) / len) * 2.3;
@@ -146,11 +150,22 @@ export function PcrBackdrop() {
 
   // Posiciones fijas, nunca aleatorias: así lo que pinta el servidor
   // y lo que pinta el navegador son exactamente iguales.
-  const molecules = Array.from({ length: 14 }, (_, i) => {
+  const molecules: {
+    x: number;
+    mol: Molecule;
+    scale: number;
+    duration: number;
+    delay: number;
+    spin: number;
+    reverse: boolean;
+  }[] = [];
+  for (let i = 0; i < 14; i++) {
+    const mol = MOLECULES[i % MOLECULES.length];
+    if (!mol) continue;
     const duration = 28 + (i % 6) * 7;
-    return {
+    molecules.push({
       x: 70 + ((i * 197) % 1060),
-      mol: SHAPES[i % SHAPES.length],
+      mol,
       scale: 0.85 + (i % 4) * 0.2,
       duration,
       // Retardo negativo: todas arrancan ya en marcha y repartidas por la pantalla.
@@ -158,8 +173,8 @@ export function PcrBackdrop() {
       // Giro sobre sí misma: larguísimo y alternando el sentido.
       spin: 54 + (i % 5) * 13,
       reverse: i % 2 === 0,
-    };
-  });
+    });
+  }
 
   return (
     <div className="pcr-backdrop" aria-hidden="true">
