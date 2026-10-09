@@ -70,8 +70,9 @@ export function MenuMolecule() {
   return (
     <div ref={ref} aria-hidden className="menu-molecule">
       {!listo ? null : (
+      {/* Coordenadas en píxeles reales del nav, sin viewBox que las estire */}
+      <svg width="100%" height="100%" style={{ overflow: "visible" }}>
 
-      <svg width="100%" height="100%" viewBox={`0 0 ${1000} ${1000}`} preserveAspectRatio="none" style={{ overflow: "visible" }}>
         {bonds.map((b, i) => {
           // Desdoblamiento perpendicular para el doble enlace.
           const dx = b.x2 - b.x1;
