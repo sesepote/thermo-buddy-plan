@@ -106,7 +106,10 @@ const MOLECULES: Molecule[] = SPECS.map((spec) => {
   for (const [i, j, double] of spec.pairs) {
     const a = spec.atoms[i];
     const b = spec.atoms[j];
-    if (a && b) bonds.push({ a, b, double });
+    if (!a || !b) continue;
+    // Sin `double` se omite la propiedad: el proyecto no admite undefined.
+    if (double) bonds.push({ a, b, double: true });
+    else bonds.push({ a, b });
   }
   return { atoms: spec.atoms, bonds };
 });
