@@ -4,11 +4,13 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { SWIPE_ORDER, swipeTarget } from "../lib/swipe";
 
 // Fuentes empaquetadas localmente (@fontsource): no se descargan de internet.
 import "@fontsource/ibm-plex-sans/400.css";
@@ -147,10 +149,45 @@ function RootComponent() {
     return () => window.clearInterval(timer);
   }, []);
 
+  // Gestos táctiles: deslizar horizontalmente cambia de pantalla.
+  const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const prevPath = useRef(pathname);
+  const dir = useRef<"left" | "right" | null>(null);
+  if (prevPath.current !== pathname) {
+    const a = SWIPE_ORDER.indexOf(prevPath.current as never), b = SWIPE_ORDER.indexOf(pathname as never);
+    dir.current = a >= 0 && b >= 0 ? (b > a ? "left" : "right") : null;
+    prevPath.current = pathname;
+  }
+  useEffect(() => {
+    let start: { x: number; y: number; t: number } | null = null;
+    const onStart = (e: TouchEvent) => {
+      const el = e.target as Element;
+      // No se interfiere con gráficos, campos, ventanas emergentes ni zonas desplazables en horizontal.
+      if (e.touches.length !== 1 || el.closest("svg, input, textarea, select, [data-no-swipe], .fixed")) { start = null; return; }
+      start = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!start) return;
+      const dx = e.changedTouches[0].clientX - start.x, dy = e.changedTouches[0].clientY - start.y;
+      const fast = Date.now() - start.t < 600;
+      start = null;
+      if (fast && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
+        const to = swipeTarget(window.location.pathname, dx);
+        if (to) void router.navigate({ to });
+      }
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
+  }, [router]);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div key={pathname} className={dir.current ? `page-slide-${dir.current}` : undefined}>
+        <Outlet />
+      </div>
     </QueryClientProvider>
   );
 }
