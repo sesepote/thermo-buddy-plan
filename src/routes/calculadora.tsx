@@ -85,6 +85,12 @@ function MasterMixTab() {
   const [enzymeUnits, setEnzymeUnits] = useState(initPol.unitsPer50);
   const [primerStockUM, setPrimerStockUM] = useState(10);
   const [primerFinalUM, setPrimerFinalUM] = useState(0.5);
+  // dNTPs (mM de cada nucleótido) y MgCl2 (mM).
+  const [dntpStockMM, setDntpStockMM] = useState(10);
+  const [dntpFinalMM, setDntpFinalMM] = useState(0.2);
+  const [bufferMg, setBufferMg] = useState(DEFAULT_INPUT.mgMM);
+  const [mgStockMM, setMgStockMM] = useState(25);
+  const [extraMg, setExtraMg] = useState(0);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
@@ -99,15 +105,14 @@ function MasterMixTab() {
     () => ({
       ...DEFAULT_INPUT,
       polymeraseId,
+      mgMM: bufferMg,
       template: colony ? "colony" : DEFAULT_INPUT.template,
-      additives: { ...DEFAULT_INPUT.additives, dmso },
+      additives: { ...DEFAULT_INPUT.additives, dmso, extraMg },
     }),
-    [polymeraseId, dmso, colony],
+    [polymeraseId, dmso, colony, bufferMg, extraMg],
   );
-  const mix = useMemo(
-    () => masterMix(input, volume, samples, { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM }),
-    [input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM],
-  );
+  const opts = { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM };
+  const mix = useMemo(() => masterMix(input, volume, samples, opts), [input, volume, samples, ...Object.values(opts)]);
   const pol = POLYMERASES.find((p) => p.id === polymeraseId)!;
 
   const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
