@@ -4,7 +4,7 @@ import { AlertTriangle, Send, Info, ChevronRight, ChevronDown, Timer } from "luc
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
-import { OptionPopup, type PopupContent } from "@/components/sim/OptionPopup";
+import { OptionPopup } from "@/components/sim/OptionPopup";
 import { useApp } from "@/lib/store";
 import { DEFAULT_INPUT, generateProtocol, masterMix, type CalcInput } from "@/lib/pcr/protocol";
 import { POLYMERASES, REACTION_TYPES, TEMPLATES } from "@/lib/pcr/reagents";
@@ -93,7 +93,7 @@ function MasterMixTab() {
   const [extraMg, setExtraMg] = useState(0);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   /** Ventana emergente para las polimerasas menos habituales. */
-  const [popup, setPopup] = useState<PopupContent | null>(null);
+  const [popupOpen, setPopupOpen] = useState(false);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
