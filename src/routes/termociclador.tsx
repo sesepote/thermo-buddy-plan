@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Play, Pause, Square, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Flame, Activity, Grid3X3, Settings2, Volume2, VolumeX, Maximize2, Minimize2, SkipForward, Download, Upload, Check, Pencil, ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { ThermalProfile, type StepPosition } from "@/components/sim/ThermalProfi
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { useApp } from "@/lib/store";
 import { useThermocyclerSession } from "@/lib/thermocycler-session";
-import { buildSegments, stateAt, totalDuration, AMBIENT, stepTempAt, gradientColumns } from "@/lib/pcr/simulation";
+import { buildSegments, stateAt, totalDuration, AMBIENT, stepTempAt } from "@/lib/pcr/simulation";
 import { cloneProgram, formatTime, uid, type Program, type Step } from "@/lib/pcr/types";
 import { cn } from "@/lib/utils";
 import { setLoopRange } from "@/lib/pcr/loops";
