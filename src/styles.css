@@ -192,6 +192,12 @@
 .menu-sphere-calculator { grid-column: 1; grid-row: 1; }
 .menu-sphere-exercises { grid-column: 3; grid-row: 1; }
 .menu-sphere-glossary { grid-column: 2; grid-row: 2; width: 158px; }
+/* Enlaces moleculares entre las esferas: quedan detrás (las esferas son opacas). */
+.menu-molecule { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.menu-molecule svg { width: 100%; height: 100%; overflow: visible; }
+.menu-bond { stroke: color-mix(in oklch, var(--ice) 30%, transparent); stroke-width: 2; stroke-linecap: round; }
+.menu-bond-dot { fill: var(--menu-bg); stroke: color-mix(in oklch, var(--ice) 50%, transparent); stroke-width: 1.5; animation: bond-pulse 5s ease-in-out infinite; }
+@keyframes bond-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 .pcr-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; color: var(--ice); opacity: 0.22; }
 .pcr-backdrop svg { width: 100%; height: 100%; }
 .pcr-helix { transform-origin: 250px 450px; animation: dna-breathe 16s ease-in-out infinite; }
