@@ -392,45 +392,12 @@ function Calculator() {
           <Field
             label="Molde y amplicón"
             value={`${template.name} · ${input.ampliconBp} pb${input.highGC ? " · alto GC" : ""}`}
-            onClick={() =>
-              setPopup({
-                title: "Molde y amplicón",
-                body: () => (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                      {TEMPLATES.map((t) => (
-                        <Choice key={t.id} active={input.template === t.id} onClick={() => set({ template: t.id })}>
-                          {t.name}
-                        </Choice>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {num("Amplicón", input.ampliconBp, "pb", (v) => set({ ampliconBp: Math.round(v) }), { min: 50, max: 40000, allowDecimal: false })}
-                      <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>Alto GC (&gt; 65 %)</Choice>
-                    </div>
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("template")}
           />
           <Field
             label="Tampón y aditivos"
             value={additiveSummary}
-            onClick={() =>
-              setPopup({
-                title: "Tampón y aditivos",
-                subtitle: `MgCl₂ del tampón ${input.mgMM} mM`,
-                body: () => (
-                  <div className="flex flex-wrap gap-2">
-                    {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
-                    {num("MgCl₂ extra", input.additives.extraMg, "mM", (v) => setAdd({ extraMg: v }), { max: 5 })}
-                    {num("DMSO", input.additives.dmso, "%", (v) => setAdd({ dmso: v }), { max: 10 })}
-                    {num("Betaína", input.additives.betaine, "M", (v) => setAdd({ betaine: v }), { max: 2.5 })}
-                    {num("Formamida", input.additives.formamide, "%", (v) => setAdd({ formamide: v }), { max: 10 })}
-                  </div>
-                ),
-              })
-            }
+            onClick={() => setPopup("additives")}
           />
         </section>
 
