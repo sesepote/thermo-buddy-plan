@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Thermometer, Calculator, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { PcrBackdrop } from "@/components/sim/PcrBackdrop";
+import { MenuMolecule } from "@/components/sim/MenuMolecule";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
