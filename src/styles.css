@@ -192,7 +192,7 @@
 .menu-sphere-calculator { grid-column: 1; grid-row: 1; }
 .menu-sphere-exercises { grid-column: 3; grid-row: 1; }
 .menu-sphere-glossary { grid-column: 2; grid-row: 2; width: 158px; }
-.pcr-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; color: var(--ice); opacity: 0.18; }
+.pcr-backdrop { position: absolute; inset: 0; pointer-events: none; overflow: hidden; color: var(--ice); opacity: 0.22; }
 .pcr-backdrop svg { width: 100%; height: 100%; }
 .pcr-helix { transform-origin: 250px 450px; animation: dna-breathe 16s ease-in-out infinite; }
 .pcr-trace { stroke-dasharray: 2000; animation: pcr-trace 20s linear infinite; opacity: 0.65; }

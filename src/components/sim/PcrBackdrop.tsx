@@ -18,10 +18,10 @@ export function PcrBackdrop() {
 
   // Posiciones fijas, nunca aleatorias: así lo que pinta el servidor
   // y lo que pinta el navegador son exactamente iguales.
-  const bubbles = Array.from({ length: 18 }, (_, i) => ({
-    x: 40 + ((i * 173) % 1120),
-    r: 1.5 + (i % 3) * 1.2,
-    delay: (i % 9) * 2.6,
+  const bubbles = Array.from({ length: 16 }, (_, i) => ({
+    x: 40 + ((i * 197) % 1120),
+    r: 3 + (i % 4) * 1.9,
+    delay: (i % 8) * 3.1,
     duration: 26 + (i % 6) * 7,
   }));
 
