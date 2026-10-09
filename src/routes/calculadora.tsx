@@ -171,6 +171,20 @@ function MasterMixTab() {
             {num("Concentración final", primerFinalUM, "µM", (v) => setPrimerFinalUM(v), { min: 0.05, max: 5 })}
           </div>
         </Section>
+        <Section title="dNTPs (cada nucleótido)">
+          <div className="flex flex-wrap gap-2">
+            {num("Stock de cada dNTP", dntpStockMM, "mM", (v) => setDntpStockMM(v), { min: 0.5, max: 100 })}
+            {num("Concentración final", dntpFinalMM, "mM", (v) => setDntpFinalMM(v), { min: 0.01, max: 2 })}
+          </div>
+        </Section>
+        <Section title="Cloruro de magnesio (MgCl₂)">
+          <div className="flex flex-wrap gap-2">
+            {num("Mg²⁺ del tampón", bufferMg, "mM", (v) => setBufferMg(v), { max: 10 })}
+            {num("MgCl₂ extra a añadir", extraMg, "mM", (v) => setExtraMg(v), { max: 5 })}
+            {num("Stock de MgCl₂", mgStockMM, "mM", (v) => setMgStockMM(v), { min: 1, max: 1000 })}
+          </div>
+          <p className="text-xs text-muted-foreground">Mg²⁺ final: {round2(bufferMg + extraMg)} mM (óptimo habitual 1,5–2,5 mM).</p>
+        </Section>
       </section>
 
       {/* Tabla de volúmenes */}
