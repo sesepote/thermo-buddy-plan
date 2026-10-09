@@ -6,9 +6,9 @@ import { Repeat2 } from "lucide-react";
 import { useRef, useState } from "react";
 
 export interface StepPosition { si: number; pi: number }
-export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onLoopRange, onGradient, onTemperature, onTime, locked, showHeader = true }: {
+export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onLoopRange, onTemperature, onTime, locked, showHeader = true }: {
   program: Program; selected: StepPosition; current?: StepPosition | undefined; cycle?: number | undefined;
-  onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onLoopRange: (si: number, start: number, end: number) => void; onGradient: (p: StepPosition) => void; onTemperature: (p: StepPosition) => void; onTime: (p: StepPosition) => void; locked: boolean;
+  onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onLoopRange: (si: number, start: number, end: number) => void; onTemperature: (p: StepPosition) => void; onTime: (p: StepPosition) => void; locked: boolean;
   showHeader?: boolean;
 }) {
   const graph = useRef<HTMLDivElement>(null);
@@ -53,7 +53,6 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
             return <g key={step.id}>
               {chosen && <rect x={p.x1 - 7} y={p.y - 11} width={p.x2 - p.x1 + 14} height="22" rx="4" fill="var(--ice)" fillOpacity="0.24" stroke="var(--ice)" />}
               {active && <circle cx={(p.x1+p.x2)/2} cy={p.y} r="11" fill="var(--run)" fillOpacity="0.5" />}
-              {step.gradient && <rect x={p.x1} y={y(step.gradient.high)} width={p.x2-p.x1} height={Math.max(5,y(step.gradient.low)-y(step.gradient.high))} fill="var(--amber)" fillOpacity="0.25" stroke="var(--amber)" strokeDasharray="3 3" />}
               <circle cx={(p.x1+p.x2)/2} cy={p.y} r="5" fill="var(--lcd-foreground)" />
             </g>;
           })}
@@ -69,6 +68,8 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
           const pos = { si, pi };
           const center = percent((point.x1 + point.x2) / 2);
           return <div key={step.id}>
+            {/* Toda la columna es táctil: selecciona el paso y muestra la barra azul. */}
+            <button type="button" aria-label={`Seleccionar columna ${i + 1}: ${step.label}`} className="absolute top-[43px] h-[300px] cursor-pointer bg-transparent" style={{ left: percent(left + i * span), width: percent(span) }} onClick={() => onSelect(pos)} />
             <span className="absolute top-[351px] -translate-x-1/2 font-mono text-sm text-muted-foreground" style={{ left: center }}>Col. {i + 1}</span>
             {pi === 0 && stage.repeats > 1 && <Button variant="ghost" disabled={locked} aria-label={`Ciclos etapa ${si + 1}: ${stage.repeats}`} className="absolute top-0 h-10 -translate-x-1/2 px-2 font-mono text-base font-bold text-amber" style={{ left: percent((point.x1 + (points[i + stage.steps.length - 1]?.x2 ?? point.x2)) / 2) }} onClick={() => onCycles(si)}>{stage.repeats}× <Repeat2 /></Button>}
             <Button variant="ghost" disabled={locked} aria-label={`Temperatura ${step.label}: ${step.temp.toFixed(1)} grados`} className="absolute h-11 -translate-x-1/2 px-2 font-mono text-xl font-bold tabular-nums text-lcd-foreground" style={{ left: center, top: point.y - 59 }} onClick={() => { onSelect(pos); onTemperature(pos); }}>{step.temp.toFixed(1)}°</Button>

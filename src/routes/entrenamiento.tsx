@@ -79,7 +79,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PracticeCase; onBac
   return <div className="space-y-5 p-4 sm:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button><span className="font-mono text-xs text-muted-foreground">{exercise.mix.samples} MUESTRAS · +10 % EXTRA</span></div>
     <section aria-label="Gráfico del termociclador">
-      <ThermalProfile showHeader={false} program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onGradient={() => {}} onCycles={si => {
+      <ThermalProfile showHeader={false} program={{ ...program, sampleVolume: mix?.volume ?? program.sampleVolume }} selected={selected} onSelect={setSelected} locked={false} onTemperature={pos => edit(pos, "temp")} onTime={pos => edit(pos, "time")} onCycles={si => {
         const stage = program.stages[si]; if (!stage) return;
         setPad({ title: "Número de ciclos", value: stage.repeats, unit: "×", min: 2, max: 99, onConfirm: value => updateProgram({ ...program, stages: program.stages.map((s, i) => i === si ? { ...s, repeats: Math.round(value) } : s) }) });
       }} onLoopRange={(si, start, end) => { const stage = program.stages[si]; if (stage) updateProgram(setLoopRange(program, stage.id, start, end, stage.repeats)); }} />
