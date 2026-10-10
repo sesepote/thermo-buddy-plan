@@ -161,7 +161,7 @@ function RootComponent() {
   }
   const pageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // La pantalla sigue al dedo mientras se arrastra; al soltar cambia o vuelve a su sitio.
+    // La pantalla sigue al dedo o al ratón mientras se arrastra; al soltar cambia o vuelve a su sitio.
     let start: { x: number; y: number; t: number } | null = null;
     let lock: "h" | "v" | null = null;
     const setX = (x: number, animate: boolean) => {
@@ -170,25 +170,21 @@ function RootComponent() {
       el.style.transition = animate ? "transform 220ms ease-out" : "none";
       el.style.transform = x ? `translateX(${x}px)` : "";
     };
-    const onStart = (e: TouchEvent) => {
-      const el = e.target as Element;
-      // No se interfiere con gráficos, campos, ventanas emergentes ni zonas desplazables en horizontal.
-      if (e.touches.length !== 1 || el.closest("svg, input, textarea, select, [data-no-swipe], .fixed")) { start = null; return; }
-      start = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY, t: Date.now() };
-      lock = null;
-    };
-    const onMove = (e: TouchEvent) => {
+    const blocked = (e: Event) =>
+      (e.target as Element).closest("svg, input, textarea, select, a, [data-no-swipe], .fixed") !== null;
+    const begin = (x: number, y: number) => { start = { x, y, t: Date.now() }; lock = null; };
+    const move = (x: number, y: number) => {
       if (!start) return;
-      const dx = e.touches[0]!.clientX - start.x, dy = e.touches[0]!.clientY - start.y;
+      const dx = x - start.x, dy = y - start.y;
       if (!lock && Math.hypot(dx, dy) > 10) lock = Math.abs(dx) > Math.abs(dy) * 1.5 ? "h" : "v";
       if (lock !== "h") return;
       // Resistencia elástica si no hay pantalla en esa dirección.
       const has = swipeTarget(window.location.pathname, dx) !== null;
       setX(has ? dx : dx * 0.25, false);
     };
-    const onEnd = (e: TouchEvent) => {
+    const end = (x: number) => {
       if (!start) return;
-      const dx = e.changedTouches[0]!.clientX - start.x;
+      const dx = x - start.x;
       const fast = Date.now() - start.t < 400 && Math.abs(dx) > 60;
       const far = Math.abs(dx) > window.innerWidth * 0.25;
       const wasH = lock === "h";
@@ -199,15 +195,34 @@ function RootComponent() {
         void router.navigate({ to });
       } else setX(0, true);
     };
-    window.addEventListener("touchstart", onStart, { passive: true });
-    window.addEventListener("touchmove", onMove, { passive: true });
-    window.addEventListener("touchend", onEnd, { passive: true });
-    window.addEventListener("touchcancel", onEnd, { passive: true });
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || blocked(e)) { start = null; return; }
+      begin(e.touches[0]!.clientX, e.touches[0]!.clientY);
+    };
+    const onTouchMove = (e: TouchEvent) => move(e.touches[0]!.clientX, e.touches[0]!.clientY);
+    const onTouchEnd = (e: TouchEvent) => end(e.changedTouches[0]!.clientX);
+    // Ratón: mismo gesto arrastrando con el botón pulsado (para probar en el ordenador).
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0 || blocked(e)) return;
+      begin(e.clientX, e.clientY);
+    };
+    const onMouseMove = (e: MouseEvent) => move(e.clientX, e.clientY);
+    const onMouseUp = (e: MouseEvent) => end(e.clientX);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    window.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
     return () => {
-      window.removeEventListener("touchstart", onStart);
-      window.removeEventListener("touchmove", onMove);
-      window.removeEventListener("touchend", onEnd);
-      window.removeEventListener("touchcancel", onEnd);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
   }, [router]);
 
