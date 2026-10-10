@@ -200,14 +200,14 @@ function RootComponent() {
       begin(e.touches[0]!.clientX, e.touches[0]!.clientY);
     };
     const onTouchMove = (e: TouchEvent) => move(e.touches[0]!.clientX, e.touches[0]!.clientY);
-    const onTouchEnd = (e: TouchEvent) => end(e.changedTouches[0]!.clientX);
+    const onTouchEnd = (e: TouchEvent) => end(e.changedTouches[0]!.clientY);
     // Ratón: mismo gesto arrastrando con el botón pulsado (para probar en el ordenador).
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0 || blocked(e)) return;
       begin(e.clientX, e.clientY);
     };
     const onMouseMove = (e: MouseEvent) => move(e.clientX, e.clientY);
-    const onMouseUp = (e: MouseEvent) => end(e.clientX);
+    const onMouseUp = (e: MouseEvent) => end(e.clientY);
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("touchend", onTouchEnd, { passive: true });
@@ -229,7 +229,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <div ref={pageRef} className="overflow-x-hidden" style={{ touchAction: "pan-y" }}>
+      <div ref={pageRef} className="overflow-x-hidden" style={{ touchAction: "pan-x" }}>
         <div key={pathname} className={dir.current ? `page-slide-${dir.current}` : undefined}>
           <Outlet />
         </div>
