@@ -12,3 +12,4 @@
 - [x] Nombres automáticos de columna según el paso anterior, con diálogo para elegir nombre al clicar.
 - [x] Animar algo más el fondo del menú: hélice lejana, halos y burbujas que suben despacio.
 - [x] Convertir las burbujas del fondo en moléculas: átomos unidos por enlaces, con giro muy lento.
+- [ ] Redistribuir Master Mix con parámetros principales arriba y concentraciones/resultados debajo, y verificar la edición táctil.
