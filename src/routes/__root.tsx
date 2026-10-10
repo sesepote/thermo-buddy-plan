@@ -149,14 +149,14 @@ function RootComponent() {
     return () => window.clearInterval(timer);
   }, []);
 
-  // Gestos táctiles: deslizar horizontalmente cambia de pantalla.
+  // Gestos táctiles: deslizar verticalmente cambia de pantalla.
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prevPath = useRef(pathname);
-  const dir = useRef<"left" | "right" | null>(null);
+  const dir = useRef<"up" | "down" | null>(null);
   if (prevPath.current !== pathname) {
     const a = SWIPE_ORDER.indexOf(prevPath.current as never), b = SWIPE_ORDER.indexOf(pathname as never);
-    dir.current = a >= 0 && b >= 0 ? (b > a ? "left" : "right") : null;
+    dir.current = a >= 0 && b >= 0 ? (b > a ? "up" : "down") : null;
     prevPath.current = pathname;
   }
   const pageRef = useRef<HTMLDivElement>(null);
@@ -164,11 +164,11 @@ function RootComponent() {
     // La pantalla sigue al dedo o al ratón mientras se arrastra; al soltar cambia o vuelve a su sitio.
     let start: { x: number; y: number; t: number } | null = null;
     let lock: "h" | "v" | null = null;
-    const setX = (x: number, animate: boolean) => {
+    const setY = (y: number, animate: boolean) => {
       const el = pageRef.current;
       if (!el) return;
       el.style.transition = animate ? "transform 220ms ease-out" : "none";
-      el.style.transform = x ? `translateX(${x}px)` : "";
+      el.style.transform = y ? `translateY(${y}px)` : "";
     };
     const blocked = (e: Event) =>
       (e.target as Element).closest("svg, input, textarea, select, a, [data-no-swipe], .fixed") !== null;
@@ -176,24 +176,24 @@ function RootComponent() {
     const move = (x: number, y: number) => {
       if (!start) return;
       const dx = x - start.x, dy = y - start.y;
-      if (!lock && Math.hypot(dx, dy) > 10) lock = Math.abs(dx) > Math.abs(dy) * 1.5 ? "h" : "v";
-      if (lock !== "h") return;
+      if (!lock && Math.hypot(dx, dy) > 10) lock = Math.abs(dy) > Math.abs(dx) * 1.5 ? "v" : "h";
+      if (lock !== "v") return;
       // Resistencia elástica si no hay pantalla en esa dirección.
-      const has = swipeTarget(window.location.pathname, dx) !== null;
-      setX(has ? dx : dx * 0.25, false);
+      const has = swipeTarget(window.location.pathname, dy) !== null;
+      setY(has ? dy : dy * 0.25, false);
     };
-    const end = (x: number) => {
+    const end = (y: number) => {
       if (!start) return;
-      const dx = x - start.x;
-      const fast = Date.now() - start.t < 400 && Math.abs(dx) > 60;
-      const far = Math.abs(dx) > window.innerWidth * 0.25;
-      const wasH = lock === "h";
+      const dy = y - start.y;
+      const fast = Date.now() - start.t < 400 && Math.abs(dy) > 60;
+      const far = Math.abs(dy) > window.innerHeight * 0.25;
+      const wasV = lock === "v";
       start = null; lock = null;
-      const to = wasH && (fast || far) ? swipeTarget(window.location.pathname, dx) : null;
+      const to = wasV && (fast || far) ? swipeTarget(window.location.pathname, dy) : null;
       if (to) {
-        setX(0, false);
+        setY(0, false);
         void router.navigate({ to });
-      } else setX(0, true);
+      } else setY(0, true);
     };
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1 || blocked(e)) { start = null; return; }
