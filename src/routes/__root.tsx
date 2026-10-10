@@ -164,6 +164,7 @@ function RootComponent() {
     // La pantalla sigue al dedo o al ratón mientras se arrastra; al soltar cambia o vuelve a su sitio.
     let start: { x: number; y: number; t: number } | null = null;
     let lock: "h" | "v" | null = null;
+    let dragged = false; // true si hubo arrastre vertical: anula el clic posterior
     const setY = (y: number, animate: boolean) => {
       const el = pageRef.current;
       if (!el) return;
@@ -171,13 +172,14 @@ function RootComponent() {
       el.style.transform = y ? `translateY(${y}px)` : "";
     };
     const blocked = (e: Event) =>
-      (e.target as Element).closest("svg, input, textarea, select, a, [data-no-swipe], .fixed") !== null;
+      (e.target as Element).closest("input, textarea, select, [data-no-swipe], .fixed") !== null;
     const begin = (x: number, y: number) => { start = { x, y, t: Date.now() }; lock = null; };
     const move = (x: number, y: number) => {
       if (!start) return;
       const dx = x - start.x, dy = y - start.y;
       if (!lock && Math.hypot(dx, dy) > 10) lock = Math.abs(dy) > Math.abs(dx) * 1.5 ? "v" : "h";
       if (lock !== "v") return;
+      dragged = true;
       // Resistencia elástica si no hay pantalla en esa dirección.
       const has = swipeTarget(window.location.pathname, dy) !== null;
       setY(has ? dy : dy * 0.25, false);
@@ -194,6 +196,13 @@ function RootComponent() {
         setY(0, false);
         void router.navigate({ to });
       } else setY(0, true);
+    };
+    // Si el gesto fue un arrastre, el clic que lo acompaña no debe activar enlaces ni botones.
+    const onClick = (e: MouseEvent) => {
+      if (!dragged) return;
+      dragged = false;
+      e.preventDefault();
+      e.stopPropagation();
     };
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1 || blocked(e)) { start = null; return; }
