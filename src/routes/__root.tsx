@@ -159,34 +159,65 @@ function RootComponent() {
     dir.current = a >= 0 && b >= 0 ? (b > a ? "left" : "right") : null;
     prevPath.current = pathname;
   }
+  const pageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    // La pantalla sigue al dedo mientras se arrastra; al soltar cambia o vuelve a su sitio.
     let start: { x: number; y: number; t: number } | null = null;
+    let lock: "h" | "v" | null = null;
+    const setX = (x: number, animate: boolean) => {
+      const el = pageRef.current;
+      if (!el) return;
+      el.style.transition = animate ? "transform 220ms ease-out" : "none";
+      el.style.transform = x ? `translateX(${x}px)` : "";
+    };
     const onStart = (e: TouchEvent) => {
       const el = e.target as Element;
       // No se interfiere con gráficos, campos, ventanas emergentes ni zonas desplazables en horizontal.
       if (e.touches.length !== 1 || el.closest("svg, input, textarea, select, [data-no-swipe], .fixed")) { start = null; return; }
       start = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY, t: Date.now() };
+      lock = null;
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!start) return;
+      const dx = e.touches[0]!.clientX - start.x, dy = e.touches[0]!.clientY - start.y;
+      if (!lock && Math.hypot(dx, dy) > 10) lock = Math.abs(dx) > Math.abs(dy) * 1.5 ? "h" : "v";
+      if (lock !== "h") return;
+      // Resistencia elástica si no hay pantalla en esa dirección.
+      const has = swipeTarget(window.location.pathname, dx) !== null;
+      setX(has ? dx : dx * 0.25, false);
     };
     const onEnd = (e: TouchEvent) => {
       if (!start) return;
-      const dx = e.changedTouches[0]!.clientX - start.x, dy = e.changedTouches[0]!.clientY - start.y;
-      const fast = Date.now() - start.t < 600;
-      start = null;
-      if (fast && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
-        const to = swipeTarget(window.location.pathname, dx);
-        if (to) void router.navigate({ to });
-      }
+      const dx = e.changedTouches[0]!.clientX - start.x;
+      const fast = Date.now() - start.t < 400 && Math.abs(dx) > 60;
+      const far = Math.abs(dx) > window.innerWidth * 0.25;
+      const wasH = lock === "h";
+      start = null; lock = null;
+      const to = wasH && (fast || far) ? swipeTarget(window.location.pathname, dx) : null;
+      if (to) {
+        setX(0, false);
+        void router.navigate({ to });
+      } else setX(0, true);
     };
     window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchmove", onMove, { passive: true });
     window.addEventListener("touchend", onEnd, { passive: true });
-    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
+    window.addEventListener("touchcancel", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("touchend", onEnd);
+      window.removeEventListener("touchcancel", onEnd);
+    };
   }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <div key={pathname} className={dir.current ? `page-slide-${dir.current}` : undefined}>
-        <Outlet />
+      <div ref={pageRef} className="overflow-x-hidden" style={{ touchAction: "pan-y" }}>
+        <div key={pathname} className={dir.current ? `page-slide-${dir.current}` : undefined}>
+          <Outlet />
+        </div>
       </div>
     </QueryClientProvider>
   );
