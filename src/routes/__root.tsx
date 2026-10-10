@@ -149,101 +149,44 @@ function RootComponent() {
     return () => window.clearInterval(timer);
   }, []);
 
-  // Gestos táctiles: deslizar verticalmente cambia de pantalla.
+  // Gestos táctiles: deslizar horizontalmente cambia de pantalla.
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prevPath = useRef(pathname);
-  const dir = useRef<"up" | "down" | null>(null);
+  const dir = useRef<"left" | "right" | null>(null);
   if (prevPath.current !== pathname) {
     const a = SWIPE_ORDER.indexOf(prevPath.current as never), b = SWIPE_ORDER.indexOf(pathname as never);
-    dir.current = a >= 0 && b >= 0 ? (b > a ? "up" : "down") : null;
+    dir.current = a >= 0 && b >= 0 ? (b > a ? "left" : "right") : null;
     prevPath.current = pathname;
   }
-  const pageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    // La pantalla sigue al dedo o al ratón mientras se arrastra; al soltar cambia o vuelve a su sitio.
     let start: { x: number; y: number; t: number } | null = null;
-    let lock: "h" | "v" | null = null;
-    let dragged = false; // true si hubo arrastre vertical: anula el clic posterior
-    const setY = (y: number, animate: boolean) => {
-      const el = pageRef.current;
-      if (!el) return;
-      el.style.transition = animate ? "transform 220ms ease-out" : "none";
-      el.style.transform = y ? `translateY(${y}px)` : "";
+    const onStart = (e: TouchEvent) => {
+      const el = e.target as Element;
+      // No se interfiere con gráficos, campos, ventanas emergentes ni zonas desplazables en horizontal.
+      if (e.touches.length !== 1 || el.closest("svg, input, textarea, select, [data-no-swipe], .fixed")) { start = null; return; }
+      start = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY, t: Date.now() };
     };
-    const blocked = (e: Event) =>
-      (e.target as Element).closest("input, textarea, select, [data-no-swipe], .fixed") !== null;
-    const begin = (x: number, y: number) => { start = { x, y, t: Date.now() }; lock = null; };
-    const move = (x: number, y: number) => {
+    const onEnd = (e: TouchEvent) => {
       if (!start) return;
-      const dx = x - start.x, dy = y - start.y;
-      if (!lock && Math.hypot(dx, dy) > 10) lock = Math.abs(dy) > Math.abs(dx) * 1.5 ? "v" : "h";
-      if (lock !== "v") return;
-      dragged = true;
-      // Resistencia elástica si no hay pantalla en esa dirección.
-      const has = swipeTarget(window.location.pathname, dy) !== null;
-      setY(has ? dy : dy * 0.25, false);
+      const dx = e.changedTouches[0]!.clientX - start.x, dy = e.changedTouches[0]!.clientY - start.y;
+      const fast = Date.now() - start.t < 600;
+      start = null;
+      if (fast && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
+        const to = swipeTarget(window.location.pathname, dx);
+        if (to) void router.navigate({ to });
+      }
     };
-    const end = (y: number) => {
-      if (!start) return;
-      const dy = y - start.y;
-      const fast = Date.now() - start.t < 400 && Math.abs(dy) > 60;
-      const far = Math.abs(dy) > window.innerHeight * 0.25;
-      const wasV = lock === "v";
-      start = null; lock = null;
-      const to = wasV && (fast || far) ? swipeTarget(window.location.pathname, dy) : null;
-      if (to) {
-        setY(0, false);
-        void router.navigate({ to });
-      } else setY(0, true);
-    };
-    // Si el gesto fue un arrastre, el clic que lo acompaña no debe activar enlaces ni botones.
-    const onClick = (e: MouseEvent) => {
-      if (!dragged) return;
-      dragged = false;
-      e.preventDefault();
-      e.stopPropagation();
-    };
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1 || blocked(e)) { start = null; return; }
-      begin(e.touches[0]!.clientX, e.touches[0]!.clientY);
-    };
-    const onTouchMove = (e: TouchEvent) => move(e.touches[0]!.clientX, e.touches[0]!.clientY);
-    const onTouchEnd = (e: TouchEvent) => end(e.changedTouches[0]!.clientY);
-    // Ratón: mismo gesto arrastrando con el botón pulsado (para probar en el ordenador).
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0 || blocked(e)) return;
-      begin(e.clientX, e.clientY);
-    };
-    const onMouseMove = (e: MouseEvent) => move(e.clientX, e.clientY);
-    const onMouseUp = (e: MouseEvent) => end(e.clientY);
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("touchend", onTouchEnd, { passive: true });
-    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
-    window.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("click", onClick, true);
-    return () => {
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
-      window.removeEventListener("touchcancel", onTouchEnd);
-      window.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("click", onClick, true);
-    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
   }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <div ref={pageRef} className="overflow-x-hidden" style={{ touchAction: "pan-x" }}>
-        <div key={pathname} className={dir.current ? `page-slide-${dir.current}` : undefined}>
-          <Outlet />
-        </div>
+      <div key={pathname} className={dir.current ? `page-slide-${dir.current}` : undefined}>
+        <Outlet />
       </div>
     </QueryClientProvider>
   );

@@ -178,10 +178,10 @@
 }
 
 /* Transición al cambiar de pantalla deslizando. */
-@keyframes page-in-up { from { transform: translateY(12%); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes page-in-down { from { transform: translateY(-12%); opacity: 0; } to { transform: none; opacity: 1; } }
-.page-slide-up { animation: page-in-up 260ms ease-out; }
-.page-slide-down { animation: page-in-down 260ms ease-out; }
+@keyframes page-in-left { from { transform: translateX(12%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes page-in-right { from { transform: translateX(-12%); opacity: 0; } to { transform: none; opacity: 1; } }
+.page-slide-left { animation: page-in-left 260ms ease-out; }
+.page-slide-right { animation: page-in-right 260ms ease-out; }
 
 /* Composition scientifique : trois accès principaux et le glosario en dessous. */
 .menu-spheres { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1.35fr 1fr; grid-template-rows: auto auto; align-items: center; justify-items: center; gap: 28px 36px; width: min(100%, 1100px); margin: auto; padding: 42px 32px; }
@@ -221,6 +221,6 @@
   .menu-sphere { max-width: 210px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-mol, .pcr-drift, .page-slide-up, .page-slide-down { animation: none; }
+  .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-mol, .pcr-drift, .page-slide-left, .page-slide-right { animation: none; }
   .menu-sphere { transition: none; }
 }

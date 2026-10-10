@@ -45,7 +45,7 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
     </div>}
     <div className="overflow-x-auto">
       <div ref={graph} className="relative h-[424px] w-full" style={{ minWidth: width }}>
-        <svg data-no-swipe viewBox={`0 0 ${width} 424`} className="h-full w-full" preserveAspectRatio="none" role="img" aria-label="Curva de temperaturas por pasos, siete columnas visibles">
+        <svg viewBox={`0 0 ${width} 424`} className="h-full w-full" preserveAspectRatio="none" role="img" aria-label="Curva de temperaturas por pasos, siete columnas visibles">
           {Array.from({ length: columns }, (_, i) => <line key={`col-${i}`} x1={left + i * span} x2={left + i * span} y1="44" y2="342" stroke="var(--border)" strokeOpacity="0.55" />)}
           {[4, 37, 55, 72, 95, 105].map(t => <g key={t}><line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeDasharray="4 5" /><text x={left - 8} y={y(t) + 5} textAnchor="end" fill="var(--lcd-foreground)" fontSize="15">{t}°</text></g>)}
           {loops.map(loop => <rect key={loop.stage.id} x={left + loop.start * span} y="43" width={(loop.end - loop.start + 1) * span} height="300" fill="var(--amber)" fillOpacity="0.045" stroke="var(--amber)" strokeOpacity="0.7" strokeDasharray="4 4" rx="5" />)}
