@@ -161,62 +161,25 @@ function RootComponent() {
   }
   useEffect(() => {
     let start: { x: number; y: number; t: number } | null = null;
-    // Zonas que no inician el gesto: campos de texto, ventanas emergentes y el gráfico del perfil.
-    const bloqueado = (el: Element) => el.closest("input, textarea, select, [data-no-swipe], .fixed");
-    const onBegin = (x: number, y: number, el: Element) => {
-      start = bloqueado(el) ? null : { x, y, t: Date.now() };
+    const onStart = (e: TouchEvent) => {
+      const el = e.target as Element;
+      // No se interfiere con gráficos, campos, ventanas emergentes ni zonas desplazables en horizontal.
+      if (e.touches.length !== 1 || el.closest("svg, input, textarea, select, [data-no-swipe], .fixed")) { start = null; return; }
+      start = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY, t: Date.now() };
     };
-    const onEnd = (x: number, y: number) => {
+    const onEnd = (e: TouchEvent) => {
       if (!start) return;
-      const dx = x - start.x, dy = y - start.y;
-      const fast = Date.now() - start.t < 1200;
+      const dx = e.changedTouches[0]!.clientX - start.x, dy = e.changedTouches[0]!.clientY - start.y;
+      const fast = Date.now() - start.t < 600;
       start = null;
-      if (fast && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (fast && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
         const to = swipeTarget(window.location.pathname, dx);
         if (to) void router.navigate({ to });
       }
     };
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) { start = null; return; }
-      onBegin(e.touches[0]!.clientX, e.touches[0]!.clientY, e.target as Element);
-    };
-    const onTouchEnd = (e: TouchEvent) => onEnd(e.changedTouches[0]!.clientX, e.changedTouches[0]!.clientY);
-    // Ratón: el mismo gesto de arrastre con el botón izquierdo también cambia de pantalla.
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0) { start = null; return; }
-      onBegin(e.clientX, e.clientY, e.target as Element);
-    };
-    const onMouseUp = (e: MouseEvent) => onEnd(e.clientX, e.clientY);
-    // Panel táctil (dos dedos en horizontal): se acumula el desplazamiento lateral.
-    let acc = 0, lastWheel = 0, cooldown = 0;
-    const onWheel = (e: WheelEvent) => {
-      const now = Date.now();
-      if (now < cooldown) return;
-      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) * 1.5) { acc = 0; return; }
-      if (bloqueado(e.target as Element)) return;
-      if (now - lastWheel > 250) acc = 0;
-      lastWheel = now;
-      acc += e.deltaX;
-      if (Math.abs(acc) > 120) {
-        // deltaX positivo = dedos hacia la izquierda = avanzar (como dx negativo).
-        const to = swipeTarget(window.location.pathname, -acc);
-        acc = 0;
-        cooldown = now + 900;
-        if (to) void router.navigate({ to });
-      }
-    };
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchend", onTouchEnd, { passive: true });
-    window.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("wheel", onWheel, { passive: true });
-    return () => {
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchend", onTouchEnd);
-      window.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("wheel", onWheel);
-    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
   }, [router]);
 
   return (
