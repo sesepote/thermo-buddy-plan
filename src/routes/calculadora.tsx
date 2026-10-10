@@ -142,7 +142,7 @@ function Calculator() {
 
   return (
     <StatusBars section="CALCULADORA">
-      <ScreenHeader title="Calculadora de protocolos" subtitle="Toca cada bloque para configurarlo; el programa se calcula al momento" />
+      <ScreenHeader title="Calculadora de protocolos" />
       {/* Pestañas táctiles: protocolo completo o solo master mix. */}
       <div className="flex gap-2 px-4 pt-3">
         {([["protocolo", "Protocolo PCR"], ["mastermix", "Master mix"]] as const).map(([id, label]) => (
