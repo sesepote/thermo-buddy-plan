@@ -2,8 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Thermometer, Calculator, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { PcrBackdrop } from "@/components/sim/PcrBackdrop";
-import { MenuMolecule } from "@/components/sim/MenuMolecule";
-
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,9 +63,6 @@ function MainMenu() {
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
       <nav aria-label="Menú principal" className="menu-spheres">
-        {/* Enlaces moleculares entre las esferas */}
-        <MenuMolecule />
-
         {SPHERES.map(({ to, icon: Icon, title, center }) => (
           <Link
             key={to}
