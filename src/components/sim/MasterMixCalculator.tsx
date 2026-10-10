@@ -101,18 +101,18 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   );
 
   return (
-    <div className="grid flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      {/* Entradas de la mezcla */}
-      <section className="min-w-0 space-y-3 self-start p-1">
+    <div className="flex flex-1 flex-col gap-5 p-4">
+      {/* Franja superior: selección de enzima y parámetros de la reacción. */}
+      <section aria-label="Parámetros principales" className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <Section title="Polimerasa">
-          <div className="space-y-2">
+          <div className="grid gap-2 sm:grid-cols-3">
             {/* Polimerasas habituales directamente; las demás en "Más polimerasas…". */}
             {POLYMERASES.filter((p) => p.id === "taq" || p.id === "hs-taq").map((p) => (
               <Button variant="outline"
                 key={p.id}
                 onClick={() => setPolymeraseId(p.id)}
                 className={cn(
-                  "hw-key min-h-14 w-full flex-col items-start justify-center rounded-md px-3 py-2 text-left",
+                  "hw-key min-h-14 w-full flex-col items-start justify-center whitespace-normal rounded-md px-3 py-2 text-left",
                   polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
                 )}
               >
@@ -125,7 +125,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
             <Button variant="outline"
               onClick={() => setPopupOpen(true)}
               className={cn(
-                "hw-key flex min-h-14 w-full items-center justify-between gap-3 rounded-md px-3 text-left",
+                "hw-key flex min-h-14 w-full items-center justify-between gap-2 whitespace-normal rounded-md px-3 text-left",
                 !["taq", "hs-taq"].includes(polymeraseId) && "bg-none bg-amber text-amber-foreground",
               )}
             >
@@ -140,7 +140,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
           </div>
         </Section>
         <Section title="Reacción">
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {num("Volumen por reacción", volume, "µL", (v) => setVolume(v), { min: 5, max: 100 })}
             {num("Nº de muestras", samples, "", (v) => setSamples(Math.round(v)), { min: 1, max: 384, allowDecimal: false })}
             {num("DMSO", dmso, "%", (v) => setDmso(v), { max: 10 })}
@@ -150,6 +150,11 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
             PCR de colonia (sin molde medido)
           </Choice>
         </Section>
+      </section>
+
+      <div className="grid min-w-0 gap-5 border-t pt-5 lg:grid-cols-2">
+      {/* Concentraciones a la izquierda; resultados a la derecha. */}
+      <section aria-label="Concentraciones y stocks" className="grid min-w-0 content-start gap-4 sm:grid-cols-2">
         <Section title="Polimerasa: stock y unidades">
           <div className="flex flex-wrap gap-2">
             {num("Stock de enzima", enzymeStockU, "U/µL", (v) => setEnzymeStockU(v), { min: 0.1, max: 100 })}
@@ -168,18 +173,18 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
             {num("Concentración final", dntpFinalMM, "mM", (v) => setDntpFinalMM(v), { min: 0.01, max: 2 })}
           </div>
         </Section>
-        <Section title="Cloruro de magnesio (MgCl₂)">
+        <div className="sm:col-span-2"><Section title="Cloruro de magnesio (MgCl₂)">
           <div className="flex flex-wrap gap-2">
             {num("Mg²⁺ del tampón", bufferMg, "mM", (v) => setBufferMg(v), { max: 10 })}
             {num("MgCl₂ extra a añadir", extraMg, "mM", (v) => setExtraMg(v), { max: 5 })}
             {num("Stock de MgCl₂", mgStockMM, "mM", (v) => setMgStockMM(v), { min: 1, max: 1000 })}
           </div>
           <p className="text-xs text-muted-foreground">Mg²⁺ final: {round2(bufferMg + extraMg)} mM (óptimo habitual 1,5–2,5 mM).</p>
-        </Section>
+        </Section></div>
       </section>
 
       {/* Tabla de volúmenes */}
-      <section className="min-w-0 space-y-3 self-start border-t pt-4 xl:border-t-0 xl:border-l xl:pl-5">
+      <section aria-label="Resultados del master mix" className="min-w-0 space-y-3 self-start border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
           <p className="text-sm text-muted-foreground">{samples} muestras + 10 % extra = {round1(mix.factor)}×</p>
@@ -210,6 +215,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
             : "Toca la colonia con la punta y resuspende en cada tubo."}
         </p>
       </section>
+      </div>
       <NumPad req={pad} onClose={() => setPad(null)} />
       {popupOpen && (
         /* El cuerpo se construye en cada render para que la selección resaltada esté al día. */
