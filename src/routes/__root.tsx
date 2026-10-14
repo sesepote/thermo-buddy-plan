@@ -10,7 +10,7 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
-import { SWIPE_ORDER, swipeTarget } from "../lib/swipe";
+import { SWIPE_ORDER } from "../lib/swipe";
 
 // Fuentes empaquetadas localmente (@fontsource): no se descargan de internet.
 import "@fontsource/ibm-plex-sans/400.css";
@@ -160,7 +160,7 @@ function RootComponent() {
     prevPath.current = pathname;
   }
   // El cambio de pantalla por deslizamiento está desactivado a petición del usuario.
-  void router; void swipeTarget;
+  void router;
 
   return (
     <QueryClientProvider client={queryClient}>

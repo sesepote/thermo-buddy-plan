@@ -66,7 +66,6 @@ export interface Additives {
   /** % de DMSO (v/v). */
   dmso: number;
   /** Betaína en M. */
-  betaine: number;
   /** % de formamida. */
   formamide: number;
   /** MgCl2 extra añadido en mM. */
@@ -78,5 +77,5 @@ export interface Additives {
  * DMSO ≈ 0,6 °C por cada 1 %; formamida ≈ 0,65 °C por %; betaína ≈ 2 °C por M.
  */
 export function additiveTmShift(a: Additives): number {
-  return -(a.dmso * 0.6 + a.formamide * 0.65 + a.betaine * 2);
+  return -(a.dmso * 0.6 + a.formamide * 0.65);
 }
