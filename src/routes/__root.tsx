@@ -149,8 +149,7 @@ function RootComponent() {
     return () => window.clearInterval(timer);
   }, []);
 
-  // Gestos táctiles: deslizar horizontalmente cambia de pantalla.
-  const router = useRouter();
+  // Dirección de la animación al cambiar de pantalla.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prevPath = useRef(pathname);
   const dir = useRef<"left" | "right" | null>(null);
@@ -159,8 +158,6 @@ function RootComponent() {
     dir.current = a >= 0 && b >= 0 ? (b > a ? "left" : "right") : null;
     prevPath.current = pathname;
   }
-  // El cambio de pantalla por deslizamiento está desactivado a petición del usuario.
-  void router;
 
   return (
     <QueryClientProvider client={queryClient}>
