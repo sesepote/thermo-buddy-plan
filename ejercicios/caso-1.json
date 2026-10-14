@@ -1,54 +1,54 @@
 {
-  "id": "practice-b1",
-  "title": "PCR de un plásmido · Taq",
+  "id": "practice-b3",
+  "title": "ADN genómico · Hot-start",
   "program": {
-    "id": "practice-b1-ref",
-    "name": "Taq polimerasa · 500 pb",
+    "id": "practice-b3-ref",
+    "name": "Hot-start Taq · 800 pb",
     "lidTemp": 105,
     "rampRate": 3,
     "stages": [
       {
-        "id": "practice-b1-ref-2",
+        "id": "practice-b3-ref-2",
         "repeats": 1,
         "steps": [
           {
-            "id": "practice-b1-ref-1",
-            "label": "Desnaturalización inicial",
+            "id": "practice-b3-ref-1",
+            "label": "Activación inicial",
             "temp": 95,
-            "time": 120
+            "time": 300
           }
         ]
       },
       {
-        "id": "practice-b1-ref-6",
-        "repeats": 25,
+        "id": "practice-b3-ref-6",
+        "repeats": 32,
         "steps": [
           {
-            "id": "practice-b1-ref-3",
+            "id": "practice-b3-ref-3",
             "label": "Desnaturalización",
             "temp": 95,
             "time": 30
           },
           {
-            "id": "practice-b1-ref-4",
+            "id": "practice-b3-ref-4",
             "label": "Anillamiento",
-            "temp": 55,
+            "temp": 57,
             "time": 30
           },
           {
-            "id": "practice-b1-ref-5",
+            "id": "practice-b3-ref-5",
             "label": "Extensión",
             "temp": 72,
-            "time": 30
+            "time": 50
           }
         ]
       },
       {
-        "id": "practice-b1-ref-8",
+        "id": "practice-b3-ref-8",
         "repeats": 1,
         "steps": [
           {
-            "id": "practice-b1-ref-7",
+            "id": "practice-b3-ref-7",
             "label": "Extensión final",
             "temp": 72,
             "time": 300
@@ -56,11 +56,11 @@
         ]
       },
       {
-        "id": "practice-b1-ref-10",
+        "id": "practice-b3-ref-10",
         "repeats": 1,
         "steps": [
           {
-            "id": "practice-b1-ref-9",
+            "id": "practice-b3-ref-9",
             "label": "Conservación",
             "temp": 4,
             "time": 0
@@ -70,46 +70,46 @@
     ]
   },
   "mix": {
-    "volume": 25,
-    "samples": 6,
+    "volume": 50,
+    "samples": 8,
     "options": {
       "enzymeStockU": 5,
       "primerFinalUM": 0.5,
       "dntpStockMM": 10,
       "dntpFinalMM": 0.2,
       "mgStockMM": 25,
-      "templateUL": 1,
-      "enzymeUnits": 1.25,
-      "primerStockUM": 10
+      "templateUL": 2,
+      "enzymeUnits": 2,
+      "primerStockUM": 20
     },
     "input": {
       "reaction": "standard",
-      "polymeraseId": "taq",
+      "polymeraseId": "hs-taq",
       "fwdSeq": "",
       "revSeq": "",
-      "fwdTm": 60,
-      "revTm": 60,
-      "ampliconBp": 500,
-      "template": "plasmid",
+      "fwdTm": 62,
+      "revTm": 62,
+      "ampliconBp": 800,
+      "template": "genomic",
       "highGC": false,
       "additives": {
         "dmso": 0,
         "formamide": 0,
-        "extraMg": 0
+        "extraMg": 0.5
       },
       "mgMM": 1.5
     }
   },
   "statement": [
-    "Polimerasa: Taq polimerasa",
-    "Amplicón: 500 pb",
-    "Tm cebadores: 60 °C / 60 °C",
-    "25 µL por reacción · 6 muestras",
-    "Molde: 1 µL / tubo",
-    "Enzima: 5 U/µL → 1.25 U / tubo",
-    "Cebadores: 10 µM → 0.5 µM",
+    "Polimerasa: Hot-start Taq",
+    "Amplicón: 800 pb",
+    "Tm cebadores: 62 °C / 62 °C",
+    "50 µL por reacción · 8 muestras",
+    "Molde: 2 µL / tubo",
+    "Enzima: 5 U/µL → 2 U / tubo",
+    "Cebadores: 20 µM → 0.5 µM",
     "dNTPs: 10 mM cada uno → 0,2 mM",
-    "Tampón: 1,5 mM Mg²⁺ · extra: 0 mM",
+    "Tampón: 1,5 mM Mg²⁺ · extra: 0.5 mM",
     "Stock MgCl₂: 25 mM · sin DMSO"
   ]
 }
