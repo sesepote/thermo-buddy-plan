@@ -44,7 +44,7 @@ export const DEFAULT_INPUT: CalcInput = {
   ampliconBp: 1000,
   template: "plasmid",
   highGC: false,
-  additives: { dmso: 0, betaine: 0, formamide: 0, extraMg: 0 },
+  additives: { dmso: 0, formamide: 0, extraMg: 0 },
   mgMM: 1.5,
 };
 

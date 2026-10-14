@@ -69,7 +69,7 @@ function GlossaryPage() {
           )}
         </label>
 
-        <div className="flex flex-wrap gap-2" data-no-swipe>
+        <div className="flex flex-wrap gap-2">
           {[null, ...GLOSSARY_CATEGORIES].map((c) => (
             <button
               key={c ?? "all"}

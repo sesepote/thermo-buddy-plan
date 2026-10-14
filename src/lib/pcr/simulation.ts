@@ -98,16 +98,6 @@ export function stateAt(segs: Segment[], t: number): SimState {
   return { temp, segment: seg, stepRemaining: remaining, finished };
 }
 
-/** Puntos (minuto, °C) del perfil completo para la gráfica. */
-export function profilePoints(segs: Segment[]): { min: number; temp: number }[] {
-  const pts: { min: number; temp: number }[] = [{ min: 0, temp: AMBIENT }];
-  for (const s of segs) {
-    const end = Number.isFinite(s.duration) ? s.start + s.duration : s.start + 120;
-    pts.push({ min: end / 60, temp: s.toTemp });
-  }
-  return pts;
-}
-
 /** Temperaturas de las 12 columnas del bloque para un paso con gradiente. */
 export function gradientColumns(step: Step): number[] {
   if (!step.gradient) return Array(12).fill(step.temp);
