@@ -15,7 +15,7 @@
 - Must work offline on a touch kiosk: fonts via @fontsource, no CDN assets, service worker via vite-plugin-pwa registered only through `src/lib/pwa.ts`.
 - Numeric input goes through the on-screen `NumPad` (touch-first, no hover dependence).
 - Thermocycler execution is a temporary shared Zustand session clocked from the root layout and displayed by shared status bars on every screen, so live state remains consistent across navigation without persisting an interrupted run.
-- The thermocycler profile and 96-well plate are presentation views of the existing Program/Segment model and gradientColumns calculation, so all screens use one PCR simulation rather than parallel engines.
+- The thermocycler profile is a presentation view of the existing Program/Segment model, so all screens use one PCR simulation rather than parallel engines.
 - Loop ranges use global column indices and a shared pure regrouping function in src/lib/pcr/ so graphical resizing and the dialog preserve identical step order and stage semantics.
 - Master mix controls are shared by the calculator and exercises, reporting settings to pure practice evaluation so both screens use identical chemistry and volume calculations.
 - Exercise drafts stay local to their workspace and do not modify the active instrument program, so practice cannot interrupt a thermocycler run.

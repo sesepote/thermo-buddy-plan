@@ -31,7 +31,6 @@ interface AppState {
   saveProgram: (p: Program) => void;
   deleteProgram: (id: string) => void;
   addAttempt: (a: Attempt) => void;
-  resetProgress: () => void;
 }
 
 export const useApp = create<AppState>()(
@@ -54,7 +53,6 @@ export const useApp = create<AppState>()(
           return { programs, activeId: s.activeId === id ? (programs[0]?.id ?? "") : s.activeId };
         }),
       addAttempt: (a) => set((s) => ({ attempts: [...s.attempts, a] })),
-      resetProgress: () => set({ attempts: [] }),
     }),
     {
       name: "termociclador-sim",

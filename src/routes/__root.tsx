@@ -10,7 +10,6 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
-import { SWIPE_ORDER } from "../lib/swipe";
 
 // Fuentes empaquetadas localmente (@fontsource): no se descargan de internet.
 import "@fontsource/ibm-plex-sans/400.css";
@@ -27,6 +26,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useApp } from "../lib/store";
 import { useThermocyclerSession } from "../lib/thermocycler-session";
 import { registerOffline } from "../lib/pwa";
+
+/** Orden de las pantallas principales (decide la dirección de la animación al navegar). */
+const SWIPE_ORDER = ["/", "/termociclador", "/calculadora", "/entrenamiento", "/glosario"] as const;
 
 function NotFoundComponent() {
   return (

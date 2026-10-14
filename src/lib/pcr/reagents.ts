@@ -65,7 +65,6 @@ export const TEMPLATES: { id: TemplateType; name: string; cycles: number; amount
 export interface Additives {
   /** % de DMSO (v/v). */
   dmso: number;
-  /** Betaína en M. */
   /** % de formamida. */
   formamide: number;
   /** MgCl2 extra añadido en mM. */
