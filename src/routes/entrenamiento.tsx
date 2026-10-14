@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, FlaskConical, Trophy, Plus, Upload, Download, Trash2, Save } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { StatusBars } from "@/components/sim/StatusBars";
@@ -45,6 +44,9 @@ function Exercises() {
   const saveExercise = useApp(s => s.saveExercise);
   const deleteExercise = useApp(s => s.deleteExercise);
   const fileRef = useRef<HTMLInputElement>(null);
+  /** Aviso breve tras importar/guardar (sin librerías externas). */
+  const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+  const toast = { success: (text: string) => setNotice({ ok: true, text }), error: (text: string) => setNotice({ ok: false, text }) };
   const all = [...PRACTICE_CASES, ...custom];
 
   const onImport = async (file: File) => {
@@ -71,6 +73,7 @@ function Exercises() {
     {view.kind === "create" && <ExerciseCreator onBack={() => setView({ kind: "list" })} onSave={c => { saveExercise(c); setView({ kind: "list" }); toast.success("Ejercicio guardado"); }} />}
     {view.kind === "list" &&
       <div className="mx-auto w-full max-w-6xl p-6 sm:p-8">
+        {notice && <p role="status" className={cn("mb-4 text-sm", notice.ok ? "text-run" : "text-destructive")}>{notice.text}</p>}
         <div className="grid gap-5 md:grid-cols-2">
           {all.map((exercise, index) => {
             const best = Math.max(-1, ...attempts.filter(a => a.exerciseId === exercise.id).map(a => a.score));
