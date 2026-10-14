@@ -159,28 +159,8 @@ function RootComponent() {
     dir.current = a >= 0 && b >= 0 ? (b > a ? "left" : "right") : null;
     prevPath.current = pathname;
   }
-  useEffect(() => {
-    let start: { x: number; y: number; t: number } | null = null;
-    const onStart = (e: TouchEvent) => {
-      const el = e.target as Element;
-      // No se interfiere con gráficos, campos, ventanas emergentes ni zonas desplazables en horizontal.
-      if (e.touches.length !== 1 || el.closest("svg, input, textarea, select, [data-no-swipe], .fixed")) { start = null; return; }
-      start = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY, t: Date.now() };
-    };
-    const onEnd = (e: TouchEvent) => {
-      if (!start) return;
-      const dx = e.changedTouches[0]!.clientX - start.x, dy = e.changedTouches[0]!.clientY - start.y;
-      const fast = Date.now() - start.t < 600;
-      start = null;
-      if (fast && Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 2) {
-        const to = swipeTarget(window.location.pathname, dx);
-        if (to) void router.navigate({ to });
-      }
-    };
-    window.addEventListener("touchstart", onStart, { passive: true });
-    window.addEventListener("touchend", onEnd, { passive: true });
-    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
-  }, [router]);
+  // El cambio de pantalla por deslizamiento está desactivado a petición del usuario.
+  void router; void swipeTarget;
 
   return (
     <QueryClientProvider client={queryClient}>
