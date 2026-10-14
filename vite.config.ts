@@ -14,6 +14,8 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    // La carpeta de ejercicios contiene soluciones: el navegador no puede pedirla.
+    server: { fs: { deny: [".env", ".env.*", "*.{crt,pem}", "**/ejercicios/**"] } },
     plugins: [
       // Modo sin conexión: genera /sw.js que guarda en caché la app completa.
       VitePWA({

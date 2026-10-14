@@ -1,10 +1,9 @@
 /**
  * Casos prácticos (termociclador + master mix) y su verificación.
- * Cada caso guarda el programa correcto y la mezcla correcta; los casos
- * de serie se generan con el mismo motor que la calculadora y los creados
- * por el docente se importan/exportan como JSON.
+ * Cada caso guarda el programa y la mezcla correctos. Los casos viven como
+ * JSON individuales en la carpeta `ejercicios/`, accesible solo desde el servidor.
  */
-import { DEFAULT_INPUT, generateProtocol, masterMix, type CalcInput, type MixOptions } from "./protocol";
+import { masterMix, type CalcInput, type MixOptions } from "./protocol";
 import { POLYMERASES } from "./reagents";
 import { formatTime, type Program } from "./types";
 
@@ -24,31 +23,7 @@ export interface PracticeCase {
   program: Program;
   /** Master mix correcto. */
   mix: MasterMixSettings;
-  /** true si lo creó el usuario (se puede borrar y exportar). */
-  custom?: boolean | undefined;
 }
-
-const OPTS: MixOptions = { enzymeStockU: 5, primerFinalUM: 0.5, dntpStockMM: 10, dntpFinalMM: 0.2, mgStockMM: 25 };
-
-/** Construye un caso de serie a partir de una entrada de la calculadora. */
-function builtIn(id: string, title: string, over: Partial<CalcInput>, mix: Omit<MasterMixSettings, "input">, extraMg: number): PracticeCase {
-  const input: CalcInput = { ...DEFAULT_INPUT, fwdSeq: "", revSeq: "", ...over, additives: { ...DEFAULT_INPUT.additives, extraMg } };
-  const pol = POLYMERASES.find(p => p.id === input.polymeraseId)!;
-  return {
-    id, title, program: generateProtocol(input, `${id}-ref`).program, mix: { ...mix, input },
-    statement: [`Polimerasa: ${pol.name}`, `Amplicón: ${input.ampliconBp.toLocaleString("es-ES")} pb`, `Tm cebadores: ${input.fwdTm} °C / ${input.revTm} °C`,
-      `${mix.volume} µL por reacción · ${mix.samples} muestras`, `Molde: ${mix.options.templateUL} µL / tubo`,
-      `Enzima: ${mix.options.enzymeStockU} U/µL → ${mix.options.enzymeUnits} U / tubo`, `Cebadores: ${mix.options.primerStockUM} µM → ${mix.options.primerFinalUM} µM`,
-      "dNTPs: 10 mM cada uno → 0,2 mM", `Tampón: 1,5 mM Mg²⁺ · extra: ${extraMg} mM`, "Stock MgCl₂: 25 mM · sin DMSO"],
-  };
-}
-
-export const PRACTICE_CASES: PracticeCase[] = [
-  builtIn("practice-b1", "PCR de un plásmido · Taq", { polymeraseId: "taq", fwdTm: 60, revTm: 60, ampliconBp: 500, template: "plasmid" },
-    { volume: 25, samples: 6, options: { ...OPTS, templateUL: 1, enzymeUnits: 1.25, primerStockUM: 10 } }, 0),
-  builtIn("practice-b3", "ADN genómico · Hot-start", { polymeraseId: "hs-taq", fwdTm: 62, revTm: 62, ampliconBp: 800, template: "genomic" },
-    { volume: 50, samples: 8, options: { ...OPTS, templateUL: 2, enzymeUnits: 2, primerStockUM: 20 } }, 0.5),
-];
 
 export interface PracticeCheck { label: string; correct: boolean; detail: string }
 
@@ -98,32 +73,34 @@ export function verifyPractice(program: Program, mix: MasterMixSettings, exercis
   return { checks, score, correct: checks.every(c => c.correct) };
 }
 
-// --------------------------------------------------------------------------
-// Exportar / importar JSON
-// --------------------------------------------------------------------------
-
-export const EXERCISE_FILE_FORMAT = "termociclador-ejercicios";
-
-/** Serializa los ejercicios en el formato de archivo de la app. */
-export function exportExercises(cases: PracticeCase[]): string {
-  return JSON.stringify({ format: EXERCISE_FILE_FORMAT, version: 1, exercises: cases.map(c => ({ ...c, custom: undefined })) }, null, 2);
-}
-
 const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
 /** Comprueba la forma mínima de un caso para no cargar archivos corruptos. */
-function isCase(v: unknown): v is PracticeCase {
+export function isCase(v: unknown): v is PracticeCase {
   const c = v as PracticeCase;
-  return !!c && typeof c.title === "string" && Array.isArray(c.statement) && c.statement.every(l => typeof l === "string")
+  return !!c && typeof c.id === "string" && typeof c.title === "string" && Array.isArray(c.statement) && c.statement.every(l => typeof l === "string")
     && !!c.program && Array.isArray(c.program.stages) && c.program.stages.length > 0
     && c.program.stages.every(s => isNum(s.repeats) && Array.isArray(s.steps) && s.steps.length > 0 && s.steps.every(p => isNum(p.temp) && isNum(p.time) && typeof p.label === "string"))
     && !!c.mix && isNum(c.mix.volume) && isNum(c.mix.samples) && !!c.mix.input && typeof c.mix.input.polymeraseId === "string" && !!c.mix.input.additives && !!c.mix.options;
 }
 
-/** Lee un archivo de ejercicios; acepta el formato de la app o una lista/caso suelto. Lanza Error si no es válido. */
-export function importExercises(text: string, idPrefix: string): PracticeCase[] {
-  const data: unknown = JSON.parse(text);
-  const list = Array.isArray(data) ? data : (data as { exercises?: unknown }).exercises ?? [data];
-  if (!Array.isArray(list) || list.length === 0 || !list.every(isCase)) throw new Error("El archivo no contiene ejercicios válidos.");
-  return list.map((c, i) => ({ ...c, id: `${idPrefix}-${i}`, custom: true }));
+/** Datos que puede ver el alumno: estructura del programa sin valores correctos. */
+export interface PublicCase {
+  id: string;
+  title: string;
+  statement: string[];
+  /** Mismas etapas y pasos que la solución, con temperaturas y tiempos neutros. */
+  skeleton: Program;
+  samples: number;
+  volume: number;
+}
+
+/** Oculta la solución: conserva etapas, nombres y holds, pero no temperaturas, tiempos ni ciclos. */
+export function toPublic(c: PracticeCase): PublicCase {
+  const p = c.program;
+  return {
+    id: c.id, title: c.title, statement: c.statement, samples: c.mix.samples, volume: c.mix.volume,
+    skeleton: { ...p, stages: p.stages.map(st => ({ ...st, repeats: st.repeats > 1 ? 10 : 1,
+      steps: st.steps.map(s => ({ id: s.id, label: s.label, temp: s.time === 0 ? 20 : 50, time: s.time === 0 ? 0 : 10 })) })) },
+  };
 }
