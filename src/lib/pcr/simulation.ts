@@ -97,10 +97,3 @@ export function stateAt(segs: Segment[], t: number): SimState {
   const finished = (!Number.isFinite(seg.duration) && seg.step.time === 0) || (!next && Number.isFinite(seg.duration) && t >= seg.start + seg.duration);
   return { temp, segment: seg, stepRemaining: remaining, finished };
 }
-
-/** Temperaturas de las 12 columnas del bloque para un paso con gradiente. */
-export function gradientColumns(step: Step): number[] {
-  if (!step.gradient) return Array(12).fill(step.temp);
-  const { low, high } = step.gradient;
-  return Array.from({ length: 12 }, (_, i) => Math.round((low + ((high - low) * i) / 11) * 10) / 10);
-}
