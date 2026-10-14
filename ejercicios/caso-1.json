@@ -1,0 +1,115 @@
+{
+  "id": "practice-b1",
+  "title": "PCR de un plásmido · Taq",
+  "program": {
+    "id": "practice-b1-ref",
+    "name": "Taq polimerasa · 500 pb",
+    "lidTemp": 105,
+    "rampRate": 3,
+    "stages": [
+      {
+        "id": "practice-b1-ref-2",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "practice-b1-ref-1",
+            "label": "Desnaturalización inicial",
+            "temp": 95,
+            "time": 120
+          }
+        ]
+      },
+      {
+        "id": "practice-b1-ref-6",
+        "repeats": 25,
+        "steps": [
+          {
+            "id": "practice-b1-ref-3",
+            "label": "Desnaturalización",
+            "temp": 95,
+            "time": 30
+          },
+          {
+            "id": "practice-b1-ref-4",
+            "label": "Anillamiento",
+            "temp": 55,
+            "time": 30
+          },
+          {
+            "id": "practice-b1-ref-5",
+            "label": "Extensión",
+            "temp": 72,
+            "time": 30
+          }
+        ]
+      },
+      {
+        "id": "practice-b1-ref-8",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "practice-b1-ref-7",
+            "label": "Extensión final",
+            "temp": 72,
+            "time": 300
+          }
+        ]
+      },
+      {
+        "id": "practice-b1-ref-10",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "practice-b1-ref-9",
+            "label": "Conservación",
+            "temp": 4,
+            "time": 0
+          }
+        ]
+      }
+    ]
+  },
+  "mix": {
+    "volume": 25,
+    "samples": 6,
+    "options": {
+      "enzymeStockU": 5,
+      "primerFinalUM": 0.5,
+      "dntpStockMM": 10,
+      "dntpFinalMM": 0.2,
+      "mgStockMM": 25,
+      "templateUL": 1,
+      "enzymeUnits": 1.25,
+      "primerStockUM": 10
+    },
+    "input": {
+      "reaction": "standard",
+      "polymeraseId": "taq",
+      "fwdSeq": "",
+      "revSeq": "",
+      "fwdTm": 60,
+      "revTm": 60,
+      "ampliconBp": 500,
+      "template": "plasmid",
+      "highGC": false,
+      "additives": {
+        "dmso": 0,
+        "formamide": 0,
+        "extraMg": 0
+      },
+      "mgMM": 1.5
+    }
+  },
+  "statement": [
+    "Polimerasa: Taq polimerasa",
+    "Amplicón: 500 pb",
+    "Tm cebadores: 60 °C / 60 °C",
+    "25 µL por reacción · 6 muestras",
+    "Molde: 1 µL / tubo",
+    "Enzima: 5 U/µL → 1.25 U / tubo",
+    "Cebadores: 10 µM → 0.5 µM",
+    "dNTPs: 10 mM cada uno → 0,2 mM",
+    "Tampón: 1,5 mM Mg²⁺ · extra: 0 mM",
+    "Stock MgCl₂: 25 mM · sin DMSO"
+  ]
+}
