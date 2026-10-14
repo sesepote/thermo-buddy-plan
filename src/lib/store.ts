@@ -9,7 +9,6 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Program } from "./pcr/types";
 import { DEFAULT_INPUT, generateProtocol } from "./pcr/protocol";
-import type { PracticeCase } from "./pcr/practice";
 
 /** Programas de ejemplo con ids fijos (nada aleatorio a nivel de módulo). */
 function defaultPrograms(): Program[] {
@@ -32,10 +31,6 @@ interface AppState {
   saveProgram: (p: Program) => void;
   deleteProgram: (id: string) => void;
   addAttempt: (a: Attempt) => void;
-  /** Ejercicios creados o importados por el docente. */
-  customExercises: PracticeCase[];
-  saveExercise: (c: PracticeCase) => void;
-  deleteExercise: (id: string) => void;
 }
 
 export const useApp = create<AppState>()(
@@ -58,14 +53,6 @@ export const useApp = create<AppState>()(
           return { programs, activeId: s.activeId === id ? (programs[0]?.id ?? "") : s.activeId };
         }),
       addAttempt: (a) => set((s) => ({ attempts: [...s.attempts, a] })),
-      customExercises: [],
-      saveExercise: (c) =>
-        set((s) => ({
-          customExercises: s.customExercises.some((x) => x.id === c.id)
-            ? s.customExercises.map((x) => (x.id === c.id ? c : x))
-            : [...s.customExercises, c],
-        })),
-      deleteExercise: (id) => set((s) => ({ customExercises: s.customExercises.filter((x) => x.id !== id) })),
     }),
     {
       name: "termociclador-sim",
