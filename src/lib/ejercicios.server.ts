@@ -33,6 +33,11 @@ async function dir() {
 
 /** Lee los casos ordenados por número de archivo (caso-1, caso-2…). */
 export async function readCases(): Promise<PracticeCase[]> {
+  const { githubConfig, readCasesGithub } = await import("./ejercicios.github.server");
+  const cfg = githubConfig();
+  if (cfg) {
+    try { return await readCasesGithub(cfg); } catch { /* si GitHub falla, usa la copia incluida */ }
+  }
   try {
     const { fs, path, d } = await dir();
     const names = (await fs.readdir(d)).filter(n => /^caso-\d+\.json$/.test(n)).sort((x, y) => fileNumber(x) - fileNumber(y));
@@ -44,9 +49,12 @@ export async function readCases(): Promise<PracticeCase[]> {
 }
 
 /** Reescribe la carpeta con numeración consecutiva: caso-1.json … caso-N.json. */
-export async function writeCases(cases: PracticeCase[]) {
+export async function writeCases(cases: PracticeCase[], message = "Actualizar ejercicios") {
+  const { githubConfig, writeCasesGithub } = await import("./ejercicios.github.server");
+  const cfg = githubConfig();
+  if (cfg) return writeCasesGithub(cfg, cases, message);
   let disk;
-  try { disk = await dir(); } catch { throw new Error("Este servidor no permite guardar archivos."); }
+  try { disk = await dir(); } catch { throw new Error("Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO."); }
   const { fs, path, d } = disk;
   for (const n of await fs.readdir(d)) if (/^caso-\d+\.json$/.test(n)) await fs.unlink(path.join(d, n));
   for (const [i, c] of cases.entries()) await fs.writeFile(path.join(d, `caso-${i + 1}.json`), JSON.stringify(c, null, 2) + "\n");

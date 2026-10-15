@@ -34,7 +34,10 @@ export const createExercise = createServerFn({ method: "POST" })
     const { passwordMatches, readCases, writeCases } = await import("./ejercicios.server");
     if (!passwordMatches(String(data.password))) return { ok: false as const, error: "Contraseña incorrecta" };
     if (!isCase(data.exercise)) return { ok: false as const, error: "Ejercicio no válido" };
-    try { await writeCases([...(await readCases()), data.exercise]); } catch (e) { return { ok: false as const, error: (e as Error).message }; }
+    try {
+      const all = await readCases();
+      await writeCases([...all, data.exercise], `feat: nuevo caso ${all.length + 1}`);
+    } catch (e) { return { ok: false as const, error: (e as Error).message }; }
     return { ok: true as const };
   });
 
@@ -43,6 +46,6 @@ export const deleteExercise = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { passwordMatches, readCases, writeCases } = await import("./ejercicios.server");
     if (!passwordMatches(String(data.password))) return { ok: false as const, error: "Contraseña incorrecta" };
-    try { await writeCases((await readCases()).filter(c => c.id !== data.id)); } catch (e) { return { ok: false as const, error: (e as Error).message }; }
+    try { await writeCases((await readCases()).filter(c => c.id !== data.id), "chore: eliminar caso y renumerar"); } catch (e) { return { ok: false as const, error: (e as Error).message }; }
     return { ok: true as const };
   });
