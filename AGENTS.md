@@ -11,7 +11,7 @@
 
 ## Architecture rules
 - PCR logic (Tm, protocol generator, simulation, exercise evaluation) lives as pure functions in `src/lib/pcr/`; UI only calls them, so calculator and training share one rule set.
-- Exercises live as individual JSON files in root `ejercicios/`, read/written only by `src/lib/ejercicios.server.ts` via server functions (solutions verified server-side, teacher password kept in that server-only file), so solutions never reach the browser.
+- Exercises live as individual JSON files in root `ejercicios/`, accessed only by `src/lib/ejercicios.server.ts` via server functions (solutions verified server-side, teacher password server-only); when GITHUB_TOKEN/GITHUB_REPO exist, writes are single commits via the GitHub API (`ejercicios.github.server.ts`) because Cloudflare Pages has no writable disk.
 - Apart from exercises, no backend: state is a Zustand store persisted to localStorage with `skipHydration`, rehydrated in `__root.tsx` to avoid SSR mismatches.
 - Must work offline on a touch kiosk: fonts via @fontsource, no CDN assets, service worker via vite-plugin-pwa registered only through `src/lib/pwa.ts`.
 - Numeric input goes through the on-screen `NumPad` (touch-first, no hover dependence).
