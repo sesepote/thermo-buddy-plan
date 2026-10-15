@@ -23,12 +23,18 @@ export interface PracticeCase {
   program: Program;
   /** Master mix correcto. */
   mix: MasterMixSettings;
+  /** Parte evaluada; sin valor equivale a "both" (casos antiguos). */
+  mode?: PracticeMode | undefined;
 }
+
+export type PracticeMode = "both" | "cycler" | "mix";
+export const MODE_LABEL: Record<PracticeMode, string> = { both: "Completo", cycler: "Solo termociclador", mix: "Solo master mix" };
 
 export interface PracticeCheck { label: string; correct: boolean; detail: string }
 
 /** Verifica todos los pasos y los parámetros de mezcla contra los valores guardados del caso. */
-export function verifyPractice(program: Program, mix: MasterMixSettings, exercise: PracticeCase) {
+export function verifyPractice(program: Program, mix: MasterMixSettings | null, exercise: PracticeCase) {
+  const mode = exercise.mode ?? "both";
   const reference = exercise.program;
   const target = exercise.mix;
   const checks: PracticeCheck[] = [];
@@ -36,6 +42,7 @@ export function verifyPractice(program: Program, mix: MasterMixSettings, exercis
     const correct = actual !== undefined && Number.isFinite(actual) && Math.abs(actual - expected) <= tolerance;
     checks.push({ label, correct, detail: `${actual ?? "—"} ${unit} · esperado ${expected} ${unit}` });
   };
+  if (mode !== "mix") {
   const actualSteps = program.stages.flatMap(s => s.steps);
   const expectedSteps = reference.stages.flatMap(s => s.steps);
   check("Número de pasos", actualSteps.length, expectedSteps.length, 0, "pasos");
@@ -48,6 +55,8 @@ export function verifyPractice(program: Program, mix: MasterMixSettings, exercis
     const correct = actual !== undefined && (step.time === 0 ? actual.time === 0 : actual.time > 0 && Math.abs(actual.time - step.time) <= Math.max(5, step.time * 0.1));
     checks.push({ label: `Col. ${index + 1} · duración`, correct, detail: `${actual ? formatTime(actual.time) : "—"} · esperado ${formatTime(step.time)}` });
   });
+  }
+  if (mode !== "cycler" && mix) {
   const polName = POLYMERASES.find(p => p.id === target.input.polymeraseId)?.name ?? target.input.polymeraseId;
   checks.push({ label: "Master mix · polimerasa", correct: mix.input.polymeraseId === target.input.polymeraseId, detail: `Esperada: ${polName}` });
   check("Master mix · volumen", mix.volume, target.volume, 0.01, "µL");
@@ -69,6 +78,7 @@ export function verifyPractice(program: Program, mix: MasterMixSettings, exercis
     if (expected !== undefined) check(`Master mix · ${label}`, mix.options[key], expected, 0.001, unit);
   });
   checks.push({ label: "Master mix · balance de volúmenes", correct: !masterMix(mix.input, mix.volume, mix.samples, mix.options).overflow, detail: "La suma de reactivos y molde no debe superar el volumen por reacción." });
+  } else if (mode !== "cycler") checks.push({ label: "Master mix", correct: false, detail: "Falta preparar la mezcla." });
   const score = Math.round(checks.filter(c => c.correct).length / checks.length * 100);
   return { checks, score, correct: checks.every(c => c.correct) };
 }
@@ -93,13 +103,14 @@ export interface PublicCase {
   skeleton: Program;
   samples: number;
   volume: number;
+  mode: PracticeMode;
 }
 
 /** Oculta la solución: conserva etapas, nombres y holds, pero no temperaturas, tiempos ni ciclos. */
 export function toPublic(c: PracticeCase): PublicCase {
   const p = c.program;
   return {
-    id: c.id, title: c.title, statement: c.statement, samples: c.mix.samples, volume: c.mix.volume,
+    id: c.id, title: c.title, statement: c.statement, samples: c.mix.samples, volume: c.mix.volume, mode: c.mode ?? "both",
     skeleton: { ...p, stages: p.stages.map(st => ({ ...st, repeats: st.repeats > 1 ? 10 : 1,
       steps: st.steps.map(s => ({ id: s.id, label: s.label, temp: s.time === 0 ? 20 : 50, time: s.time === 0 ? 0 : 10 })) })) },
   };

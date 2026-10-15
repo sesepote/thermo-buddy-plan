@@ -22,3 +22,17 @@ describe("ejercicios de termociclador y master mix", () => {
     });
   }
 });
+
+describe("modos de ejercicio", () => {
+  const base = CASES[0]!;
+  it("solo termociclador ignora la mezcla", () => {
+    const r = verifyPractice(base.program, null, { ...base, mode: "cycler" });
+    expect(r.score).toBe(100);
+    expect(r.checks.some(c => c.label.startsWith("Master mix"))).toBe(false);
+  });
+  it("solo master mix ignora el programa", () => {
+    const r = verifyPractice(toPublic(base).skeleton, base.mix, { ...base, mode: "mix" });
+    expect(r.score).toBe(100);
+    expect(r.checks.every(c => c.label.startsWith("Master mix"))).toBe(true);
+  });
+});
