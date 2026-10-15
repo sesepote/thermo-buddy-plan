@@ -187,7 +187,6 @@ function ExerciseCreator({ onBack, onSave }: { onBack: () => void; onSave: (c: P
         </select>
       </label>
     </div>
-    <p className="text-sm text-muted-foreground">Ajusta el gráfico y la mezcla con los valores <strong>correctos</strong>: el alumno deberá reproducirlos.</p>
     <EditableProfile program={program} onChange={setProgram} volume={mix?.volume} />
     <section aria-label="Master mix correcto" className="border-t pt-5"><MasterMixCalculator onChange={reportMix} /></section>
     <section className="grid gap-4 border-y py-5">
