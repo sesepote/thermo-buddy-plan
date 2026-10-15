@@ -13,7 +13,7 @@ export const listExercises = createServerFn({ method: "GET" }).handler(async () 
 });
 
 export const verifyExercise = createServerFn({ method: "POST" })
-  .inputValidator((d: { id: string; program: Program; mix: MasterMixSettings }) => d)
+  .inputValidator((d: { id: string; program: Program; mix: MasterMixSettings | null }) => d)
   .handler(async ({ data }) => {
     const { readCases } = await import("./ejercicios.server");
     const exercise = (await readCases()).find(c => c.id === data.id);
