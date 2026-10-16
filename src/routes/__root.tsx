@@ -140,6 +140,12 @@ function RootComponent() {
     void registerOffline();
   }, []);
 
+  // Aplica el tema guardado como clase en <html> (tras rehidratar, sin desajustes SSR).
+  const theme = useApp((s) => s.theme);
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", theme === "light");
+  }, [theme]);
+
   useEffect(() => {
     // El reloj del instrumento sigue avanzando aunque se visite el menú.
     let previous = performance.now();

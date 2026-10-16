@@ -2,6 +2,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function ScreenHeader({ title, subtitle, actions }: { title: string; subtitle?: string | undefined; actions?: ReactNode }) {
   return (
@@ -13,7 +14,10 @@ export function ScreenHeader({ title, subtitle, actions }: { title: string; subt
         <h1 className="truncate text-xl font-semibold tracking-tight">{title}</h1>
         {subtitle && <p className="truncate text-sm text-muted-foreground">{subtitle}</p>}
       </div>
-      {actions && <div className="ml-auto flex shrink-0 items-center gap-2">{actions}</div>}
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        {actions}
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

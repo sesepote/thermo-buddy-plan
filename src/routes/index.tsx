@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Thermometer, Calculator, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { PcrBackdrop } from "@/components/sim/PcrBackdrop";
+import { ThemeToggle } from "@/components/sim/ThemeToggle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -60,6 +61,7 @@ function MainMenu() {
   return (
     <StatusBars section="MENÚ" menu>
       <PcrBackdrop />
+      <ThemeToggle className="fixed right-4 bottom-4 z-20" />
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
       <nav aria-label="Menú principal" className="menu-spheres">
