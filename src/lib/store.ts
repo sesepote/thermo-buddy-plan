@@ -31,6 +31,9 @@ interface AppState {
   saveProgram: (p: Program) => void;
   deleteProgram: (id: string) => void;
   addAttempt: (a: Attempt) => void;
+  /** Tema visual: oscuro por defecto, claro opcional. */
+  theme: "dark" | "light";
+  toggleTheme: () => void;
 }
 
 export const useApp = create<AppState>()(
@@ -53,6 +56,8 @@ export const useApp = create<AppState>()(
           return { programs, activeId: s.activeId === id ? (programs[0]?.id ?? "") : s.activeId };
         }),
       addAttempt: (a) => set((s) => ({ attempts: [...s.attempts, a] })),
+      theme: "dark",
+      toggleTheme: () => set((s) => ({ theme: s.theme === "dark" ? "light" : "dark" })),
     }),
     {
       name: "termociclador-sim",
