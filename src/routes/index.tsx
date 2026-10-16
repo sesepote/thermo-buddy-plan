@@ -61,7 +61,7 @@ function MainMenu() {
   return (
     <StatusBars section="MENÚ" menu>
       <PcrBackdrop />
-      <ThemeToggle className="fixed right-4 bottom-4 z-20" />
+      <ThemeToggle className="absolute right-4 top-4 z-30" />
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
       <nav aria-label="Menú principal" className="menu-spheres">
