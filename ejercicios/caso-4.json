@@ -1,0 +1,107 @@
+{
+  "id": "caso-jgd7ewwfsyzb",
+  "title": "Test",
+  "mode": "both",
+  "statement": [
+    "test del test del anterior test"
+  ],
+  "program": {
+    "id": "b7w20u8lpsno",
+    "name": "Test",
+    "lidTemp": 105,
+    "rampRate": 3,
+    "stages": [
+      {
+        "id": "labhewcwpsno",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "zp4k1540psno",
+            "label": "Desnaturalización inicial",
+            "temp": 95,
+            "time": 120
+          }
+        ]
+      },
+      {
+        "id": "34pj6xdcpsno",
+        "repeats": 25,
+        "steps": [
+          {
+            "id": "pxa4ui0cpsno",
+            "label": "Desnaturalización",
+            "temp": 95,
+            "time": 30
+          },
+          {
+            "id": "xhirpfdbpsno",
+            "label": "Anillamiento",
+            "temp": 58,
+            "time": 30
+          },
+          {
+            "id": "d6e60u2ppsno",
+            "label": "Extensión",
+            "temp": 72,
+            "time": 60
+          }
+        ]
+      },
+      {
+        "id": "draqfvvspsno",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "2zs49d36psno",
+            "label": "Extensión final",
+            "temp": 72,
+            "time": 300
+          }
+        ]
+      },
+      {
+        "id": "ghdncgd8psno",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "yiyqhmo3psno",
+            "label": "Conservación",
+            "temp": 4,
+            "time": 0
+          }
+        ]
+      }
+    ]
+  },
+  "mix": {
+    "input": {
+      "reaction": "standard",
+      "polymeraseId": "taq",
+      "fwdSeq": "AGCGGATAACAATTTCACACAGGA",
+      "revSeq": "GTAAAACGACGGCCAGTGAATTC",
+      "fwdTm": 60,
+      "revTm": 60,
+      "ampliconBp": 1000,
+      "template": "plasmid",
+      "highGC": false,
+      "additives": {
+        "dmso": 0,
+        "formamide": 0,
+        "extraMg": 0
+      },
+      "mgMM": 1.5
+    },
+    "volume": 50,
+    "samples": 8,
+    "options": {
+      "templateUL": 1,
+      "enzymeStockU": 5,
+      "enzymeUnits": 1.25,
+      "primerStockUM": 10,
+      "primerFinalUM": 0.5,
+      "dntpStockMM": 10,
+      "dntpFinalMM": 0.2,
+      "mgStockMM": 25
+    }
+  }
+}
