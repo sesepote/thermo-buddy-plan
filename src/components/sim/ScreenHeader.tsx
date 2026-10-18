@@ -3,12 +3,15 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./ThemeToggle";
+import { LanguageToggle } from "./LanguageToggle";
+import { useT } from "@/lib/i18n";
 
 export function ScreenHeader({ title, subtitle, actions }: { title: string; subtitle?: string | undefined; actions?: ReactNode }) {
+  const t = useT();
   return (
     <header className="flex items-center gap-4 border-b bg-panel px-4 py-3">
       <Link to="/" className="hw-key flex h-12 items-center gap-1 rounded-md px-4 text-base">
-        <ChevronLeft className="size-5" /> Menú
+        <ChevronLeft className="size-5" /> {t.common.menu}
       </Link>
       <div className="min-w-0">
         <h1 className="truncate text-xl font-semibold tracking-tight">{title}</h1>
@@ -16,6 +19,7 @@ export function ScreenHeader({ title, subtitle, actions }: { title: string; subt
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-2">
         {actions}
+        <LanguageToggle />
         <ThemeToggle />
       </div>
     </header>

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ChevronLeft, Search, X } from "lucide-react";
+import { useT } from "@/lib/i18n";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { GLOSSARY, GLOSSARY_CATEGORIES, GLOSSARY_SOURCE } from "@/lib/pcr/glossary";
 
@@ -39,7 +40,7 @@ function GlossaryPage() {
   const count = groups.reduce((n, g) => n + g.items.length, 0);
 
   return (
-    <StatusBars section="GLOSARIO">
+    <StatusBars section={useT().sections.glossary}>
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4">
         <div className="flex items-center gap-3">
           <Link to="/" className="hw-key flex h-12 items-center gap-1 rounded-md px-4 text-base">

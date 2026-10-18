@@ -3,6 +3,8 @@ import { Thermometer, Calculator, GraduationCap, BookOpen, type LucideIcon } fro
 import { StatusBars } from "@/components/sim/StatusBars";
 import { PcrBackdrop } from "@/components/sim/PcrBackdrop";
 import { ThemeToggle } from "@/components/sim/ThemeToggle";
+import { LanguageToggle } from "@/components/sim/LanguageToggle";
+import { useT, type Translations } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,7 +31,7 @@ export const Route = createFileRoute("/")({
 interface Sphere {
   to: "/calculadora" | "/termociclador" | "/entrenamiento" | "/glosario";
   icon: LucideIcon;
-  title: string[];
+  title: keyof Translations["menu"];
   center?: boolean; // módulo principal: esfera mayor, en el medio
 }
 
@@ -37,34 +39,35 @@ const SPHERES: Sphere[] = [
   {
     to: "/calculadora",
     icon: Calculator,
-    title: ["Calculadora de", "protocolos"],
+    title: "calculator",
   },
   {
     to: "/termociclador",
     icon: Thermometer,
-    title: ["Termociclador"],
+    title: "cycler",
     center: true,
   },
   {
     to: "/entrenamiento",
     icon: GraduationCap,
-     title: ["Ejercicios"],
+     title: "exercises",
   },
   {
     to: "/glosario",
     icon: BookOpen,
-    title: ["Glosario"],
+    title: "glossary",
   },
 ];
 
 function MainMenu() {
+  const t = useT();
   return (
-    <StatusBars section="MENÚ" menu>
+    <StatusBars section={t.sections.menu} menu>
       <PcrBackdrop />
-      <ThemeToggle className="absolute right-4 top-4 z-30" />
+      <div className="absolute right-4 top-4 z-30 flex gap-2"><LanguageToggle /><ThemeToggle /></div>
 
       {/* En pantallas estrechas el termociclador queda entre los otros dos. */}
-      <nav aria-label="Menú principal" className="menu-spheres">
+      <nav aria-label={t.menu.nav} className="menu-spheres">
         {SPHERES.map(({ to, icon: Icon, title, center }) => (
           <Link
             key={to}
@@ -99,7 +102,7 @@ function MainMenu() {
                 center ? "px-3 text-base font-bold sm:px-8 sm:text-2xl md:text-3xl" : "px-3 text-sm font-medium sm:px-6 sm:text-lg"
               }`}
             >
-              {title.map((line) => (
+              {(t.menu[title] as string[]).map((line) => (
                 <span key={line} className="block">
                   {line}
                 </span>
@@ -107,7 +110,7 @@ function MainMenu() {
             </h2>
             {center && (
               <p className="mt-2 text-[9px] font-medium text-ice/60 uppercase sm:mt-4 sm:text-[11px]">
-                Simulador principal
+                {t.menu.main}
               </p>
             )}
           </Link>
