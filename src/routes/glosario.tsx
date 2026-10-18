@@ -46,7 +46,7 @@ function GlossaryPage() {
           <Link to="/" className="hw-key flex h-12 items-center gap-1 rounded-md px-4 text-base">
             <ChevronLeft className="size-5" /> Menú
           </Link>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Glosario</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">{useT().titles.glossary}</h1>
           <span className="ml-auto font-mono text-sm text-muted-foreground">{count} términos</span>
         </div>
 
