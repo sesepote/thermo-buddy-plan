@@ -109,6 +109,7 @@ function Thermocycler() {
   const temp = active && status !== "preheating" ? state.temp : AMBIENT;
   const remaining = Math.max(0, total - simTime);
   useEffect(() => { if (!program) return; setVolume(program.sampleVolume ?? 25); setLidEnabled(program.lidHeatingEnabled !== false); setLidTarget(program.lidTemp); }, [program?.id]);
+  const t = useT();
   if (!program) return null;
 
   const updateStepAt = (position: StepPosition, patch: Partial<Step>) => {
@@ -154,7 +155,7 @@ function Thermocycler() {
   const openSave = () => { setName(`${program.name} (copia)`); setDescription(program.description ?? ""); setModal("save"); };
   const metric = (label: string, value: string, sub: string, accent = false) => <div className="min-w-0 border-b border-border pb-2 sm:border-b-0"><p className="font-mono text-[10px] uppercase text-muted-foreground">{label}</p><strong className={cn("block font-mono text-2xl tabular-nums sm:text-3xl", accent ? "text-lcd-foreground" : "text-foreground")}>{value}</strong><p className="truncate font-mono text-[11px] text-muted-foreground">{sub}</p></div>;
 
-  return <StatusBars section={useT().sections.cycler}>
+  return <StatusBars section={t.sections.cycler}>
     <div className={cn("mx-auto flex w-full flex-1 flex-col", chassis ? "max-w-6xl border-x-4 border-panel-raised bg-background shadow-2xl" : "max-w-7xl")}>
       {chassis && <div className="flex items-center justify-between border-b-4 border-panel-raised bg-secondary px-4 py-3 font-mono text-xs font-bold"><span>T5000-96 · GRADIENT THERMAL CYCLER</span><span className="text-run">● POWER <span className="ml-3 text-amber">● LID HEAT</span></span></div>}
       {/* La cabecera y las teclas replican las funciones del instrumento, sin duplicar las barras globales. */}
