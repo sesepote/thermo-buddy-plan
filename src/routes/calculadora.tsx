@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { AlertTriangle, Send, Info, ChevronRight, ChevronDown, Timer } from "lucide-react";
 import { MasterMixCalculator } from "@/components/sim/MasterMixCalculator";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
+import { useT } from "@/lib/i18n";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { OptionPopup } from "@/components/sim/OptionPopup";
@@ -141,8 +142,8 @@ function Calculator() {
   ].join(" · ");
 
   return (
-    <StatusBars section="CALCULADORA">
-      <ScreenHeader title="Calculadora de protocolos" />
+    <StatusBars section={useT().sections.calculator}>
+      <ScreenHeader title={useT().titles.calculator} />
       {/* Pestañas táctiles: protocolo completo o solo master mix. */}
       <div className="flex gap-2 px-4 pt-3">
         {([["protocolo", "Protocolo PCR"], ["mastermix", "Master mix"]] as const).map(([id, label]) => (

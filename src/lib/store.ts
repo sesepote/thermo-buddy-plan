@@ -34,6 +34,9 @@ interface AppState {
   /** Tema visual: oscuro por defecto, claro opcional. */
   theme: "dark" | "light";
   toggleTheme: () => void;
+  /** Idioma de la interfaz. */
+  language: "es" | "en";
+  setLanguage: (l: "es" | "en") => void;
 }
 
 export const useApp = create<AppState>()(
@@ -58,6 +61,8 @@ export const useApp = create<AppState>()(
       addAttempt: (a) => set((s) => ({ attempts: [...s.attempts, a] })),
       theme: "dark",
       toggleTheme: () => set((s) => ({ theme: s.theme === "dark" ? "light" : "dark" })),
+      language: "es",
+      setLanguage: (language) => set({ language }),
     }),
     {
       name: "termociclador-sim",
