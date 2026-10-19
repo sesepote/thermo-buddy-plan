@@ -184,7 +184,7 @@ function Thermocycler() {
   return <StatusBars section={t.sections.cycler}>
     {/* Modo chasis: carcasa del equipo con pantalla táctil integrada, sin elementos de la web. */}
     {chassis && <div className="fixed inset-0 z-30 flex items-center justify-center bg-background p-2 sm:p-6">
-      <Button variant="outline" className="absolute right-3 top-3 z-10 h-12" onClick={() => setChassis(false)}><X /> Salir del modo chasis</Button>
+      <Button variant="outline" className="absolute bottom-3 right-3 z-10 h-12" onClick={() => setChassis(false)}><X /> Salir del modo chasis</Button>
       <div className="flex h-full max-h-[920px] w-full max-w-6xl flex-col rounded-[2rem] border border-border bg-secondary p-4 shadow-2xl sm:p-6">
         <div className="mb-3 flex items-center justify-between px-2"><span className="font-display text-xl font-bold tracking-tight">T5000<span className="ml-2 font-normal text-muted-foreground">Thermal Cycler</span></span><span className={cn("h-2 w-8 rounded-full", status === "running" || status === "preheating" ? "bg-run" : "bg-run/40")} /></div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border-[10px] border-panel-raised bg-panel shadow-inner">
