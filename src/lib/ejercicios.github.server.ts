@@ -6,7 +6,7 @@
 
 export function githubConfig() {
   const token = process.env["GITHUB_TOKEN"];
-  const repo = process.env["GITHUB_REPO"];
+  const repo = process.env["sesepote/thermo-buddy-plan"];
   if (!token || !repo) return null;
   return { token, repo: repo.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""), branch: process.env["GITHUB_BRANCH"] || "main" };
 }
