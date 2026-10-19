@@ -99,3 +99,72 @@ export async function writeJsonFolder(folder: string, prefix: string, items: unk
   for (const n of await fs.readdir(d)) if (fileRe(prefix).test(n)) await fs.unlink(p.join(d, n));
   for (const [i, c] of items.entries()) await fs.writeFile(p.join(d, `${prefix}-${i + 1}.json`), JSON.stringify(c, null, 2) + "\n");
 }
+
+/* ---- Carpetas con archivos nombrados (p. ej. perfiles/<nombre>.json) ---- */
+
+/** Convierte un nombre en un nombre de archivo seguro: "qPCR SYBR" → "qPCR-SYBR". */
+export function fileSlug(name: string) {
+  return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "perfil";
+}
+
+/** Asigna a cada elemento `nombre.json`, añadiendo -2, -3… si se repite. */
+function namedPaths(folder: string, names: string[]) {
+  const used = new Set<string>();
+  return names.map(n => {
+    const base = fileSlug(n);
+    let f = base, k = 2;
+    while (used.has(f.toLowerCase())) f = `${base}-${k++}`;
+    used.add(f.toLowerCase());
+    return `${folder}/${f}.json`;
+  });
+}
+
+const jsonRe = /\.json$/i;
+
+export async function readNamedFolder(folder: string, bundled: Record<string, unknown>): Promise<unknown[]> {
+  const cfg = githubConfig();
+  if (cfg) {
+    try {
+      const ref = `?ref=${encodeURIComponent(cfg.branch)}`;
+      const items = await gh<{ name: string; path: string }[]>(cfg, `/contents/${folder}${ref}`);
+      const files = items.filter(i => jsonRe.test(i.name)).sort((a, b) => a.name.localeCompare(b.name));
+      return await Promise.all(files.map(async f => JSON.parse(b64((await gh<{ content: string }>(cfg, `/contents/${f.path}${ref}`)).content)) as unknown));
+    } catch { /* usa la copia incluida */ }
+  }
+  try {
+    const fs = await import("node:fs/promises");
+    const p = await import("node:path");
+    const d = p.join(process.cwd(), folder);
+    await fs.mkdir(d, { recursive: true });
+    const names = (await fs.readdir(d)).filter(n => jsonRe.test(n)).sort((a, b) => a.localeCompare(b));
+    return await Promise.all(names.map(async n => JSON.parse(await fs.readFile(p.join(d, n), "utf8")) as unknown));
+  } catch {
+    return Object.entries(bundled).sort(([x], [y]) => x.localeCompare(y)).map(([, c]) => c);
+  }
+}
+
+export async function writeNamedFolder(folder: string, items: { name: string }[], message: string) {
+  const paths = namedPaths(folder, items.map(i => i.name));
+  const cfg = githubConfig();
+  if (cfg) {
+    const ref = await gh<{ object: { sha: string } }>(cfg, `/git/ref/heads/${cfg.branch}`);
+    const commit = await gh<{ tree: { sha: string } }>(cfg, `/git/commits/${ref.object.sha}`);
+    const tree = await gh<{ tree: { path: string; type: string }[] }>(cfg, `/git/trees/${commit.tree.sha}?recursive=1`);
+    const keep = new Set(paths);
+    const entries: Record<string, unknown>[] = tree.tree
+      .filter(t => t.type === "blob" && t.path.startsWith(`${folder}/`) && jsonRe.test(t.path) && !keep.has(t.path))
+      .map(t => ({ path: t.path, mode: "100644", type: "blob", sha: null }));
+    items.forEach((c, i) => entries.push({ path: paths[i], mode: "100644", type: "blob", content: JSON.stringify(c, null, 2) + "\n" }));
+    const newTree = await gh<{ sha: string }>(cfg, `/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries }) });
+    const newCommit = await gh<{ sha: string }>(cfg, `/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: newTree.sha, parents: [ref.object.sha] }) });
+    await gh(cfg, `/git/refs/heads/${cfg.branch}`, { method: "PATCH", body: JSON.stringify({ sha: newCommit.sha }) });
+    return;
+  }
+  const err = "Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO.";
+  let fs, p;
+  try { fs = await import("node:fs/promises"); p = await import("node:path"); } catch { throw new Error(err); }
+  const d = p.join(process.cwd(), folder);
+  try { await fs.mkdir(d, { recursive: true }); } catch { throw new Error(err); }
+  for (const n of await fs.readdir(d)) if (jsonRe.test(n)) await fs.unlink(p.join(d, n));
+  for (const [i, c] of items.entries()) await fs.writeFile(p.join(process.cwd(), paths[i]!), JSON.stringify(c, null, 2) + "\n");
+}
