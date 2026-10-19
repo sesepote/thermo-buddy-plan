@@ -1,6 +1,6 @@
 /**
  * Perfiles guardados del termociclador en la carpeta `perfiles/` (solo servidor),
- * un archivo `perfil-N.json` por programa. Mismo almacenamiento que los ejercicios.
+ * un archivo `<nombre del perfil>.json` por programa. Mismo almacenamiento que los ejercicios.
  */
 import type { Program } from "./pcr/types";
 
@@ -14,11 +14,11 @@ export function isProgram(x: unknown): x is Program {
 }
 
 export async function readProfiles(): Promise<Program[]> {
-  const { readJsonFolder } = await import("./ejercicios.github.server");
-  return (await readJsonFolder("perfiles", "perfil", bundled)).filter(isProgram);
+  const { readNamedFolder } = await import("./ejercicios.github.server");
+  return (await readNamedFolder("perfiles", bundled)).filter(isProgram);
 }
 
 export async function writeProfiles(list: Program[], message: string) {
-  const { writeJsonFolder } = await import("./ejercicios.github.server");
-  return writeJsonFolder("perfiles", "perfil", list, message);
+  const { writeNamedFolder } = await import("./ejercicios.github.server");
+  return writeNamedFolder("perfiles", list, message);
 }
