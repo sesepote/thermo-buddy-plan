@@ -249,3 +249,28 @@
   .pcr-helix, .pcr-trace, .pcr-helix-echo, .pcr-glow, .pcr-bubble, .pcr-mol, .pcr-drift, .page-slide-left, .page-slide-right { animation: none; }
   .menu-sphere { transition: none; }
 }
+
+/* Ventanas del modo chasis: teclas de membrana rectas con relieve, sin aspecto web. */
+.chassis-dialog button, .chassis-dialog input, .chassis-dialog textarea, .chassis-dialog select, .chassis-dialog label[class*="border-dashed"] {
+  border-radius: 2px;
+}
+.chassis-dialog button, .chassis-key {
+  background: var(--color-screen-tile);
+  color: var(--color-screen-foreground);
+  border: 1px solid var(--color-screen-bar);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--color-screen-tile) 60%, white), inset 0 -2px 0 color-mix(in oklab, var(--color-screen-bar) 35%, transparent);
+  font-weight: 600;
+}
+.chassis-dialog button:active, .chassis-key:active { transform: translateY(1px); box-shadow: inset 0 2px 3px color-mix(in oklab, var(--color-screen-bar) 40%, transparent); }
+.chassis-dialog button[aria-pressed="true"], .chassis-dialog button.bg-primary, .chassis-dialog button[class*="bg-run"] {
+  background: var(--color-screen-bar); color: var(--color-screen-bar-foreground);
+}
+.chassis-dialog button:disabled { opacity: .45; }
+.chassis-dialog input, .chassis-dialog textarea, .chassis-dialog select {
+  background: var(--color-screen-tile); color: var(--color-screen-foreground); border: 1px solid var(--color-screen-bar);
+  box-shadow: inset 0 2px 3px color-mix(in oklab, var(--color-screen-bar) 25%, transparent);
+}
+.chassis-dialog .border-border, .chassis-dialog [class*="border-b"] { border-color: color-mix(in oklab, var(--color-screen-bar) 35%, transparent); }
+.chassis-dialog .text-muted-foreground { color: color-mix(in oklab, var(--color-screen-foreground) 65%, transparent); }
+.chassis-dialog .text-ice { color: var(--color-screen-foreground); }
+.chassis-key { background: transparent; border-color: transparent; box-shadow: none; color: var(--color-screen-bar-foreground); }
