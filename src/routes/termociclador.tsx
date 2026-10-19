@@ -104,10 +104,10 @@ function Thermocycler() {
   const profiles = Route.useLoaderData();
   const saveFile = useServerFn(saveProfile);
   const removeFile = useServerFn(deleteProfile);
-  const [password, setPassword] = useState<string | null>(null);
   const [asking, setAsking] = useState<null | ((pw: string) => void)>(null);
   const [fileMsg, setFileMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const withPassword = (then: (pw: string) => void) => (password ? then(password) : setAsking(() => (pw: string) => { setPassword(pw); then(pw); }));
+  /** Cada guardado o borrado en `perfiles/` pide siempre la contraseña (no se recuerda). */
+  const withPassword = (then: (pw: string) => void) => setAsking(() => then);
   const storeProfile = (p: Program) => withPassword(async pw => {
     const r = await saveFile({ data: { password: pw, program: p } });
     setFileMsg(r.ok ? { ok: true, text: `«${p.name}» guardado en perfiles` } : { ok: false, text: r.error });
