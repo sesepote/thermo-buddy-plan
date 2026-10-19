@@ -3,7 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useState } from "react";
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, FlaskConical, Trophy, Lock, Trash2, Save } from "lucide-react";
 import { OptionPopup } from "@/components/sim/OptionPopup";
-import { listExercises, verifyExercise, checkExercisePassword, createExercise, deleteExercise } from "@/lib/ejercicios.functions";
+import { listExercises, verifyExercise, createExercise, deleteExercise } from "@/lib/ejercicios.functions";
+import { PasswordDialog } from "@/components/sim/PasswordDialog";
 import { Button } from "@/components/ui/button";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { useT } from "@/lib/i18n";
@@ -91,23 +92,6 @@ function Exercises() {
   </StatusBars>;
 }
 
-/** Pide la contraseña del docente; se comprueba en el servidor. */
-function PasswordDialog({ onOk, onClose }: { onOk: (pw: string) => void; onClose: () => void }) {
-  const check = useServerFn(checkExercisePassword);
-  const [value, setValue] = useState("");
-  const [error, setError] = useState(false);
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const r = await check({ data: { password: value } });
-    if (r.ok) onOk(value); else setError(true);
-  };
-  return <OptionPopup onClose={onClose} content={{ title: "Acceso de docente", subtitle: "Introduce la contraseña para crear o eliminar ejercicios.", body:
-    <form onSubmit={e => void submit(e)} className="grid gap-3">
-      <input autoFocus type="password" autoComplete="off" value={value} onChange={e => { setValue(e.target.value); setError(false); }} aria-label="Contraseña" className="h-12 rounded-md border bg-background px-3 text-base" />
-      {error && <p className="text-sm text-destructive">Contraseña incorrecta</p>}
-      <Button type="submit" className="h-12 bg-run text-run-foreground">Entrar</Button>
-    </form> }} />;
-}
 
 /** Gráfico editable compartido por el alumno y el creador de ejercicios. */
 function EditableProfile({ program, onChange, volume }: { program: Program; onChange: (p: Program) => void; volume?: number | undefined }) {

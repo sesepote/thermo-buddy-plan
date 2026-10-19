@@ -1,0 +1,74 @@
+{
+  "id": "demo-qpcr",
+  "name": "qPCR SYBR",
+  "lidTemp": 105,
+  "rampRate": 3,
+  "stages": [
+    {
+      "id": "demo-qpcr-2",
+      "repeats": 1,
+      "steps": [
+        {
+          "id": "demo-qpcr-1",
+          "label": "Activación inicial",
+          "temp": 95,
+          "time": 300
+        }
+      ]
+    },
+    {
+      "id": "demo-qpcr-5",
+      "repeats": 40,
+      "steps": [
+        {
+          "id": "demo-qpcr-3",
+          "label": "Desnaturalización",
+          "temp": 95,
+          "time": 15
+        },
+        {
+          "id": "demo-qpcr-4",
+          "label": "Anillamiento/extensión + lectura",
+          "temp": 58,
+          "time": 60
+        }
+      ]
+    },
+    {
+      "id": "demo-qpcr-9",
+      "repeats": 1,
+      "steps": [
+        {
+          "id": "demo-qpcr-6",
+          "label": "Curva de fusión: 95 °C",
+          "temp": 95,
+          "time": 15
+        },
+        {
+          "id": "demo-qpcr-7",
+          "label": "Curva de fusión: 65 °C",
+          "temp": 65,
+          "time": 60
+        },
+        {
+          "id": "demo-qpcr-8",
+          "label": "Curva de fusión: 95 °C",
+          "temp": 95,
+          "time": 15
+        }
+      ]
+    },
+    {
+      "id": "demo-qpcr-11",
+      "repeats": 1,
+      "steps": [
+        {
+          "id": "demo-qpcr-10",
+          "label": "Conservación",
+          "temp": 4,
+          "time": 0
+        }
+      ]
+    }
+  ]
+}
