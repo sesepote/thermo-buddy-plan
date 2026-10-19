@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ChevronLeft, Search, X } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { LanguageToggle } from "@/components/sim/LanguageToggle";
+import { ThemeToggle } from "@/components/sim/ThemeToggle";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { GLOSSARY, GLOSSARY_CATEGORIES, GLOSSARY_SOURCE } from "@/lib/pcr/glossary";
 
@@ -48,6 +50,8 @@ function GlossaryPage() {
           </Link>
           <h1 className="font-display text-2xl font-bold tracking-tight">{useT().titles.glossary}</h1>
           <span className="ml-auto font-mono text-sm text-muted-foreground">{count} términos</span>
+          <LanguageToggle />
+          <ThemeToggle />
         </div>
 
         <p className="text-sm text-muted-foreground">
