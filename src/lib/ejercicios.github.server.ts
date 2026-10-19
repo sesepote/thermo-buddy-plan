@@ -166,5 +166,5 @@ export async function writeNamedFolder(folder: string, items: { name: string }[]
   const d = p.join(process.cwd(), folder);
   try { await fs.mkdir(d, { recursive: true }); } catch { throw new Error(err); }
   for (const n of await fs.readdir(d)) if (jsonRe.test(n)) await fs.unlink(p.join(d, n));
-  for (const [i, c] of items.entries()) await fs.writeFile(p.join(process.cwd(), paths[i]), JSON.stringify(c, null, 2) + "\n");
+  for (const [i, c] of items.entries()) await fs.writeFile(p.join(process.cwd(), paths[i]!), JSON.stringify(c, null, 2) + "\n");
 }
