@@ -1,0 +1,81 @@
+{
+  "id": "h84cu1bzep2h",
+  "name": "Programa testado",
+  "description": "35 ciclos, gradiente de 50 a 60 °C",
+  "lidTemp": 105,
+  "lidHeatingEnabled": true,
+  "sampleVolume": 50,
+  "rampRate": 3.5,
+  "stages": [
+    {
+      "id": "9dywx616ep2h",
+      "repeats": 1,
+      "steps": [
+        {
+          "id": "j2jr0r7bep2h",
+          "label": "Desnaturalización inicial",
+          "temp": 95,
+          "time": 180
+        }
+      ]
+    },
+    {
+      "id": "vkb2u3ofep2h",
+      "repeats": 35,
+      "steps": [
+        {
+          "id": "vlq4xol8ep2h",
+          "label": "Desnaturalización",
+          "temp": 95,
+          "time": 30
+        },
+        {
+          "id": "b3m2elyfep2h",
+          "label": "Anillamiento",
+          "temp": 55,
+          "time": 30,
+          "gradient": {
+            "low": 50,
+            "high": 60
+          }
+        }
+      ]
+    },
+    {
+      "id": "qujpdio7ep2h",
+      "repeats": 1,
+      "steps": [
+        {
+          "id": "u6l0rhtgep2h",
+          "label": "Extensión",
+          "temp": 72,
+          "time": 60
+        }
+      ]
+    },
+    {
+      "id": "tqcer5e2ep2h",
+      "repeats": 1,
+      "steps": [
+        {
+          "id": "emaz87reep2h",
+          "label": "Extensión final",
+          "temp": 72,
+          "time": 300
+        }
+      ]
+    },
+    {
+      "id": "kqkjapswep2h",
+      "repeats": 1,
+      "steps": [
+        {
+          "id": "m74u1zlzep2h",
+          "label": "Conservación",
+          "temp": 4,
+          "time": 0
+        }
+      ]
+    }
+  ]
+}
