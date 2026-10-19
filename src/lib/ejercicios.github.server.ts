@@ -4,11 +4,15 @@
  * Cada cambio es un único commit en la carpeta indicada (`ejercicios/`, `perfiles/`).
  */
 
+/** Repositorio fijo donde se guardan ejercicios y perfiles. */
+const GITHUB_REPO = "sesepote/thermo-buddy-plan";
+
+/** Solo online (build de producción); en local con Vite se escribe en disco. */
 export function githubConfig() {
-  const token = process.env["GITHUB_TOKEN"];
-  const repo = process.env["sesepote/thermo-buddy-plan"];
-  if (!token || !repo) return null;
-  return { token, repo: repo.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""), branch: process.env["GITHUB_BRANCH"] || "main" };
+  if (import.meta.env.DEV) return null;
+  const token = process.env["GITHUB_TOKEN"]?.trim();
+  if (!token) return null;
+  return { token, repo: GITHUB_REPO, branch: process.env["GITHUB_BRANCH"]?.trim() || "main" };
 }
 export type GithubCfg = NonNullable<ReturnType<typeof githubConfig>>;
 
