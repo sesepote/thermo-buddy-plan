@@ -11,7 +11,7 @@
 
 ## Architecture rules
 - PCR logic (Tm, protocol generator, simulation, exercise evaluation) lives as pure functions in `src/lib/pcr/`; UI only calls them, so calculator and training share one rule set.
-- Exercises live as individual JSON files in root `ejercicios/`, accessed only by `src/lib/ejercicios.server.ts` via server functions (solutions verified server-side, teacher password server-only); when GITHUB_TOKEN/GITHUB_REPO exist, writes are single commits via the GitHub API (`ejercicios.github.server.ts`) because Cloudflare Pages has no writable disk.
+- Exercises live as individual JSON files in root `ejercicios/`, accessed only by `src/lib/ejercicios.server.ts` via server functions (solutions verified server-side, teacher password server-only); in production builds with GITHUB_TOKEN set (repo fixed in code; local Vite dev writes to disk), writes are single commits via the GitHub API (`ejercicios.github.server.ts`) because Cloudflare Pages has no writable disk.
 - Saved thermocycler profiles live as `perfiles/<profile name>.json` via `src/lib/perfiles.server.ts` (same GitHub/disk/bundled storage helpers in `ejercicios.github.server.ts`, teacher password for writes); the Zustand store only holds the working copy so step edits never trigger commits.
 - Apart from exercises, no backend: state is a Zustand store persisted to localStorage with `skipHydration`, rehydrated in `__root.tsx` to avoid SSR mismatches.
 - Must work offline on a touch kiosk: fonts via @fontsource, no CDN assets, service worker via vite-plugin-pwa registered only through `src/lib/pwa.ts`.
