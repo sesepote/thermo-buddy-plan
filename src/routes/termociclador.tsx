@@ -76,9 +76,9 @@ function fromOriginal(raw: z.infer<typeof originalSchema>): Program {
 type Modal = "library" | "save" | "settings" | "cycles" | "stop" | null;
 function ModalShell({ title, onClose, children, chassis = false }: { title: string; onClose: () => void; children: React.ReactNode; chassis?: boolean }) {
   // En modo chasis la ventana imita el firmware del equipo: barra de título azul, esquinas rectas y teclas de membrana.
-  if (chassis) return <div className="fixed inset-0 z-40 flex items-center justify-center bg-screen-bar/50 p-3" role="dialog" aria-modal="true" aria-label={title} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-    <div className="chassis-dialog flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[3px] border-2 border-screen-bar bg-screen text-screen-foreground">
-      <div className="flex items-center justify-between bg-screen-bar py-1 pl-3 pr-1 text-screen-bar-foreground"><h2 className="text-sm font-bold uppercase tracking-wide">{title}</h2><button type="button" aria-label="Cerrar" className="chassis-key flex size-10 items-center justify-center" onClick={onClose}><X className="size-5" /></button></div>
+  if (chassis) return <div className="fixed inset-0 z-40 flex items-center justify-center bg-screen-bar/30 p-3" role="dialog" aria-modal="true" aria-label={title} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="chassis-dialog flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-md">
+      <div className="flex items-center justify-between py-1 pl-3 pr-1"><h2 className="text-xs font-semibold">{title}</h2><button type="button" aria-label="Cerrar" className="chassis-key flex size-10 items-center justify-center" onClick={onClose}><X className="size-5" /></button></div>
       <div className="min-h-0 overflow-y-auto p-4">{children}</div>
     </div>
   </div>;
