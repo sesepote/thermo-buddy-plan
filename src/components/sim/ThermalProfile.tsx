@@ -7,8 +7,10 @@ import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export interface StepPosition { si: number; pi: number }
-export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onLoopRange, onTemperature, onTime, onRename, locked, showHeader = true }: {
+export function ThermalProfile({ program, selected, current, cycle, playhead, onSelect, onCycles, onLoopRange, onTemperature, onTime, onRename, locked, showHeader = true }: {
   program: Program; selected: StepPosition; current?: StepPosition | undefined; cycle?: number | undefined;
+  /** Avance dentro del paso actual: en rampa recorre el hueco desde el paso anterior, en meseta la línea del paso. */
+  playhead?: { kind: "ramp" | "hold"; frac: number } | undefined;
   onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onLoopRange: (si: number, start: number, end: number) => void; onTemperature: (p: StepPosition) => void; onTime: (p: StepPosition) => void; onRename?: ((p: StepPosition) => void) | undefined; locked: boolean;
   showHeader?: boolean;
 }) {
