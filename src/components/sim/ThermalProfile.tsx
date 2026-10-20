@@ -57,7 +57,7 @@ export function ThermalProfile({ program, selected, current, cycle, playhead, on
             const i = steps.findIndex(s => s.si === current.si && s.pi === current.pi); const p = points[i]; if (!p) return null;
             const from = playhead.kind === "ramp" ? (points[i - 1]?.x2 ?? left) : p.x1; const to = playhead.kind === "ramp" ? p.x1 : p.x2;
             const x = from + (to - from) * playhead.frac;
-            return <g aria-hidden="true"><line x1={x} x2={x} y1="40" y2="342" stroke="var(--run)" strokeWidth="2.5" /><path d={`M ${x - 7} 36 L ${x + 7} 36 L ${x} 46 Z`} fill="var(--run)" /></g>;
+            return <g aria-hidden="true"><line x1={x} x2={x} y1="40" y2="342" stroke="var(--amber)" strokeWidth="2.5" /><path d={`M ${x - 7} 36 L ${x + 7} 36 L ${x} 46 Z`} fill="var(--amber)" /></g>;
           })()}
           {steps.map(({ step, si, pi }, i) => { const p = points[i]; if (!p) return null; const active = current?.si === si && current?.pi === pi; const chosen = selected.si === si && selected.pi === pi;
             return <g key={step.id}>
