@@ -37,7 +37,7 @@ export function StatusBars({ section, menu = false, children }: { section: strin
         </div>
       </header>
 
-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain">
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-none">
         {children}
       </div>
 
