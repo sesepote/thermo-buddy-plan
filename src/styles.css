@@ -157,6 +157,11 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    /* Móvil: la pantalla queda pegada a los bordes, sin rebote ni franja blanca al arrastrar. */
+    overscroll-behavior: none;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    height: 100%;
     /* Kiosco táctil: sin selección accidental ni zoom por doble toque. */
     -webkit-user-select: none;
     user-select: none;
