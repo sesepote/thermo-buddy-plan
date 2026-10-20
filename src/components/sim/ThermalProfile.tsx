@@ -7,8 +7,10 @@ import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export interface StepPosition { si: number; pi: number }
-export function ThermalProfile({ program, selected, current, cycle, onSelect, onCycles, onLoopRange, onTemperature, onTime, onRename, locked, showHeader = true }: {
+export function ThermalProfile({ program, selected, current, cycle, playhead, onSelect, onCycles, onLoopRange, onTemperature, onTime, onRename, locked, showHeader = true }: {
   program: Program; selected: StepPosition; current?: StepPosition | undefined; cycle?: number | undefined;
+  /** Avance dentro del paso actual: en rampa recorre el hueco desde el paso anterior, en meseta la línea del paso. */
+  playhead?: { kind: "ramp" | "hold"; frac: number } | undefined;
   onSelect: (p: StepPosition) => void; onCycles: (si: number) => void; onLoopRange: (si: number, start: number, end: number) => void; onTemperature: (p: StepPosition) => void; onTime: (p: StepPosition) => void; onRename?: ((p: StepPosition) => void) | undefined; locked: boolean;
   showHeader?: boolean;
 }) {
@@ -50,6 +52,13 @@ export function ThermalProfile({ program, selected, current, cycle, onSelect, on
           {[4, 37, 55, 72, 95, 105].map(t => <g key={t}><line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeDasharray="4 5" /><text x={left - 8} y={y(t) + 5} textAnchor="end" fill="var(--lcd-foreground)" fontSize="15">{t}°</text></g>)}
           {loops.map(loop => <rect key={loop.stage.id} x={left + loop.start * span} y="43" width={(loop.end - loop.start + 1) * span} height="300" fill="var(--amber)" fillOpacity="0.045" stroke="var(--amber)" strokeOpacity="0.7" strokeDasharray="4 4" rx="5" />)}
           <path d={path} fill="none" stroke="var(--lcd-foreground)" strokeWidth="3" strokeLinejoin="round" />
+          {(() => { // Barra vertical de avance de la ejecución.
+            if (!playhead || !current) return null;
+            const i = steps.findIndex(s => s.si === current.si && s.pi === current.pi); const p = points[i]; if (!p) return null;
+            const from = playhead.kind === "ramp" ? (points[i - 1]?.x2 ?? left) : p.x1; const to = playhead.kind === "ramp" ? p.x1 : p.x2;
+            const x = from + (to - from) * playhead.frac;
+            return <g aria-hidden="true"><line x1={x} x2={x} y1="40" y2="342" stroke="var(--run)" strokeWidth="2.5" /><path d={`M ${x - 7} 36 L ${x + 7} 36 L ${x} 46 Z`} fill="var(--run)" /></g>;
+          })()}
           {steps.map(({ step, si, pi }, i) => { const p = points[i]; if (!p) return null; const active = current?.si === si && current?.pi === pi; const chosen = selected.si === si && selected.pi === pi;
             return <g key={step.id}>
               {chosen && <rect x={p.x1 - 7} y={p.y - 11} width={p.x2 - p.x1 + 14} height="22" rx="4" fill="var(--ice)" fillOpacity="0.24" stroke="var(--ice)" />}
