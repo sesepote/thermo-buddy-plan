@@ -71,6 +71,7 @@ export function verifyPractice(program: Program, mix: MasterMixSettings | null, 
     ["enzymeUnits", "Enzima por reacción", "U"], ["primerStockUM", "Stock de cebadores", "µM"],
     ["primerFinalUM", "Cebadores finales", "µM"], ["dntpStockMM", "Stock de dNTPs", "mM"],
     ["dntpFinalMM", "dNTPs finales", "mM"], ["mgStockMM", "Stock de MgCl₂", "mM"],
+    ["bufferX", "Stock del tampón", "×"],
   ];
   fields.forEach(([key, label, unit]) => {
     if (wantColony && key === "templateUL") return;
