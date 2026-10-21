@@ -12,6 +12,8 @@ export interface MasterMixSettings {
   volume: number;
   samples: number;
   options: MixOptions;
+  /** Volúmenes que escribe el alumno (µL) por reactivo: 1 reacción y total de la mezcla. */
+  answers?: Record<string, { per?: number | undefined; total?: number | undefined }> | undefined;
 }
 
 export interface PracticeCase {
@@ -66,7 +68,7 @@ export function verifyPractice(program: Program, mix: MasterMixSettings | null, 
   check("Master mix · DMSO", mix.input.additives.dmso, target.input.additives.dmso, 0.01, "%");
   const wantColony = target.input.template === "colony";
   checks.push({ label: "Master mix · molde", correct: (mix.input.template === "colony") === wantColony, detail: wantColony ? "PCR de colonia." : "Molde de ADN medido por reacción, no PCR de colonia." });
-  const fields: [keyof MixOptions, string, string][] = [
+  const fields: [Exclude<keyof MixOptions, "pipetteExtra">, string, string][] = [
     ["templateUL", "Molde", "µL"], ["enzymeStockU", "Stock de enzima", "U/µL"],
     ["enzymeUnits", "Enzima por reacción", "U"], ["primerStockUM", "Stock de cebadores", "µM"],
     ["primerFinalUM", "Cebadores finales", "µM"], ["dntpStockMM", "Stock de dNTPs", "mM"],
@@ -78,6 +80,21 @@ export function verifyPractice(program: Program, mix: MasterMixSettings | null, 
     const expected = target.options[key];
     if (expected !== undefined) check(`Master mix · ${label}`, mix.options[key], expected, 0.001, unit);
   });
+  if (target.options.pipetteExtra !== undefined || mix.options.pipetteExtra) {
+    const want = !!target.options.pipetteExtra;
+    checks.push({ label: "Master mix · extra por pipeteo", correct: !!mix.options.pipetteExtra === want, detail: want ? "Esperado: con 10 % extra." : "Esperado: sin 10 % extra." });
+  }
+  if (mix.answers) {
+    // Volúmenes calculados a mano: se comparan con los de la solución (±2 %, mínimo 0,05 µL).
+    const expected = masterMix(target.input, target.volume, target.samples, target.options);
+    const tol = (v: number) => Math.max(0.05, Math.abs(v) * 0.02);
+    for (const row of expected.rows) {
+      const a = mix.answers[row.key];
+      const per = Math.round(row.per * 100) / 100, total = Math.round(row.total * 100) / 100;
+      check(`Master mix · 1× · ${row.name}`, a?.per, per, tol(per), "µL");
+      check(`Master mix · total · ${row.name}`, a?.total, total, tol(total), "µL");
+    }
+  }
   checks.push({ label: "Master mix · balance de volúmenes", correct: !masterMix(mix.input, mix.volume, mix.samples, mix.options).overflow, detail: "La suma de reactivos y molde no debe superar el volumen por reacción." });
   } else if (mode !== "cycler") checks.push({ label: "Master mix", correct: false, detail: "Falta preparar la mezcla." });
   const score = Math.round(checks.filter(c => c.correct).length / checks.length * 100);

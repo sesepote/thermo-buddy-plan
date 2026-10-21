@@ -36,3 +36,15 @@ describe("modos de ejercicio", () => {
     expect(r.checks.every(c => c.label.startsWith("Master mix"))).toBe(true);
   });
 });
+
+describe("volúmenes escritos por el alumno", () => {
+  it("acepta los volúmenes correctos y rechaza uno erróneo", async () => {
+    const { masterMix } = await import("@/lib/pcr/protocol");
+    const base = CASES[0]!;
+    const rows = masterMix(base.mix.input, base.mix.volume, base.mix.samples, base.mix.options).rows;
+    const answers = Object.fromEntries(rows.map(r => [r.key, { per: Math.round(r.per * 100) / 100, total: Math.round(r.total * 100) / 100 }]));
+    expect(verifyPractice(base.program, { ...base.mix, answers }, base).score).toBe(100);
+    const wrong = { ...answers, buffer: { per: 9, total: 9 } };
+    expect(verifyPractice(base.program, { ...base.mix, answers: wrong }, base).correct).toBe(false);
+  });
+});

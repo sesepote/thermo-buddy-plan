@@ -39,7 +39,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
  * Solo pide polimerasa, volumen, número de muestras y aditivos, y muestra
  * la tabla de volúmenes por reactivo con el 10 % extra habitual.
  */
-export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMixSettings) => void }) {
+export function MasterMixCalculator({ onChange, practice = false }: {
+  onChange?: ((value: MasterMixSettings) => void) | undefined;
+  /** Modo alumno: oculta los volúmenes calculados y pide escribirlos a mano. */
+  practice?: boolean | undefined;
+}) {
   const [polymeraseId, setPolymeraseIdRaw] = useState(DEFAULT_INPUT.polymeraseId);
   const [volume, setVolume] = useState(50);
   const [samples, setSamples] = useState(8);
@@ -58,6 +62,8 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   const [bufferMg, setBufferMg] = useState(DEFAULT_INPUT.mgMM);
   const [mgStockMM, setMgStockMM] = useState(25);
   const [extraMg, setExtraMg] = useState(0);
+  const [pipetteExtra, setPipetteExtra] = useState(false);
+  const [answers, setAnswers] = useState<NonNullable<MasterMixSettings["answers"]>>({});
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   /** Ventana emergente para las polimerasas menos habituales. */
   const [popupOpen, setPopupOpen] = useState(false);
@@ -82,13 +88,13 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
     }),
     [polymeraseId, dmso, colony, bufferMg, extraMg],
   );
-  const opts = { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX };
+  const opts = { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX, pipetteExtra };
   const mix = useMemo(() => masterMix(input, volume, samples, opts), [input, volume, samples, ...Object.values(opts)]);
   const pol = POLYMERASES.find((p) => p.id === polymeraseId) ?? initPol;
 
   useEffect(() => {
-    onChange?.({ input, volume, samples, options: { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX } });
-  }, [onChange, input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX]);
+    onChange?.({ input, volume, samples, options: { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX, pipetteExtra }, ...(practice ? { answers } : {}) });
+  }, [onChange, input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX, pipetteExtra, practice, answers]);
 
   if (!pol) return null;
 
@@ -190,8 +196,13 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
       <section aria-label="Resultados del master mix" className="min-w-0 space-y-3 self-start border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
-          <p className="text-sm text-muted-foreground">{samples} muestras + 10 % extra = {round1(mix.factor)}×</p>
+          <p className="text-sm text-muted-foreground">{samples} muestras{pipetteExtra ? ` + 10 % extra = ${round1(mix.factor)}×` : ""}</p>
         </div>
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <input type="checkbox" role="switch" className="size-4 accent-amber" checked={pipetteExtra} onChange={(e) => setPipetteExtra(e.target.checked)} />
+          +10 % por errores de pipeteo
+        </label>
+        {practice && <p className="text-xs text-muted-foreground">Toca cada casilla y escribe el volumen que has calculado.</p>}
         <table className="w-full font-mono text-sm">
           <thead className="text-muted-foreground">
             <tr><th className="py-1 text-left font-sans">Reactivo</th><th className="text-right">1× (µL)</th><th className="text-right">Total (µL)</th></tr>
@@ -200,17 +211,32 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
             {mix.rows.map((r) => (
               <tr key={r.name} className="border-t">
                 <td className="py-1.5 font-sans">{r.name}</td>
-                <td className="text-right">{fmt2(r.per)}</td>
-                <td className="text-right">{fmt2(r.total)}</td>
+                {practice
+                  ? (["per", "total"] as const).map((k) => {
+                      const v = answers[r.key]?.[k];
+                      return (
+                        <td key={k} className="py-1 pl-2 text-right">
+                          <Button variant="outline" className="hw-key h-10 w-full justify-end rounded-md px-2 font-mono"
+                            onClick={() => setPad({ title: `${r.name} · ${k === "per" ? "1×" : "total"}`, value: v ?? 0, unit: "µL", allowDecimal: true, min: 0, max: 100000,
+                              onConfirm: (n) => setAnswers((a) => ({ ...a, [r.key]: { ...a[r.key], [k]: n } })) })}>
+                            {v === undefined ? "—" : v}
+                          </Button>
+                        </td>
+                      );
+                    })
+                  : <>
+                      <td className="text-right">{fmt2(r.per)}</td>
+                      <td className="text-right">{fmt2(r.total)}</td>
+                    </>}
               </tr>
             ))}
           </tbody>
         </table>
-        {mix.overflow && (
+        {!practice && mix.overflow && (
           <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
         )}
         <p className="text-xs text-muted-foreground">
-          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock {dntpStockMM} mM de cada
+          Volúmenes en µL{pipetteExtra ? " con 10 % extra para compensar pérdidas al pipetear" : ""}. dNTPs: stock {dntpStockMM} mM de cada
           nucleótido ({round2(dntpStockMM * 4)} mM total) → {dntpFinalMM} mM finales de cada uno. Mg²⁺ final{" "}
           {round2(bufferMg + extraMg)} mM.{" "}
           {mix.template
