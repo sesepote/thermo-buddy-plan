@@ -25,6 +25,25 @@ function Choice({ active, onClick, children }: { active: boolean; onClick: () =>
   );
 }
 
+/** Interruptor pequeño y discreto para activar o desactivar el cálculo del error de pipeteo. */
+function PipetteSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label="Error de pipeteo"
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-2 py-1.5"
+    >
+      <span className="text-xs text-muted-foreground">Error de pipeteo</span>
+      <span className={cn("relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-border transition-colors", checked ? "bg-amber" : "bg-muted")}>
+        <span className={cn("absolute left-0.5 size-4 rounded-full bg-amber-foreground shadow transition-transform", checked && "translate-x-4")} />
+      </span>
+    </button>
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
@@ -61,6 +80,8 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   /** Ventana emergente para las polimerasas menos habituales. */
   const [popupOpen, setPopupOpen] = useState(false);
+  /** Extra del 10 % para compensar el error de pipeteo; se puede desactivar. */
+  const [pipetting, setPipetting] = useState(true);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
