@@ -1,6 +1,6 @@
 {
   "id": "pdf8",
-  "title": "Caso 8",
+  "title": "Ejercicio 8",
   "mode": "both",
   "program": {
     "id": "pdf8-ref",
@@ -101,5 +101,6 @@
     "Taq ADN polimerasa · 5 U/µl · 1.5 U por reacción",
     "b) Calcula los volúmenes para una mastermix para 8 reacciones, sin añadir el ADN molde.",
     "c) Configura el termociclador para estos parámetros: desnaturalización inicial a 94 °C durante 5 min; 36 ciclos de desnaturalización a 94 °C durante 20 s, hibridación a 64 °C durante 20 s y extensión a 68 °C durante 75 s; extensión final a 68 °C durante 240 s."
-  ]
+  ],
+  "topic": "Tema 3"
 }

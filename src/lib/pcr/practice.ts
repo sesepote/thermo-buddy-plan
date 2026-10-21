@@ -17,6 +17,8 @@ export interface MasterMixSettings {
 export interface PracticeCase {
   id: string;
   title: string;
+  /** Etiqueta de la tarjeta (p. ej. «Tema 3»); sin valor muestra «Caso N». */
+  topic?: string | undefined;
   /** Líneas del enunciado que ve el alumno. */
   statement: string[];
   /** Programa correcto del termociclador. */
@@ -99,6 +101,7 @@ export function isCase(v: unknown): v is PracticeCase {
 export interface PublicCase {
   id: string;
   title: string;
+  topic?: string | undefined;
   statement: string[];
   /** Mismas etapas y pasos que la solución, con temperaturas y tiempos neutros. */
   skeleton: Program;
@@ -111,7 +114,7 @@ export interface PublicCase {
 export function toPublic(c: PracticeCase): PublicCase {
   const p = c.program;
   return {
-    id: c.id, title: c.title, statement: c.statement, samples: c.mix.samples, volume: c.mix.volume, mode: c.mode ?? "both",
+    id: c.id, title: c.title, topic: c.topic, statement: c.statement, samples: c.mix.samples, volume: c.mix.volume, mode: c.mode ?? "both",
     skeleton: { ...p, stages: p.stages.map(st => ({ ...st, repeats: st.repeats > 1 ? 10 : 1,
       steps: st.steps.map(s => ({ id: s.id, label: s.label, temp: s.time === 0 ? 20 : 50, time: s.time === 0 ? 0 : 10 })) })) },
   };
