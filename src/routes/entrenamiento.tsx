@@ -79,7 +79,7 @@ function Exercises() {
             const best = Math.max(-1, ...attempts.filter(a => a.exerciseId === exercise.id).map(a => a.score));
             return <div key={exercise.id} className="relative">
               <Button variant="outline" onClick={() => setView({ kind: "solve", exercise })} className="h-auto min-h-60 w-full flex-col items-start gap-5 whitespace-normal rounded-lg bg-panel p-6 text-left">
-                <div className="flex w-full items-center justify-between text-ice"><FlaskConical className="size-7" /><span className="mr-14 font-mono text-xs">CASO {index + 1}</span></div>
+                <div className="flex w-full items-center justify-between text-ice"><FlaskConical className="size-7" /><span className="mr-14 font-mono text-xs uppercase">{exercise.topic ?? `Caso ${index + 1}`}</span></div>
                 <h2 className="text-xl font-display font-semibold">{exercise.title}</h2>
                 <p className="text-sm font-normal text-muted-foreground">{MODE_LABEL[exercise.mode]} · {exercise.mode !== "mix" && `${exercise.skeleton.stages.flatMap(s => s.steps).length} pasos · `}{exercise.samples} muestras · {exercise.volume} µL / reacción</p>
                 <div className="flex w-full items-center justify-between border-t pt-4"><span className={cn("text-sm", best === 100 ? "text-run" : "text-muted-foreground")}>{best < 0 ? "Sin resolver" : `Mejor resultado: ${best} / 100`}</span><ChevronRight className="size-5" /></div>
@@ -158,13 +158,14 @@ function ExerciseCreator({ onBack, onSave }: { onBack: () => void; onSave: (c: P
   const [program, setProgram] = useState<Program>(() => cloneProgram(programs[0]!));
   const [mix, setMix] = useState<MasterMixSettings | null>(null);
   const [title, setTitle] = useState("");
+  const [topic, setTopic] = useState("");
   const [statement, setStatement] = useState("");
   const [mode, setMode] = useState<PracticeMode>("both");
   const reportMix = useCallback((next: MasterMixSettings) => setMix(next), []);
   const showCycler = mode !== "mix", showMix = mode !== "cycler";
   const save = () => {
     if (!mix || !title.trim()) return;
-    onSave({ id: `caso-${uid()}`, title: title.trim(), mode, statement: statement.split("\n").map(l => l.trim()).filter(Boolean), program: { ...program, name: title.trim() }, mix });
+    onSave({ id: `caso-${uid()}`, title: title.trim(), ...(topic.trim() ? { topic: topic.trim() } : {}), mode, statement: statement.split("\n").map(l => l.trim()).filter(Boolean), program: { ...program, name: title.trim() }, mix });
   };
   return <div className="space-y-5 p-4 sm:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -184,6 +185,9 @@ function ExerciseCreator({ onBack, onSave }: { onBack: () => void; onSave: (c: P
     <section className="grid gap-4 border-y py-5">
       <label className="grid gap-2 text-sm">Título
         <input value={title} onChange={e => setTitle(e.target.value)} placeholder="p. ej. PCR de colonia con Taq" className="h-12 rounded-md border bg-panel px-3 text-base" />
+      </label>
+      <label className="grid gap-2 text-sm">Tema (etiqueta de la tarjeta)
+        <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="p. ej. Tema 3" className="h-12 rounded-md border bg-panel px-3 text-base" />
       </label>
       <label className="grid gap-2 text-sm">Enunciado (una línea por dato)
         <textarea value={statement} onChange={e => setStatement(e.target.value)} rows={6} placeholder={"Polimerasa: Taq\nAmplicón: 700 pb\n25 µL por reacción · 6 muestras"} className="rounded-md border bg-panel p-3 text-base" />
