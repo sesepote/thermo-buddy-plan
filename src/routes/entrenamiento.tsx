@@ -136,7 +136,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PublicCase; onBack:
   return <div className="space-y-5 p-4 sm:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button><span className="font-mono text-xs text-muted-foreground">{exercise.samples} MUESTRAS · +10 % EXTRA</span></div>
     {showCycler && <EditableProfile program={program} onChange={updateProgram} volume={mix?.volume ?? exercise.volume} />}
-    {showMix && <section aria-label="Calculadora de master mix" className={cn(showCycler && "border-t pt-5")}><MasterMixCalculator onChange={reportMix} practice /></section>}
+    {showMix && <section aria-label="Calculadora de master mix" className={cn(showCycler && "border-t pt-5")}><MasterMixCalculator onChange={reportMix} /></section>}
     <section aria-labelledby="exercise-statement" className="space-y-5 border-y py-5">
       <h2 id="exercise-statement" className="font-display text-xl text-ice">Enunciado</h2>
       <div className="grid content-start gap-2 text-sm sm:grid-cols-2">{exercise.statement.map((line, i) => <p key={i}>{line}</p>)}</div>

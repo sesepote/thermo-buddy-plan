@@ -216,21 +216,19 @@ export interface MixOptions {
   dntpFinalMM?: number;
   /** Concentración del stock del tampón (×). Por defecto, la de la polimerasa. */
   bufferX?: number;
-  /** Suma un 10 % extra por errores de pipeteo (desactivado por defecto). */
-  pipetteExtra?: boolean;
   /** Stock de MgCl2 (mM). El MgCl2 añadido es `input.additives.extraMg` (mM finales). */
   mgStockMM?: number;
 }
 
 /**
- * Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL (10 % extra opcional).
+ * Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL, con 10 % extra.
  * Todos los reactivos siguen C1·V1 = C2·V2 → V = C_final × V_reacción / C_stock.
  * dNTPs: por defecto stock 10 mM de CADA nucleótido → 0,2 mM finales de cada uno.
  * MgCl2: por defecto stock 25 mM; solo se añade el Mg extra sobre el del tampón.
  */
 export function masterMix(input: CalcInput, volume: number, samples: number, opts: MixOptions = {}) {
   const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0]!;
-  const factor = samples * (opts.pipetteExtra ? 1.1 : 1);
+  const factor = samples * 1.1;
   const stockU = opts.enzymeStockU ?? pol.stockU;
   const units = opts.enzymeUnits ?? pol.unitsPer50 * (volume / 50);
   const pStock = opts.primerStockUM ?? 10;
@@ -251,14 +249,14 @@ export function masterMix(input: CalcInput, volume: number, samples: number, opt
   };
   const used = Object.values(per).reduce((a, b) => a + b, 0);
   const rows = [
-    { key: "buffer", name: `Tampón ${bufferX}x (aporta ${input.mgMM} mM Mg²⁺)`, per: per.buffer },
-    { key: "dntp", name: `dNTPs ${dStock} mM (cada uno) → ${dFinal} mM`, per: per.dntp },
-    ...(per.mg > 0 ? [{ key: "mg", name: `MgCl₂ ${mgStock} mM → +${input.additives.extraMg} mM`, per: per.mg }] : []),
-    { key: "fwd", name: `Cebador directo ${pStock} µM`, per: per.fwd },
-    { key: "rev", name: `Cebador reverso ${pStock} µM`, per: per.rev },
-    ...(per.dmso > 0 ? [{ key: "dmso", name: "DMSO", per: per.dmso }] : []),
-    { key: "enzyme", name: `${pol.name} (${stockU} U/µL · ${round1(units * 100) / 100} U)`, per: per.enzyme },
-    { key: "water", name: "Agua libre de nucleasas", per: Math.max(volume - used, 0) },
+    { name: `Tampón ${bufferX}x (aporta ${input.mgMM} mM Mg²⁺)`, per: per.buffer },
+    { name: `dNTPs ${dStock} mM (cada uno) → ${dFinal} mM`, per: per.dntp },
+    ...(per.mg > 0 ? [{ name: `MgCl₂ ${mgStock} mM → +${input.additives.extraMg} mM`, per: per.mg }] : []),
+    { name: `Cebador directo ${pStock} µM`, per: per.fwd },
+    { name: `Cebador reverso ${pStock} µM`, per: per.rev },
+    ...(per.dmso > 0 ? [{ name: "DMSO", per: per.dmso }] : []),
+    { name: `${pol.name} (${stockU} U/µL · ${round1(units * 100) / 100} U)`, per: per.enzyme },
+    { name: "Agua libre de nucleasas", per: Math.max(volume - used, 0) },
   ];
   return {
     rows: rows.map((r) => ({ ...r, total: r.per * factor })),
