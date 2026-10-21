@@ -68,7 +68,7 @@ export function verifyPractice(program: Program, mix: MasterMixSettings | null, 
   check("Master mix · DMSO", mix.input.additives.dmso, target.input.additives.dmso, 0.01, "%");
   const wantColony = target.input.template === "colony";
   checks.push({ label: "Master mix · molde", correct: (mix.input.template === "colony") === wantColony, detail: wantColony ? "PCR de colonia." : "Molde de ADN medido por reacción, no PCR de colonia." });
-  const fields: [keyof MixOptions, string, string][] = [
+  const fields: [Exclude<keyof MixOptions, "pipetteExtra">, string, string][] = [
     ["templateUL", "Molde", "µL"], ["enzymeStockU", "Stock de enzima", "U/µL"],
     ["enzymeUnits", "Enzima por reacción", "U"], ["primerStockUM", "Stock de cebadores", "µM"],
     ["primerFinalUM", "Cebadores finales", "µM"], ["dntpStockMM", "Stock de dNTPs", "mM"],

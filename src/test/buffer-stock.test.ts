@@ -10,3 +10,12 @@ describe("stock del tampón", () => {
     expect(masterMix(DEFAULT_INPUT, 50, 1).rows[0]!.per).toBeCloseTo(5);
   });
 });
+
+describe("extra por pipeteo", () => {
+  it("desactivado por defecto: 12 muestras = 12×", () => {
+    expect(masterMix(DEFAULT_INPUT, 25, 12).factor).toBe(12);
+  });
+  it("activado: 12 muestras = 13,2×", () => {
+    expect(masterMix(DEFAULT_INPUT, 25, 12, { pipetteExtra: true }).factor).toBeCloseTo(13.2);
+  });
+});
