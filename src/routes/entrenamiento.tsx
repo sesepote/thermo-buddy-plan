@@ -139,7 +139,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PublicCase; onBack:
     {showMix && <section aria-label="Calculadora de master mix" className={cn(showCycler && "border-t pt-5")}><MasterMixCalculator onChange={reportMix} /></section>}
     <section aria-labelledby="exercise-statement" className="space-y-5 border-y py-5">
       <h2 id="exercise-statement" className="font-display text-xl text-ice">Enunciado</h2>
-      <div className="grid content-start gap-2 text-sm sm:grid-cols-2">{exercise.statement.map((line, i) => <p key={i}>{line}</p>)}</div>
+      <StatementBody lines={exercise.statement} />
     </section>
     <Button className="h-14 w-full bg-run text-lg text-run-foreground" disabled={showMix && !mix} onClick={() => void verify()}><CheckCircle2 /> Verificar</Button>
     {result && <section className="space-y-4 border-t pt-5" aria-label="Resultado de la verificación" aria-live="polite">
