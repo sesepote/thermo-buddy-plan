@@ -214,6 +214,8 @@ export interface MixOptions {
   /** Stock de cada dNTP (mM) y concentración final de cada uno (mM). */
   dntpStockMM?: number;
   dntpFinalMM?: number;
+  /** Concentración del stock del tampón (×). Por defecto, la de la polimerasa. */
+  bufferX?: number;
   /** Stock de MgCl2 (mM). El MgCl2 añadido es `input.additives.extraMg` (mM finales). */
   mgStockMM?: number;
 }
@@ -234,8 +236,9 @@ export function masterMix(input: CalcInput, volume: number, samples: number, opt
   const dStock = opts.dntpStockMM ?? 10;
   const dFinal = opts.dntpFinalMM ?? 0.2;
   const mgStock = opts.mgStockMM ?? 25;
+  const bufferX = opts.bufferX ?? pol.bufferX;
   const per = {
-    buffer: volume / pol.bufferX,
+    buffer: volume / bufferX,
     dntp: (volume * dFinal) / dStock,
     mg: (volume * input.additives.extraMg) / mgStock,
     fwd: (volume * pFinal) / pStock,
@@ -246,7 +249,7 @@ export function masterMix(input: CalcInput, volume: number, samples: number, opt
   };
   const used = Object.values(per).reduce((a, b) => a + b, 0);
   const rows = [
-    { name: `Tampón ${pol.bufferX}x (aporta ${input.mgMM} mM Mg²⁺)`, per: per.buffer },
+    { name: `Tampón ${bufferX}x (aporta ${input.mgMM} mM Mg²⁺)`, per: per.buffer },
     { name: `dNTPs ${dStock} mM (cada uno) → ${dFinal} mM`, per: per.dntp },
     ...(per.mg > 0 ? [{ name: `MgCl₂ ${mgStock} mM → +${input.additives.extraMg} mM`, per: per.mg }] : []),
     { name: `Cebador directo ${pStock} µM`, per: per.fwd },

@@ -48,6 +48,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   const [templateUL, setTemplateUL] = useState(1);
   const initPol = (POLYMERASES.find((p) => p.id === DEFAULT_INPUT.polymeraseId) ?? POLYMERASES[0]);
   const [enzymeStockU, setEnzymeStockU] = useState(initPol?.stockU ?? 5);
+  const [bufferX, setBufferX] = useState(initPol?.bufferX ?? 10);
   const [enzymeUnits, setEnzymeUnits] = useState(initPol?.unitsPer50 ?? 1.25);
   const [primerStockUM, setPrimerStockUM] = useState(10);
   const [primerFinalUM, setPrimerFinalUM] = useState(0.5);
@@ -67,6 +68,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
     if (!p) return;
     setPolymeraseIdRaw(id);
     setEnzymeStockU(p.stockU);
+    setBufferX(p.bufferX);
     setEnzymeUnits(round2(p.unitsPer50 * (volume / 50)));
   };
 
@@ -80,13 +82,13 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
     }),
     [polymeraseId, dmso, colony, bufferMg, extraMg],
   );
-  const opts = { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM };
+  const opts = { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX };
   const mix = useMemo(() => masterMix(input, volume, samples, opts), [input, volume, samples, ...Object.values(opts)]);
   const pol = POLYMERASES.find((p) => p.id === polymeraseId) ?? initPol;
 
   useEffect(() => {
-    onChange?.({ input, volume, samples, options: { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM } });
-  }, [onChange, input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM]);
+    onChange?.({ input, volume, samples, options: { templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX } });
+  }, [onChange, input, volume, samples, templateUL, enzymeStockU, enzymeUnits, primerStockUM, primerFinalUM, dntpStockMM, dntpFinalMM, mgStockMM, bufferX]);
 
   if (!pol) return null;
 
@@ -173,8 +175,9 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
             {num("Concentración final", dntpFinalMM, "mM", (v) => setDntpFinalMM(v), { min: 0.01, max: 2 })}
           </div>
         </Section>
-        <div className="sm:col-span-2"><Section title="Cloruro de magnesio (MgCl₂)">
+        <div className="sm:col-span-2"><Section title="Tampón y cloruro de magnesio (MgCl₂)">
           <div className="flex flex-wrap gap-2">
+            {num("Stock del tampón", bufferX, "×", (v) => setBufferX(v), { min: 1, max: 100 })}
             {num("Mg²⁺ del tampón", bufferMg, "mM", (v) => setBufferMg(v), { max: 10 })}
             {num("MgCl₂ extra a añadir", extraMg, "mM", (v) => setExtraMg(v), { max: 5 })}
             {num("Stock de MgCl₂", mgStockMM, "mM", (v) => setMgStockMM(v), { min: 1, max: 1000 })}
