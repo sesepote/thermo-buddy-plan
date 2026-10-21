@@ -139,7 +139,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PublicCase; onBack:
     {showMix && <section aria-label="Calculadora de master mix" className={cn(showCycler && "border-t pt-5")}><MasterMixCalculator onChange={reportMix} /></section>}
     <section aria-labelledby="exercise-statement" className="space-y-5 border-y py-5">
       <h2 id="exercise-statement" className="font-display text-xl text-ice">Enunciado</h2>
-      <div className="grid content-start gap-2 text-sm sm:grid-cols-2">{exercise.statement.map((line, i) => <p key={i}>{line}</p>)}</div>
+      <StatementBody lines={exercise.statement} />
     </section>
     <Button className="h-14 w-full bg-run text-lg text-run-foreground" disabled={showMix && !mix} onClick={() => void verify()}><CheckCircle2 /> Verificar</Button>
     {result && <section className="space-y-4 border-t pt-5" aria-label="Resultado de la verificación" aria-live="polite">
@@ -191,4 +191,28 @@ function ExerciseCreator({ onBack, onSave }: { onBack: () => void; onSave: (c: P
     </section>
     <Button className="h-14 w-full bg-run text-lg text-run-foreground" disabled={!mix || !title.trim()} onClick={save}><Save /> Guardar ejercicio</Button>
   </div>;
+}
+
+/**
+ * Enunciado: las líneas consecutivas con « · » forman una tabla
+ * (la primera es la cabecera); el resto se muestra como párrafos.
+ */
+function StatementBody({ lines }: { lines: string[] }) {
+  const blocks: ({ kind: "p"; text: string } | { kind: "table"; rows: string[][] })[] = [];
+  for (const line of lines) {
+    const cells = line.split(" · ");
+    const last = blocks[blocks.length - 1];
+    if (cells.length > 1) {
+      if (last?.kind === "table") last.rows.push(cells);
+      else blocks.push({ kind: "table", rows: [cells] });
+    } else blocks.push({ kind: "p", text: line });
+  }
+  return <div className="space-y-3 text-sm">{blocks.map((b, i) => b.kind === "p"
+    ? <p key={i}>{b.text}</p>
+    : <div key={i} className="overflow-x-auto rounded-md border">
+        <table className="w-full border-collapse text-left">
+          <thead className="bg-panel"><tr>{b.rows[0]!.map((c, j) => <th key={j} className="border-b px-3 py-2 font-display font-medium text-ice">{c}</th>)}</tr></thead>
+          <tbody>{b.rows.slice(1).map((r, k) => <tr key={k} className="border-b last:border-b-0">{r.map((c, j) => <td key={j} className={cn("px-3 py-2", j > 0 && "font-mono")}>{c}</td>)}</tr>)}</tbody>
+        </table>
+      </div>)}</div>;
 }
