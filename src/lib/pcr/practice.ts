@@ -91,8 +91,8 @@ export function verifyPractice(program: Program, mix: MasterMixSettings | null, 
     for (const row of expected.rows) {
       const a = mix.answers[row.key];
       const per = Math.round(row.per * 100) / 100, total = Math.round(row.total * 100) / 100;
-      check(`Volumen 1× · ${row.name}`, a?.per, per, tol(per), "µL");
-      check(`Volumen total · ${row.name}`, a?.total, total, tol(total), "µL");
+      check(`Master mix · 1× · ${row.name}`, a?.per, per, tol(per), "µL");
+      check(`Master mix · total · ${row.name}`, a?.total, total, tol(total), "µL");
     }
   }
   checks.push({ label: "Master mix · balance de volúmenes", correct: !masterMix(mix.input, mix.volume, mix.samples, mix.options).overflow, detail: "La suma de reactivos y molde no debe superar el volumen por reacción." });
