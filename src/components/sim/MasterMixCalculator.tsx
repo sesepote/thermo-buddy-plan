@@ -25,6 +25,25 @@ function Choice({ active, onClick, children }: { active: boolean; onClick: () =>
   );
 }
 
+/** Interruptor pequeño y discreto para activar o desactivar el cálculo del error de pipeteo. */
+function PipetteSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label="Error de pipeteo"
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-2 py-1.5"
+    >
+      <span className="text-xs text-muted-foreground">Error de pipeteo</span>
+      <span className={cn("relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-border transition-colors", checked ? "bg-amber" : "bg-muted")}>
+        <span className={cn("absolute left-0.5 size-4 rounded-full bg-amber-foreground shadow transition-transform", checked && "translate-x-4")} />
+      </span>
+    </button>
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
@@ -61,6 +80,8 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   /** Ventana emergente para las polimerasas menos habituales. */
   const [popupOpen, setPopupOpen] = useState(false);
+  /** Extra del 10 % para compensar el error de pipeteo; se puede desactivar. */
+  const [pipetting, setPipetting] = useState(true);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
@@ -190,7 +211,12 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
       <section aria-label="Resultados del master mix" className="min-w-0 space-y-3 self-start border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
-          <p className="text-sm text-muted-foreground">{samples} muestras + 10 % extra = {round1(mix.factor)}×</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              {samples} muestras {pipetting ? `+ 10 % extra = ${round1(mix.factor)}×` : `= ${samples}×`}
+            </p>
+            <PipetteSwitch checked={pipetting} onChange={setPipetting} />
+          </div>
         </div>
         <table className="w-full font-mono text-sm">
           <thead className="text-muted-foreground">
@@ -201,7 +227,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
               <tr key={r.name} className="border-t">
                 <td className="py-1.5 font-sans">{r.name}</td>
                 <td className="text-right">{fmt2(r.per)}</td>
-                <td className="text-right">{fmt2(r.total)}</td>
+                <td className="text-right">{fmt2(pipetting ? r.total : r.per * samples)}</td>
               </tr>
             ))}
           </tbody>
@@ -210,7 +236,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
           <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
         )}
         <p className="text-xs text-muted-foreground">
-          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock {dntpStockMM} mM de cada
+          Volúmenes en µL {pipetting ? "con 10 % extra para compensar pérdidas al pipetear" : "sin extra por pipeteo (volúmenes exactos)"}. dNTPs: stock {dntpStockMM} mM de cada
           nucleótido ({round2(dntpStockMM * 4)} mM total) → {dntpFinalMM} mM finales de cada uno. Mg²⁺ final{" "}
           {round2(bufferMg + extraMg)} mM.{" "}
           {mix.template
