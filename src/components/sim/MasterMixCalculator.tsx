@@ -81,7 +81,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
   /** Ventana emergente para las polimerasas menos habituales. */
   const [popupOpen, setPopupOpen] = useState(false);
   /** Extra del 10 % para compensar el error de pipeteo; se puede desactivar. */
-  const [pipetting, setPipetting] = useState(true);
+  const [pipetting, setPipetting] = useState(false);
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
