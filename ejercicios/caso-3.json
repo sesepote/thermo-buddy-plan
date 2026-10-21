@@ -1,107 +1,104 @@
 {
-  "id": "caso-jgd7ewwfsyzb",
-  "title": "Test",
+  "id": "pdf3",
+  "title": "Caso 3",
   "mode": "both",
-  "statement": [
-    "test del test del anterior test"
-  ],
   "program": {
-    "id": "b7w20u8lpsno",
-    "name": "Test",
+    "id": "pdf3-ref",
+    "name": "Caso 3",
     "lidTemp": 105,
     "rampRate": 3,
     "stages": [
       {
-        "id": "labhewcwpsno",
+        "id": "pdf3-g1",
         "repeats": 1,
         "steps": [
           {
-            "id": "zp4k1540psno",
+            "id": "pdf3-s1",
             "label": "Desnaturalización inicial",
             "temp": 95,
-            "time": 120
-          }
-        ]
-      },
-      {
-        "id": "34pj6xdcpsno",
-        "repeats": 25,
-        "steps": [
-          {
-            "id": "pxa4ui0cpsno",
-            "label": "Desnaturalización",
-            "temp": 95,
-            "time": 30
-          },
-          {
-            "id": "xhirpfdbpsno",
-            "label": "Anillamiento",
-            "temp": 58,
-            "time": 30
-          },
-          {
-            "id": "d6e60u2ppsno",
-            "label": "Extensión",
-            "temp": 72,
-            "time": 60
-          }
-        ]
-      },
-      {
-        "id": "draqfvvspsno",
-        "repeats": 1,
-        "steps": [
-          {
-            "id": "2zs49d36psno",
-            "label": "Extensión final",
-            "temp": 72,
             "time": 300
           }
         ]
       },
       {
-        "id": "ghdncgd8psno",
+        "id": "pdf3-g2",
+        "repeats": 38,
+        "steps": [
+          {
+            "id": "pdf3-s2",
+            "label": "Desnaturalización",
+            "temp": 95,
+            "time": 30
+          },
+          {
+            "id": "pdf3-s3",
+            "label": "Anillamiento",
+            "temp": 55,
+            "time": 30
+          },
+          {
+            "id": "pdf3-s4",
+            "label": "Extensión",
+            "temp": 68,
+            "time": 60
+          }
+        ]
+      },
+      {
+        "id": "pdf3-g3",
         "repeats": 1,
         "steps": [
           {
-            "id": "yiyqhmo3psno",
-            "label": "Conservación",
-            "temp": 4,
-            "time": 0
+            "id": "pdf3-s5",
+            "label": "Extensión final",
+            "temp": 68,
+            "time": 240
           }
         ]
       }
     ]
   },
   "mix": {
+    "volume": 20,
+    "samples": 13,
+    "options": {
+      "enzymeStockU": 5,
+      "enzymeUnits": 0.8,
+      "primerStockUM": 10,
+      "primerFinalUM": 0.25,
+      "dntpStockMM": 10,
+      "dntpFinalMM": 0.15,
+      "mgStockMM": 20,
+      "templateUL": 2,
+      "bufferX": 10
+    },
     "input": {
       "reaction": "standard",
       "polymeraseId": "taq",
-      "fwdSeq": "AGCGGATAACAATTTCACACAGGA",
-      "revSeq": "GTAAAACGACGGCCAGTGAATTC",
+      "fwdSeq": "",
+      "revSeq": "",
       "fwdTm": 60,
       "revTm": 60,
-      "ampliconBp": 1000,
+      "ampliconBp": 500,
       "template": "plasmid",
       "highGC": false,
       "additives": {
         "dmso": 0,
         "formamide": 0,
-        "extraMg": 0
+        "extraMg": 1.8
       },
-      "mgMM": 1.5
-    },
-    "volume": 50,
-    "samples": 8,
-    "options": {
-      "templateUL": 1,
-      "enzymeStockU": 5,
-      "enzymeUnits": 1.25,
-      "primerStockUM": 10,
-      "primerFinalUM": 0.5,
-      "dntpStockMM": 10,
-      "dntpFinalMM": 0.2,
-      "mgStockMM": 25
+      "mgMM": 0
     }
-  }
+  },
+  "statement": [
+    "PCR de 20 µL por reacción para 10 muestras (+ control negativo, control positivo y 1 tubo extra por pipeteo = 13 reacciones).",
+    "ADN molde: 2 µL por tubo (no va en la master mix).",
+    "Tampón de reacción: stock 10× → 1×. Tampón sin Mg²⁺ (0 mM).",
+    "MgCl₂: stock 20 mM → 1.8 mM final (añádelo como MgCl₂ extra).",
+    "Cada dNTP: stock 10 mM → 150 µM.",
+    "Cada cebador (F y R): stock 10 pmol/µL (µM) → 250 nM.",
+    "Taq ADN polimerasa: 5 U/µL → 0.8 U por reacción.",
+    "b) Prepara la master mix para 13 reacciones sin molde.",
+    "c) Termociclador: 95 °C 5 min; 38 ciclos de 95 °C 30 s, 55 °C 30 s y 68 °C 60 s; extensión final a 68 °C 240 s."
+  ]
 }

@@ -1,115 +1,104 @@
 {
-  "id": "practice-b3",
-  "title": "ADN genómico · Hot-start",
+  "id": "pdf2",
+  "title": "Caso 2",
+  "mode": "both",
   "program": {
-    "id": "practice-b3-ref",
-    "name": "Hot-start Taq · 800 pb",
+    "id": "pdf2-ref",
+    "name": "Caso 2",
     "lidTemp": 105,
     "rampRate": 3,
     "stages": [
       {
-        "id": "practice-b3-ref-2",
+        "id": "pdf2-g1",
         "repeats": 1,
         "steps": [
           {
-            "id": "practice-b3-ref-1",
-            "label": "Activación inicial",
-            "temp": 95,
-            "time": 300
+            "id": "pdf2-s1",
+            "label": "Desnaturalización inicial",
+            "temp": 94,
+            "time": 240
           }
         ]
       },
       {
-        "id": "practice-b3-ref-6",
+        "id": "pdf2-g2",
         "repeats": 32,
         "steps": [
           {
-            "id": "practice-b3-ref-3",
+            "id": "pdf2-s2",
             "label": "Desnaturalización",
-            "temp": 95,
-            "time": 30
+            "temp": 94,
+            "time": 20
           },
           {
-            "id": "practice-b3-ref-4",
+            "id": "pdf2-s3",
             "label": "Anillamiento",
-            "temp": 57,
-            "time": 30
+            "temp": 60,
+            "time": 25
           },
           {
-            "id": "practice-b3-ref-5",
+            "id": "pdf2-s4",
             "label": "Extensión",
             "temp": 72,
-            "time": 50
+            "time": 40
           }
         ]
       },
       {
-        "id": "practice-b3-ref-8",
+        "id": "pdf2-g3",
         "repeats": 1,
         "steps": [
           {
-            "id": "practice-b3-ref-7",
+            "id": "pdf2-s5",
             "label": "Extensión final",
             "temp": 72,
-            "time": 300
-          }
-        ]
-      },
-      {
-        "id": "practice-b3-ref-10",
-        "repeats": 1,
-        "steps": [
-          {
-            "id": "practice-b3-ref-9",
-            "label": "Conservación",
-            "temp": 4,
-            "time": 0
+            "time": 180
           }
         ]
       }
     ]
   },
   "mix": {
-    "volume": 50,
-    "samples": 8,
+    "volume": 30,
+    "samples": 21,
     "options": {
-      "enzymeStockU": 5,
-      "primerFinalUM": 0.5,
-      "dntpStockMM": 10,
-      "dntpFinalMM": 0.2,
-      "mgStockMM": 25,
-      "templateUL": 2,
-      "enzymeUnits": 2,
-      "primerStockUM": 20
+      "enzymeStockU": 10,
+      "enzymeUnits": 1.5,
+      "primerStockUM": 20,
+      "primerFinalUM": 0.4,
+      "dntpStockMM": 25,
+      "dntpFinalMM": 0.25,
+      "mgStockMM": 50,
+      "templateUL": 1,
+      "bufferX": 20
     },
     "input": {
       "reaction": "standard",
-      "polymeraseId": "hs-taq",
+      "polymeraseId": "taq",
       "fwdSeq": "",
       "revSeq": "",
-      "fwdTm": 62,
-      "revTm": 62,
-      "ampliconBp": 800,
-      "template": "genomic",
+      "fwdTm": 60,
+      "revTm": 60,
+      "ampliconBp": 500,
+      "template": "plasmid",
       "highGC": false,
       "additives": {
         "dmso": 0,
         "formamide": 0,
-        "extraMg": 0.5
+        "extraMg": 2.0
       },
-      "mgMM": 1.5
+      "mgMM": 0
     }
   },
   "statement": [
-    "Polimerasa: Hot-start Taq",
-    "Amplicón: 800 pb",
-    "Tm cebadores: 62 °C / 62 °C",
-    "50 µL por reacción · 8 muestras",
-    "Molde: 2 µL / tubo",
-    "Enzima: 5 U/µL → 2 U / tubo",
-    "Cebadores: 20 µM → 0.5 µM",
-    "dNTPs: 10 mM cada uno → 0,2 mM",
-    "Tampón: 1,5 mM Mg²⁺ · extra: 0.5 mM",
-    "Stock MgCl₂: 25 mM · sin DMSO"
+    "PCR de 30 µL por reacción para 18 muestras (+ control negativo, control positivo y 1 tubo extra por pipeteo = 21 reacciones).",
+    "ADN molde: 1 µL por tubo (no va en la master mix).",
+    "Tampón de reacción: stock 20× → 1×. Tampón sin Mg²⁺ (0 mM).",
+    "MgCl₂: stock 50 mM → 2.0 mM final (añádelo como MgCl₂ extra).",
+    "Cada dNTP: stock 25 mM → 250 µM.",
+    "Cada cebador (F y R): stock 20 pmol/µL (µM) → 400 nM.",
+    "Taq ADN polimerasa: 10 U/µL → 1.5 U por reacción.",
+    "b) Prepara la master mix para 21 reacciones sin molde.",
+    "c) Termociclador: 94 °C 4 min; 32 ciclos de 94 °C 20 s, 60 °C 25 s y 72 °C 40 s; extensión final a 72 °C 180 s."
   ]
 }

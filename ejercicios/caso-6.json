@@ -1,0 +1,104 @@
+{
+  "id": "pdf6",
+  "title": "Caso 6",
+  "mode": "both",
+  "program": {
+    "id": "pdf6-ref",
+    "name": "Caso 6",
+    "lidTemp": 105,
+    "rampRate": 3,
+    "stages": [
+      {
+        "id": "pdf6-g1",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "pdf6-s1",
+            "label": "Desnaturalización inicial",
+            "temp": 96,
+            "time": 180
+          }
+        ]
+      },
+      {
+        "id": "pdf6-g2",
+        "repeats": 40,
+        "steps": [
+          {
+            "id": "pdf6-s2",
+            "label": "Desnaturalización",
+            "temp": 96,
+            "time": 15
+          },
+          {
+            "id": "pdf6-s3",
+            "label": "Anillamiento",
+            "temp": 59,
+            "time": 25
+          },
+          {
+            "id": "pdf6-s4",
+            "label": "Extensión",
+            "temp": 72,
+            "time": 30
+          }
+        ]
+      },
+      {
+        "id": "pdf6-g3",
+        "repeats": 1,
+        "steps": [
+          {
+            "id": "pdf6-s5",
+            "label": "Extensión final",
+            "temp": 72,
+            "time": 180
+          }
+        ]
+      }
+    ]
+  },
+  "mix": {
+    "volume": 20,
+    "samples": 17,
+    "options": {
+      "enzymeStockU": 5,
+      "enzymeUnits": 1.0,
+      "primerStockUM": 10,
+      "primerFinalUM": 0.3,
+      "dntpStockMM": 10,
+      "dntpFinalMM": 0.25,
+      "mgStockMM": 20,
+      "templateUL": 1,
+      "bufferX": 5
+    },
+    "input": {
+      "reaction": "standard",
+      "polymeraseId": "taq",
+      "fwdSeq": "",
+      "revSeq": "",
+      "fwdTm": 60,
+      "revTm": 60,
+      "ampliconBp": 500,
+      "template": "plasmid",
+      "highGC": false,
+      "additives": {
+        "dmso": 0,
+        "formamide": 0,
+        "extraMg": 2.0
+      },
+      "mgMM": 0
+    }
+  },
+  "statement": [
+    "PCR de 20 µL por reacción para 14 muestras (+ control negativo, control positivo y 1 tubo extra por pipeteo = 17 reacciones).",
+    "ADN molde: 1 µL por tubo (no va en la master mix).",
+    "Tampón de reacción: stock 5× → 1×. Tampón sin Mg²⁺ (0 mM).",
+    "MgCl₂: stock 20 mM → 2.0 mM final (añádelo como MgCl₂ extra).",
+    "Cada dNTP: stock 10 mM → 250 µM.",
+    "Cada cebador (F y R): stock 10 pmol/µL (µM) → 300 nM.",
+    "Taq ADN polimerasa: 5 U/µL → 1.0 U por reacción.",
+    "b) Prepara la master mix para 17 reacciones sin molde.",
+    "c) Termociclador: 96 °C 3 min; 40 ciclos de 96 °C 15 s, 59 °C 25 s y 72 °C 30 s; extensión final a 72 °C 180 s."
+  ]
+}
