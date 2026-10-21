@@ -211,7 +211,12 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
       <section aria-label="Resultados del master mix" className="min-w-0 space-y-3 self-start border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
-          <p className="text-sm text-muted-foreground">{samples} muestras + 10 % extra = {round1(mix.factor)}×</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              {samples} muestras {pipetting ? `+ 10 % extra = ${round1(mix.factor)}×` : `= ${samples}×`}
+            </p>
+            <PipetteSwitch checked={pipetting} onChange={setPipetting} />
+          </div>
         </div>
         <table className="w-full font-mono text-sm">
           <thead className="text-muted-foreground">
@@ -222,7 +227,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
               <tr key={r.name} className="border-t">
                 <td className="py-1.5 font-sans">{r.name}</td>
                 <td className="text-right">{fmt2(r.per)}</td>
-                <td className="text-right">{fmt2(r.total)}</td>
+                <td className="text-right">{fmt2(pipetting ? r.total : r.per * samples)}</td>
               </tr>
             ))}
           </tbody>
@@ -231,7 +236,7 @@ export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMix
           <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
         )}
         <p className="text-xs text-muted-foreground">
-          Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear. dNTPs: stock {dntpStockMM} mM de cada
+          Volúmenes en µL {pipetting ? "con 10 % extra para compensar pérdidas al pipetear" : "sin extra por pipeteo (volúmenes exactos)"}. dNTPs: stock {dntpStockMM} mM de cada
           nucleótido ({round2(dntpStockMM * 4)} mM total) → {dntpFinalMM} mM finales de cada uno. Mg²⁺ final{" "}
           {round2(bufferMg + extraMg)} mM.{" "}
           {mix.template
