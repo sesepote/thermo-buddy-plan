@@ -91,14 +91,15 @@
     }
   },
   "statement": [
-    "PCR de 20 µL por reacción para 14 muestras (+ control negativo, control positivo y 1 tubo extra por pipeteo = 17 reacciones).",
-    "ADN molde: 1 µL por tubo (no va en la master mix).",
-    "Tampón de reacción: stock 5× → 1×. Tampón sin Mg²⁺ (0 mM).",
-    "MgCl₂: stock 20 mM → 2.0 mM final (añádelo como MgCl₂ extra).",
-    "Cada dNTP: stock 10 mM → 250 µM.",
-    "Cada cebador (F y R): stock 10 pmol/µL (µM) → 300 nM.",
-    "Taq ADN polimerasa: 5 U/µL → 1.0 U por reacción.",
-    "b) Prepara la master mix para 17 reacciones sin molde.",
-    "c) Termociclador: 96 °C 3 min; 40 ciclos de 96 °C 15 s, 59 °C 25 s y 72 °C 30 s; extensión final a 72 °C 180 s."
+    "*Recuerda que en todos los ejercicios se habla de muestras y realmente tienes que contar con un tubo a mayores como control negativo, uno como control positivo, y uno para no tener errores de pipeteo.",
+    "Se desea preparar una PCR de 20 µl por reacción para 14 muestras. En cada tubo se añadirán 1 µl de ADN molde. Los reactivos disponibles y las condiciones finales son:",
+    "Componente · Stock disponible · Concentración/cantidad final",
+    "Tampón de reacción · 5× · 1×",
+    "MgCl₂ · 20 mM · 2.0 mM",
+    "Cada dNTP · 10 mM · 250 µM",
+    "Cada cebador (F y R) · 10 pmol/µl · 300 nM",
+    "Taq ADN polimerasa · 5 U/µl · 1.0 U por reacción",
+    "b) Calcula los volúmenes para una mastermix para 14 reacciones, sin añadir el ADN molde.",
+    "c) Configura el termociclador para estos parámetros: desnaturalización inicial a 96 °C durante 3 min; 40 ciclos de desnaturalización a 96 °C durante 15 s, hibridación a 59 °C durante 25 s y extensión a 72 °C durante 30 s; extensión final a 72 °C durante 180 s."
   ]
 }
