@@ -6,6 +6,7 @@ import { LanguageToggle } from "@/components/sim/LanguageToggle";
 import { ThemeToggle } from "@/components/sim/ThemeToggle";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { GLOSSARY, GLOSSARY_CATEGORIES, GLOSSARY_SOURCE } from "@/lib/pcr/glossary";
+import { FORMULAS } from "@/lib/pcr/formulas";
 
 export const Route = createFileRoute("/glosario")({
   head: () => ({
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/glosario")({
 const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 function GlossaryPage() {
+  const [tab, setTab] = useState<"terms" | "formulas">("terms");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
 
@@ -59,6 +61,21 @@ function GlossaryPage() {
           <a href={GLOSSARY_SOURCE.url} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">INCUAL</a>
         </p>
 
+        <div className="flex gap-2" role="tablist">
+          {(["terms", "formulas"] as const).map((t) => (
+            <button
+              key={t}
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={`min-h-12 flex-1 rounded-lg border px-4 font-display text-base font-semibold ${tab === t ? "border-primary bg-primary text-primary-foreground" : "bg-panel"}`}
+            >
+              {t === "terms" ? "Términos" : "Fórmulas y conversiones"}
+            </button>
+          ))}
+        </div>
+
+        {tab === "formulas" ? <FormulaSheet /> : <>
         <label className="flex h-14 items-center gap-3 rounded-lg border bg-panel px-4">
           <Search className="size-5 shrink-0 text-muted-foreground" />
           <input
@@ -101,7 +118,35 @@ function GlossaryPage() {
             </dl>
           </section>
         ))}
+        </>}
       </div>
     </StatusBars>
+  );
+}
+
+/** Tarjetas de fórmulas: fórmula grande, variables y ejemplo práctico. */
+function FormulaSheet() {
+  return (
+    <div className="flex flex-col gap-6">
+      {FORMULAS.map((g) => (
+        <section key={g.group} className="flex flex-col gap-2">
+          <h2 className="font-mono text-sm uppercase tracking-wider text-primary">{g.group}</h2>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {g.cards.map((c) => (
+              <article key={c.title} className="flex flex-col gap-3 rounded-lg border bg-panel p-4">
+                <h3 className="font-semibold">{c.title}</h3>
+                <p className="overflow-x-auto rounded-md bg-background px-3 py-3 text-center font-mono text-lg font-semibold text-primary">{c.formula}</p>
+                <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+                  {c.vars.map((v) => (
+                    <li key={v.sym}><span className="font-mono font-semibold text-foreground">{v.sym}</span> — {v.desc}</li>
+                  ))}
+                </ul>
+                <p className="mt-auto border-t pt-2 text-sm"><span className="font-semibold text-amber">Ejemplo:</span> {c.example}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
