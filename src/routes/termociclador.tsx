@@ -3,11 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { listProfiles, saveProfile, deleteProfile } from "@/lib/perfiles.functions";
 import { PasswordDialog } from "@/components/sim/PasswordDialog";
 import { useMemo, useState, useEffect } from "react";
-import { Play, Pause, Square, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Settings2, Maximize2, Minimize2, SkipForward, Download, Upload, Check, Pencil, ChevronLeft } from "lucide-react";
+import { Play, Pause, Square, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Settings2, SkipForward, Download, Upload, Check, Pencil, ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n";
 import { ChassisScreen } from "@/components/sim/ChassisScreen";
+import { ThermocyclerIcon } from "@/components/sim/ThermocyclerIcon";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { ThermalProfile, type StepPosition } from "@/components/sim/ThermalProfile";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
@@ -217,7 +218,7 @@ function Thermocycler() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-panel px-4 py-3 sm:px-6">
         <Button variant="outline" asChild className="h-12"><Link to="/"><ChevronLeft /> Menú</Link></Button>
         <div className="flex min-w-0 items-center gap-2"><Button variant="outline" className="h-12 min-w-0 max-w-[280px] border-ice/40 text-ice" disabled={locked} onClick={() => { setLibraryTab("factory"); setModal("library"); }} title="Biblioteca de protocolos"><FolderOpen /><span className="truncate">{program.name}</span></Button><span className="hidden font-mono text-[11px] text-muted-foreground sm:inline">{program.stages.reduce((n,s)=>n+s.steps.length,0)} pasos · {program.sampleVolume ?? 25} µL</span></div>
-        <div className="flex flex-wrap gap-1"><Button variant="ghost" size="icon" className="size-11" title="Ajustes del equipo" aria-label="Ajustes del equipo" disabled={locked} onClick={() => setModal("settings")}><Settings2 /></Button><Button variant="ghost" size="icon" className="size-11" title={chassis ? "Modo pantalla" : "Modo chasis"} aria-label={chassis ? "Modo pantalla" : "Modo chasis"} onClick={() => setChassis(!chassis)}>{chassis ? <Maximize2 /> : <Minimize2 />}</Button><LanguageToggle className="size-11" /><ThemeToggle className="size-11" /></div>
+        <div className="flex flex-wrap gap-1"><Button variant="ghost" size="icon" className="size-11" title="Ajustes del equipo" aria-label="Ajustes del equipo" disabled={locked} onClick={() => setModal("settings")}><Settings2 /></Button><Button variant="ghost" size="icon" className="size-11" title={chassis ? "Modo pantalla" : "Modo chasis"} aria-label={chassis ? "Modo pantalla" : "Modo chasis"} onClick={() => setChassis(!chassis)}><ThermocyclerIcon /></Button><LanguageToggle className="size-11" /><ThemeToggle className="size-11" /></div>
       </div>
       <div className="flex flex-1 flex-col gap-4 p-3 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3 font-mono text-xs"><div className="flex items-center gap-2"><span className={cn("size-2.5 rounded-full", status === "running" ? "bg-run" : status === "paused" || status === "preheating" ? "bg-amber" : "bg-ice")} /><strong className="text-foreground">{status === "preheating" ? "CALENTANDO TAPA" : status === "running" ? seg?.kind === "ramp" ? "RAMPA TÉRMICA" : "INCUBACIÓN TÉRMICA" : status === "paused" ? "EN PAUSA" : status === "done" ? "CONSERVACIÓN / FINALIZADO" : "LISTO PARA PROGRAMAR"}</strong><span className="hidden text-muted-foreground sm:inline">· {active ? seg?.step.label : chosen?.label}</span></div><span className="text-muted-foreground">{active && seg ? `ETAPA ${seg.stageIndex+1} · CICLO ${seg.cycle}/${seg.repeats}` : `TAPA ${program.lidTemp}°C · ${program.rampRate}°C/s`}</span></div>
