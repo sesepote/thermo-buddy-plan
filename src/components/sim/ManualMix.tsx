@@ -105,7 +105,7 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
         <tbody>{reagents.map(r => <tr key={r.key} className={cn("border-b", focus === r.key && "bg-panel")} onMouseEnter={() => setFocus(r.key)} onMouseLeave={() => setFocus(null)}>
           <td className="py-2"><span className="mr-3 inline-block size-3.5 rounded-sm align-middle" style={{ background: color(r.key) }} />{r.label}</td>
           <td className="py-1.5 text-right">{locked(r.key)
-            ? <span className="inline-flex h-11 min-w-24 items-center justify-end px-3 font-mono text-muted-foreground" title="El molde se añade aparte en cada tubo">0 (aparte)</span>
+            ? <span className="inline-flex h-11 min-w-24 items-center justify-end px-3 font-mono text-muted-foreground">0 (aparte)</span>
             : <button onClick={() => editRow(r.key, r.label)} className="h-11 min-w-24 rounded-md border bg-background px-3 text-right font-mono">{values[r.key] !== undefined ? fmt(values[r.key]!) : "—"}</button>}</td>
         </tr>)}</tbody>
         <tfoot><tr><td className="pt-3 font-medium">Suma total</td><td className={cn("pt-3 text-right font-mono", target !== undefined && Math.abs(total - target) > 0.01 && total > 0 ? "text-amber" : "")}>{fmt(total)}{target !== undefined && ` / ${target}`} µL</td></tr></tfoot>
