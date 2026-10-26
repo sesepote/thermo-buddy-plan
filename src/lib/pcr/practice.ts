@@ -130,6 +130,8 @@ export interface PublicCase {
   samples: number;
   volume: number;
   mode: PracticeMode;
+  /** Filas de la tabla manual (nombre y stock, sin volúmenes). */
+  reagents: { key: ReagentKey; label: string }[];
 }
 
 /** Oculta la solución: conserva etapas, nombres y holds, pero no temperaturas, tiempos ni ciclos. */
@@ -137,6 +139,7 @@ export function toPublic(c: PracticeCase): PublicCase {
   const p = c.program;
   return {
     id: c.id, title: c.title, topic: c.topic, statement: c.statement, samples: c.mix.samples, volume: c.mix.volume, mode: c.mode ?? "both",
+    reagents: expectedRows(c.mix).map(({ key, label }) => ({ key, label })),
     skeleton: { ...p, stages: p.stages.map(st => ({ ...st, repeats: st.repeats > 1 ? 10 : 1,
       steps: st.steps.map(s => ({ id: s.id, label: s.label, temp: s.time === 0 ? 20 : 50, time: s.time === 0 ? 0 : 10 })) })) },
   };
