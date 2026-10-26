@@ -101,7 +101,7 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
         <button onClick={editTubes} className="h-11 min-w-24 rounded-md border bg-background px-3 font-mono">{answer.tubes ?? "—"} tubos</button>
       </div>}
       <table className="w-full text-sm">
-        <thead><tr className="border-b text-left text-xs uppercase text-muted-foreground"><th className="py-2 font-normal">Reactivo</th><th className="py-2 text-right font-normal">Volumen (µL)</th></tr></thead>
+        <thead><tr className="border-b text-left text-xs uppercase text-muted-foreground"><th className="py-2 font-normal">Reactivo</th><th className="py-2 text-right font-normal">VOLUMEN <span className="normal-case">(µL)</span></th></tr></thead>
         <tbody>{reagents.map(r => <tr key={r.key} className={cn("border-b", focus === r.key && "bg-panel")} onMouseEnter={() => setFocus(r.key)} onMouseLeave={() => setFocus(null)}>
           <td className="py-2"><span className="mr-3 inline-block size-3.5 rounded-sm align-middle" style={{ background: color(r.key) }} />{r.label}</td>
           <td className="py-1.5 text-right">{locked(r.key)
