@@ -139,7 +139,7 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PublicCase; onBack:
     addAttempt({ exerciseId: exercise.id, score: next.score, date: Date.now(), hintsUsed: 0 });
   };
   return <div className="space-y-5 p-4 sm:p-6">
-    {animating && result && <ScientistReaction score={result.score} onDone={endAnimation} />}
+    {animating && result && <ScientistReaction score={result.score} onClose={endAnimation} />}
     <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button></div>
     {showCycler && <EditableProfile program={program} onChange={updateProgram} volume={exercise.volume} />}
     {showMix && <section aria-label="Mezcla de reacción y master mix" className={cn("space-y-3", showCycler && "border-t pt-5")}><h2 className="font-display text-xl text-ice">Mezcla de reacción y master mix</h2><ManualMix reagents={exercise.reagents} volume={exercise.volume} answer={answer} onChange={updateAnswer} celebrate={celebrate} /></section>}
