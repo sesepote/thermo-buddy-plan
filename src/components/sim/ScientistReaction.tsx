@@ -66,7 +66,7 @@ export function ScientistReaction({ score, onDone }: { score: number; onDone: ()
         </g>
         {/* efectos */}
         {end && tier === "perfect" && <g className="sci-sparkles">
-          {[[170, 50], [222, 60], [180, 30], [215, 100], [160, 85]].map(([x, y], i) =>
+          {([[170, 50], [222, 60], [180, 30], [215, 100], [160, 85]] as const).map(([x, y], i) =>
             <path key={i} d={`M${x} ${y - 8} L${x + 2} ${y - 2} L${x + 8} ${y} L${x + 2} ${y + 2} L${x} ${y + 8} L${x - 2} ${y + 2} L${x - 8} ${y} L${x - 2} ${y - 2} Z`} className="fill-amber" style={{ animationDelay: `${i * 0.12}s` }} />)}
         </g>}
         {end && tier === "toxic" && <g className="sci-skull">
