@@ -3,8 +3,7 @@
  * Cada caso guarda el programa y la mezcla correctos. Los casos viven como
  * JSON individuales en la carpeta `ejercicios/`, accesible solo desde el servidor.
  */
-import { masterMix, type CalcInput, type MixOptions } from "./protocol";
-import { POLYMERASES } from "./reagents";
+import { reactionVolumes, type CalcInput, type MixOptions } from "./protocol";
 import { formatTime, type Program } from "./types";
 
 export interface MasterMixSettings {
@@ -34,8 +33,54 @@ export const MODE_LABEL: Record<PracticeMode, string> = { both: "Completo", cycl
 
 export interface PracticeCheck { label: string; correct: boolean; detail: string }
 
+/** Componentes de la tabla de volúmenes manual, en orden de pipeteo. */
+export type ReagentKey = "buffer" | "mg" | "dntp" | "fwd" | "rev" | "dmso" | "enzyme" | "template" | "water";
+export interface ReagentRow { key: ReagentKey; label: string; per: number }
+
+const round3 = (v: number) => Math.round(v * 1000) / 1000;
+
+/** Volúmenes correctos para 1 reacción; el agua completa el volumen final. */
+export function expectedRows(mix: MasterMixSettings): ReagentRow[] {
+  const { pol, stockU, pStock, dStock, mgStock, bufferX, per } = reactionVolumes(mix.input, mix.volume, mix.options);
+  const rows: ReagentRow[] = [
+    { key: "buffer", label: `Tampón de reacción (${bufferX}×)`, per: per.buffer },
+    ...(per.mg > 0 ? [{ key: "mg" as const, label: `MgCl₂ (${mgStock} mM)`, per: per.mg }] : []),
+    { key: "dntp", label: `dNTPs (${dStock} mM c/u)`, per: per.dntp },
+    { key: "fwd", label: `Cebador F (${pStock} µM)`, per: per.fwd },
+    { key: "rev", label: `Cebador R (${pStock} µM)`, per: per.rev },
+    ...(per.dmso > 0 ? [{ key: "dmso" as const, label: "DMSO", per: per.dmso }] : []),
+    { key: "enzyme", label: `${pol.name} (${stockU} U/µL)`, per: per.enzyme },
+    { key: "template", label: "ADN molde", per: per.template },
+  ];
+  const used = rows.reduce((a, r) => a + r.per, 0);
+  return [...rows, { key: "water", label: "Agua libre de nucleasas", per: Math.max(mix.volume - used, 0) }].map(r => ({ ...r, per: round3(r.per) }));
+}
+
+/** Respuesta escrita a mano por el alumno: 1 reacción y master mix (sin molde). */
+export interface ManualAnswer {
+  single: Partial<Record<ReagentKey, number>>;
+  tubes?: number | undefined;
+  mix: Partial<Record<ReagentKey, number>>;
+}
+
+/** Master mix correcta: volumen de 1 reacción × nº de tubos, sin molde; el agua no cambia. */
+export const mixVolume = (row: ReagentRow, tubes: number) => row.key === "template" ? 0 : round3(row.per * tubes);
+
+const close = (actual: number | undefined, expected: number) =>
+  actual !== undefined && Number.isFinite(actual) && Math.abs(actual - expected) <= Math.max(0.05, expected * 0.02);
+
+function checkManual(answer: ManualAnswer | null, target: MasterMixSettings, checks: PracticeCheck[]) {
+  const rows = expectedRows(target);
+  rows.forEach(r => checks.push({ label: `1 reacción · ${r.label}`, correct: close(answer?.single[r.key], r.per), detail: `${answer?.single[r.key] ?? "—"} µL · esperado ${r.per} µL` }));
+  checks.push({ label: "Master mix · nº de reacciones", correct: answer?.tubes === target.samples, detail: `${answer?.tubes ?? "—"} · esperado ${target.samples} (muestras + controles + pipeteo)` });
+  rows.forEach(r => {
+    const expected = mixVolume(r, target.samples);
+    checks.push({ label: `Master mix · ${r.label}`, correct: close(answer?.mix[r.key] ?? (r.key === "template" ? 0 : undefined), expected), detail: `${answer?.mix[r.key] ?? "—"} µL · esperado ${expected} µL` });
+  });
+}
+
 /** Verifica todos los pasos y los parámetros de mezcla contra los valores guardados del caso. */
-export function verifyPractice(program: Program, mix: MasterMixSettings | null, exercise: PracticeCase) {
+export function verifyPractice(program: Program, answer: ManualAnswer | null, exercise: PracticeCase) {
   const mode = exercise.mode ?? "both";
   const reference = exercise.program;
   const target = exercise.mix;
@@ -58,30 +103,7 @@ export function verifyPractice(program: Program, mix: MasterMixSettings | null, 
     checks.push({ label: `Col. ${index + 1} · duración`, correct, detail: `${actual ? formatTime(actual.time) : "—"} · esperado ${formatTime(step.time)}` });
   });
   }
-  if (mode !== "cycler" && mix) {
-  const polName = POLYMERASES.find(p => p.id === target.input.polymeraseId)?.name ?? target.input.polymeraseId;
-  checks.push({ label: "Master mix · polimerasa", correct: mix.input.polymeraseId === target.input.polymeraseId, detail: `Esperada: ${polName}` });
-  check("Master mix · volumen", mix.volume, target.volume, 0.01, "µL");
-  check("Master mix · muestras", mix.samples, target.samples, 0, "");
-  check("Master mix · Mg²⁺ del tampón", mix.input.mgMM, target.input.mgMM, 0.01, "mM");
-  check("Master mix · MgCl₂ extra", mix.input.additives.extraMg, target.input.additives.extraMg, 0.01, "mM");
-  check("Master mix · DMSO", mix.input.additives.dmso, target.input.additives.dmso, 0.01, "%");
-  const wantColony = target.input.template === "colony";
-  checks.push({ label: "Master mix · molde", correct: (mix.input.template === "colony") === wantColony, detail: wantColony ? "PCR de colonia." : "Molde de ADN medido por reacción, no PCR de colonia." });
-  const fields: [keyof MixOptions, string, string][] = [
-    ["templateUL", "Molde", "µL"], ["enzymeStockU", "Stock de enzima", "U/µL"],
-    ["enzymeUnits", "Enzima por reacción", "U"], ["primerStockUM", "Stock de cebadores", "µM"],
-    ["primerFinalUM", "Cebadores finales", "µM"], ["dntpStockMM", "Stock de dNTPs", "mM"],
-    ["dntpFinalMM", "dNTPs finales", "mM"], ["mgStockMM", "Stock de MgCl₂", "mM"],
-    ["bufferX", "Stock del tampón", "×"],
-  ];
-  fields.forEach(([key, label, unit]) => {
-    if (wantColony && key === "templateUL") return;
-    const expected = target.options[key];
-    if (expected !== undefined) check(`Master mix · ${label}`, mix.options[key], expected, 0.001, unit);
-  });
-  checks.push({ label: "Master mix · balance de volúmenes", correct: !masterMix(mix.input, mix.volume, mix.samples, mix.options).overflow, detail: "La suma de reactivos y molde no debe superar el volumen por reacción." });
-  } else if (mode !== "cycler") checks.push({ label: "Master mix", correct: false, detail: "Falta preparar la mezcla." });
+  if (mode !== "cycler") checkManual(answer, target, checks);
   const score = Math.round(checks.filter(c => c.correct).length / checks.length * 100);
   return { checks, score, correct: checks.every(c => c.correct) };
 }
