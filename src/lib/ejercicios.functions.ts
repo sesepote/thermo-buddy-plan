@@ -3,7 +3,7 @@
  * versión pública de cada caso; las soluciones se comparan en el servidor.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { isCase, toPublic, verifyPractice, type MasterMixSettings, type PracticeCase } from "./pcr/practice";
+import { isCase, toPublic, verifyPractice, type ManualAnswer, type PracticeCase } from "./pcr/practice";
 import type { Program } from "./pcr/types";
 
 /** Lista pública: enunciado y estructura, sin valores correctos. */
@@ -13,12 +13,12 @@ export const listExercises = createServerFn({ method: "GET" }).handler(async () 
 });
 
 export const verifyExercise = createServerFn({ method: "POST" })
-  .inputValidator((d: { id: string; program: Program; mix: MasterMixSettings | null }) => d)
+  .inputValidator((d: { id: string; program: Program; answer: ManualAnswer | null }) => d)
   .handler(async ({ data }) => {
     const { readCases } = await import("./ejercicios.server");
     const exercise = (await readCases()).find(c => c.id === data.id);
     if (!exercise) throw new Error("Ejercicio no encontrado");
-    return verifyPractice(data.program, data.mix, exercise);
+    return verifyPractice(data.program, data.answer, exercise);
   });
 
 export const checkExercisePassword = createServerFn({ method: "POST" })

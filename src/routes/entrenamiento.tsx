@@ -11,9 +11,10 @@ import { useT } from "@/lib/i18n";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { ThermalProfile, type StepPosition } from "@/components/sim/ThermalProfile";
 import { MasterMixCalculator } from "@/components/sim/MasterMixCalculator";
+import { ManualMix } from "@/components/sim/ManualMix";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { useApp } from "@/lib/store";
-import { MODE_LABEL, type PracticeCase, type PracticeMode, type PublicCase, type MasterMixSettings } from "@/lib/pcr/practice";
+import { MODE_LABEL, type PracticeCase, type PracticeMode, type PublicCase, type MasterMixSettings, type ManualAnswer } from "@/lib/pcr/practice";
 import { cloneProgram, uid, type Program } from "@/lib/pcr/types";
 import { setLoopRange } from "@/lib/pcr/loops";
 import { StepNameDialog } from "@/components/sim/StepNameDialog";
@@ -119,29 +120,29 @@ function EditableProfile({ program, onChange, volume }: { program: Program; onCh
 function ExerciseWorkspace({ exercise, onBack }: { exercise: PublicCase; onBack: () => void }) {
   const verifyFn = useServerFn(verifyExercise);
   const [program, setProgram] = useState<Program>(() => cloneProgram(exercise.skeleton));
-  const [mix, setMix] = useState<MasterMixSettings | null>(null);
+  const [answer, setAnswer] = useState<ManualAnswer>({ single: {}, mix: {} });
+  const [celebrate, setCelebrate] = useState(0);
   const [result, setResult] = useState<Awaited<ReturnType<typeof verifyExercise>> | null>(null);
   const addAttempt = useApp(s => s.addAttempt);
   const updateProgram = (next: Program) => { setProgram(next); setResult(null); };
-  // La referencia estable evita volver a notificar cambios en cada render.
-  const reportMix = useCallback((next: MasterMixSettings) => { setMix(next); setResult(null); }, []);
+  const updateAnswer = (next: ManualAnswer) => { setAnswer(next); setResult(null); };
   const showCycler = exercise.mode !== "mix", showMix = exercise.mode !== "cycler";
   const verify = async () => {
-    if (showMix && !mix) return;
     // La solución nunca llega al navegador: se compara en el servidor.
-    const next = await verifyFn({ data: { id: exercise.id, program, mix } });
+    const next = await verifyFn({ data: { id: exercise.id, program, answer: showMix ? answer : null } });
     setResult(next);
+    if (showMix && next.checks.filter(c => c.label.startsWith("1 reacción") || c.label.startsWith("Master mix")).every(c => c.correct)) setCelebrate(n => n + 1);
     addAttempt({ exerciseId: exercise.id, score: next.score, date: Date.now(), hintsUsed: 0 });
   };
   return <div className="space-y-5 p-4 sm:p-6">
-    <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button><span className="font-mono text-xs text-muted-foreground">{exercise.samples} MUESTRAS · +10 % EXTRA</span></div>
-    {showCycler && <EditableProfile program={program} onChange={updateProgram} volume={mix?.volume ?? exercise.volume} />}
-    {showMix && <section aria-label="Calculadora de master mix" className={cn(showCycler && "border-t pt-5")}><MasterMixCalculator onChange={reportMix} /></section>}
+    <div className="flex flex-wrap items-center justify-between gap-3"><Button variant="outline" className="h-12" onClick={onBack}><ChevronLeft /> Todos los ejercicios</Button></div>
+    {showCycler && <EditableProfile program={program} onChange={updateProgram} volume={exercise.volume} />}
+    {showMix && <section aria-label="Mezcla de reacción y master mix" className={cn("space-y-3", showCycler && "border-t pt-5")}><h2 className="font-display text-xl text-ice">Mezcla de reacción y master mix</h2><ManualMix reagents={exercise.reagents} volume={exercise.volume} answer={answer} onChange={updateAnswer} celebrate={celebrate} /></section>}
     <section aria-labelledby="exercise-statement" className="space-y-5 border-y py-5">
       <h2 id="exercise-statement" className="font-display text-xl text-ice">Enunciado</h2>
       <StatementBody lines={exercise.statement} />
     </section>
-    <Button className="h-14 w-full bg-run text-lg text-run-foreground" disabled={showMix && !mix} onClick={() => void verify()}><CheckCircle2 /> Verificar</Button>
+    <Button className="h-14 w-full bg-run text-lg text-run-foreground" onClick={() => void verify()}><CheckCircle2 /> Verificar</Button>
     {result && <section className="space-y-4 border-t pt-5" aria-label="Resultado de la verificación" aria-live="polite">
       <div className="flex flex-wrap items-center gap-4"><Trophy className={cn("size-9", result.correct ? "text-run" : "text-amber")} /><h2 className="font-display text-2xl">{result.score} / 100</h2><p className="text-sm text-muted-foreground">{result.correct ? "¡Correcto! Ejercicio resuelto." : "Revisa los parámetros marcados y vuelve a verificar."}</p></div>
       <ul className="grid gap-x-8 sm:grid-cols-2">{result.checks.map(check => <li key={check.label} className="flex gap-3 border-b py-3">{check.correct ? <CheckCircle2 className="size-5 shrink-0 text-run" /> : <XCircle className="size-5 shrink-0 text-destructive" />}<div><p className="text-sm font-medium">{check.label}</p><p className="text-xs text-muted-foreground">{check.detail}</p></div></li>)}</ul>

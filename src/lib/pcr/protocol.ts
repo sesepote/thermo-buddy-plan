@@ -220,15 +220,9 @@ export interface MixOptions {
   mgStockMM?: number;
 }
 
-/**
- * Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL, con 10 % extra.
- * Todos los reactivos siguen C1·V1 = C2·V2 → V = C_final × V_reacción / C_stock.
- * dNTPs: por defecto stock 10 mM de CADA nucleótido → 0,2 mM finales de cada uno.
- * MgCl2: por defecto stock 25 mM; solo se añade el Mg extra sobre el del tampón.
- */
-export function masterMix(input: CalcInput, volume: number, samples: number, opts: MixOptions = {}) {
+/** Volúmenes por reacción (µL) según C1·V1 = C2·V2; compartido por la calculadora y la corrección manual. */
+export function reactionVolumes(input: CalcInput, volume: number, opts: MixOptions = {}) {
   const pol = POLYMERASES.find((p) => p.id === input.polymeraseId) ?? POLYMERASES[0]!;
-  const factor = samples * 1.1;
   const stockU = opts.enzymeStockU ?? pol.stockU;
   const units = opts.enzymeUnits ?? pol.unitsPer50 * (volume / 50);
   const pStock = opts.primerStockUM ?? 10;
@@ -247,6 +241,18 @@ export function masterMix(input: CalcInput, volume: number, samples: number, opt
     dmso: (volume * input.additives.dmso) / 100,
     template: input.template === "colony" ? 0 : (opts.templateUL ?? 1),
   };
+  return { pol, stockU, units, pStock, dStock, dFinal, mgStock, bufferX, per };
+}
+
+/**
+ * Mezcla de reacción (master mix) para `samples` reacciones de `volume` µL, con 10 % extra.
+ * Todos los reactivos siguen C1·V1 = C2·V2 → V = C_final × V_reacción / C_stock.
+ * dNTPs: por defecto stock 10 mM de CADA nucleótido → 0,2 mM finales de cada uno.
+ * MgCl2: por defecto stock 25 mM; solo se añade el Mg extra sobre el del tampón.
+ */
+export function masterMix(input: CalcInput, volume: number, samples: number, opts: MixOptions = {}) {
+  const { pol, stockU, units, pStock, dStock, dFinal, mgStock, bufferX, per } = reactionVolumes(input, volume, opts);
+  const factor = samples * 1.1;
   const used = Object.values(per).reduce((a, b) => a + b, 0);
   const rows = [
     { name: `Tampón ${bufferX}x (aporta ${input.mgMM} mM Mg²⁺)`, per: per.buffer },
