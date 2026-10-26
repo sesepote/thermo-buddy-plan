@@ -99,6 +99,7 @@
     "Cada dNTP · 10 mM · 250 µM",
     "Cada cebador (F y R) · 10 pmol/µl · 300 nM",
     "Taq ADN polimerasa · 5 U/µl · 1.0 U por reacción",
+    "a) Calcula el volumen de cada reactivo y de agua para una reacción.",
     "b) Calcula los volúmenes para una mastermix para 14 reacciones, sin añadir el ADN molde.",
     "c) Configura el termociclador para estos parámetros: desnaturalización inicial a 96 °C durante 3 min; 40 ciclos de desnaturalización a 96 °C durante 15 s, hibridación a 59 °C durante 25 s y extensión a 72 °C durante 30 s; extensión final a 72 °C durante 180 s."
   ],
