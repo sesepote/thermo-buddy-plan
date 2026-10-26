@@ -303,3 +303,20 @@
 .tube-bubble { animation: tube-bubble 1.6s ease-out forwards; }
 @keyframes tube-spill { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.25); } }
 .tube-spill { transform-origin: bottom; animation: tube-spill 1s ease-in-out infinite; }
+/* Gota que cae desde la pipeta hasta el líquido. */
+@keyframes tube-drop { 0% { transform: translate(-50%, -24px); opacity: 0; } 15% { opacity: 1; } 85% { transform: translate(-50%, 200px); opacity: 1; } 100% { transform: translate(-50%, 220px) scale(1.8, 0.3); opacity: 0; } }
+.tube-drop { animation: tube-drop 0.7s ease-in forwards; }
+/* Capa nueva que entra desde abajo. */
+@keyframes tube-layer-in { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.tube-layer { transform-origin: bottom; animation: tube-layer-in 0.6s ease-out; }
+/* Oleaje del menisco tras añadir líquido. */
+@keyframes tube-wave { 0% { transform: translateY(-3px) skewX(10deg); } 30% { transform: translateY(2px) skewX(-8deg); } 60% { transform: translateY(-1px) skewX(4deg); } 100% { transform: none; } }
+.tube-wave { animation: tube-wave 0.9s ease-out; }
+/* Cambio de tamaño de tubo: aparece con un pequeño rebote. */
+@keyframes tube-swap { 0% { transform: scale(0.85); opacity: 0.3; } 70% { transform: scale(1.04); opacity: 1; } 100% { transform: none; } }
+.tube-swap { animation: tube-swap 0.45s ease-out; }
+/* Desborde: el tubo tiembla y gotea por fuera. */
+@keyframes tube-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px) rotate(-1deg); } 40% { transform: translateX(3px) rotate(1deg); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } }
+.tube-shake { animation: tube-shake 0.5s ease-in-out 2; }
+@keyframes tube-overflow-drip { 0% { transform: translateY(-6px); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(260px); opacity: 0; } }
+.tube-overflow-drip { animation: tube-overflow-drip 1.4s ease-in infinite; }

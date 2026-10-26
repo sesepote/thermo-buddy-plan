@@ -12,6 +12,7 @@ type Kind = "single" | "mix";
 
 /** Consumibles estandarizados de laboratorio. */
 const TUBES = [
+  { id: "pcr01", label: "Tubo qPCR perfil bajo 0.1 mL", capacity: 100, width: 40 },
   { id: "pcr02", label: "Tubo PCR 0.2 mL", capacity: 200, width: 46 },
   { id: "pcr05", label: "Tubo PCR 0.5 mL", capacity: 500, width: 56 },
   { id: "epp15", label: "Eppendorf 1.5 mL", capacity: 1500, width: 74 },
@@ -58,28 +59,31 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
       </select>
       <p className={cn("text-xs", overflow ? "text-destructive" : "text-muted-foreground")}>Llenado: {fmt(total)} / {tube.capacity} µL ({Math.round(total / tube.capacity * 100)} %)</p>
 
-      <div className="relative mx-auto mt-2 flex h-72 flex-col items-center" aria-hidden>
+      <div className={cn("relative mx-auto mt-2 flex h-72 flex-col items-center", overflow && "tube-shake")} aria-hidden>
+        {/* Gota que cae al añadir volumen */}
+        {total > 0 && <span key={`drop-${total}`} className="tube-drop absolute top-0 left-1/2 z-10 size-2.5 -translate-x-1/2 rounded-full bg-ice" />}
         {/* Tapa */}
         <div className="h-3 rounded-t-sm border border-b-0 bg-muted/40 transition-all duration-500" style={{ width: tube.width + 10 }} />
         {/* Cuerpo con fondo cónico */}
-        <div className="relative flex-1 transition-all duration-500" style={{ width: tube.width }}>
+        <div key={tube.id} className="tube-swap relative flex-1 transition-all duration-500" style={{ width: tube.width }}>
           <div className={cn("absolute inset-0 bg-foreground/10", overflow && "bg-destructive/30")} style={{ clipPath: "polygon(0 0,100% 0,100% 72%,62% 100%,38% 100%,0 72%)" }} />
           <div className="absolute inset-[2px]" style={{ clipPath: "polygon(0 0,100% 0,100% 72%,62% 100%,38% 100%,0 72%)" }}>
             <div className="absolute inset-0 bg-background/80" />
             {/* Capas de líquido: la primera fila queda al fondo, el agua arriba */}
-            <div className="absolute inset-x-0 bottom-0 flex flex-col-reverse transition-[height] duration-500 ease-out" style={{ height: `${fill * 100}%` }}>
+            <div className="absolute inset-x-0 bottom-0 flex flex-col-reverse transition-[height] duration-700 ease-out" style={{ height: `${fill * 100}%` }}>
               {layers.map(l => <div key={l.key} onMouseEnter={() => setFocus(l.key)} onMouseLeave={() => setFocus(null)} onClick={() => setFocus(focus === l.key ? null : l.key)}
-                className={cn("w-full transition-[height,filter] duration-500 ease-out", focus && focus !== l.key && "opacity-50", focus === l.key && "brightness-125")}
+                className={cn("tube-layer w-full transition-[height,filter,opacity] duration-700 ease-out", focus && focus !== l.key && "opacity-50", focus === l.key && "brightness-125")}
                 style={{ height: `${l.v / total * 100}%`, minHeight: 1, background: color(l.key) }} />)}
             </div>
-            {/* Menisco */}
-            {total > 0 && !overflow && <div className="absolute inset-x-0 h-2 rounded-b-[50%] border-b border-foreground/30 transition-[bottom] duration-500" style={{ bottom: `calc(${fill * 100}% - 4px)` }} />}
+            {/* Menisco con oleaje */}
+            {total > 0 && !overflow && <div key={`m-${total}`} className="tube-wave absolute inset-x-0 h-2 rounded-b-[50%] border-b border-foreground/30 transition-[bottom] duration-700" style={{ bottom: `calc(${fill * 100}% - 4px)` }} />}
             {/* Burbujas de mezcla correcta */}
-            {celebrate > 0 && <div key={celebrate} className="absolute inset-0">{[12, 30, 48, 66, 84].map((x, i) => <span key={x} className="tube-bubble absolute bottom-2 size-2 rounded-full border border-foreground/40 bg-background/40" style={{ left: `${x}%`, animationDelay: `${i * 0.18}s` }} />)}</div>}
+            {celebrate > 0 && <div key={celebrate} className="absolute inset-0">{[10, 24, 38, 52, 66, 80, 90, 30, 60].map((x, i) => <span key={i} className="tube-bubble absolute bottom-2 size-2 rounded-full border border-foreground/40 bg-background/40" style={{ left: `${x}%`, animationDelay: `${i * 0.15}s` }} />)}</div>}
           </div>
           {/* Graduaciones */}
           {[0.25, 0.5, 0.75].map(f => <div key={f} className="absolute -right-12 flex items-center gap-1 text-[10px] font-mono text-muted-foreground" style={{ bottom: `${f * 100}%` }}><span className="h-px w-3 bg-muted-foreground" />{tube.capacity * f >= 1000 ? `${tube.capacity * f / 1000} mL` : `${tube.capacity * f} µL`}</div>)}
           {overflow && <div className="tube-spill absolute -top-4 left-1/2 h-4 w-[110%] -translate-x-1/2 rounded-t-full bg-destructive/70" />}
+          {overflow && [20, 50, 80].map((x, i) => <span key={x} className="tube-overflow-drip absolute top-0 size-1.5 rounded-full bg-destructive" style={{ left: `${x}%`, animationDelay: `${i * 0.35}s` }} />)}
         </div>
       </div>
 
