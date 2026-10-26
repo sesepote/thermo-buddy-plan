@@ -77,7 +77,7 @@ export function ScientistReaction({ score, onDone }: { score: number; onDone: ()
             <path d="M-4 12 L-4 16 M0 12 L0 16 M4 12 L4 16" className="stroke-card" strokeWidth="1.5" />
           </g>
         </g>}
-        {end && tier === "boom" && <g className="sci-boom">
+        {end && tier === "boom" && <g className="sci-fx-boom">
           <path d="M196 95 L210 60 L216 88 L238 70 L224 98 L240 112 L216 112 L222 140 L200 118 L180 140 L184 112 L156 110 L180 96 L166 66 Z" className="fill-destructive" />
           <path d="M196 100 L204 80 L208 96 L222 88 L212 104 L222 112 L206 112 L208 126 L196 114 L186 124 L188 110 L174 106 L188 100 L182 84 Z" className="fill-amber" />
         </g>}
