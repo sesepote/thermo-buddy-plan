@@ -53,7 +53,7 @@ export function expectedRows(mix: MasterMixSettings): ReagentRow[] {
     { key: "template", label: "ADN molde", per: per.template },
   ];
   const used = rows.reduce((a, r) => a + r.per, 0);
-  return [...rows, { key: "water", label: "Agua libre de nucleasas", per: Math.max(mix.volume - used, 0) }].map(r => ({ ...r, per: round3(r.per) }));
+  return [...rows, { key: "water" as const, label: "Agua libre de nucleasas", per: Math.max(mix.volume - used, 0) }].map(r => ({ ...r, per: round3(r.per) }));
 }
 
 /** Respuesta escrita a mano por el alumno: 1 reacción y master mix (sin molde). */
