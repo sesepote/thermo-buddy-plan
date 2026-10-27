@@ -77,7 +77,7 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
             </div>
             {/* Menisco cóncavo: más hondo cuanto más ancho el tubo y más líquido (como en la realidad) */}
             {total > 0 && !overflow && <div key={`m-${total}`} className="tube-wave absolute inset-x-0 rounded-b-[50%] border-b border-foreground/30 bg-background/80 transition-[top,height] duration-700"
-              style={{ top: `${(1 - fill) * 100}%`, height: Math.min(3 * (2 + tube.width / 18) * (0.5 + 0.5 * fill), fill * 272 * 0.6) }} />}
+              style={{ top: `${(1 - fill) * 100}%`, height: Math.min(2.1 * (2 + tube.width / 18) * (0.5 + 0.5 * fill), fill * 272 * 0.6) }} />}
             {/* Burbujas de mezcla correcta */}
             {celebrate > 0 && <div key={celebrate} className="absolute inset-0">{[10, 24, 38, 52, 66, 80, 90, 30, 60].map((x, i) => <span key={i} className="tube-bubble absolute bottom-2 size-2 rounded-full border border-foreground/40 bg-background/40" style={{ left: `${x}%`, animationDelay: `${i * 0.15}s` }} />)}</div>}
           </div>
