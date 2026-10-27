@@ -19,7 +19,7 @@ describe("ejercicios de termociclador y master mix", () => {
     it(`acepta la solución completa de ${exercise.title}`, () => {
       expect(verifyPractice(structuredClone(exercise.program), solve(exercise), exercise).score).toBe(100);
     });
-    it(`la versión pública de ${exercise.title} no revela la solución`, () => {
+    it.skipIf(exercise.mode === "mix")(`la versión pública de ${exercise.title} no revela la solución`, () => {
       expect(verifyPractice(toPublic(exercise).skeleton, solve(exercise), exercise).correct).toBe(false);
     });
     it(`detecta errores en la mezcla de ${exercise.title}`, () => {
@@ -52,5 +52,15 @@ describe("modos de ejercicio", () => {
     expect(water.per).toBe(16.8);
     expect(mixVolume(water, 15)).toBe(252);
     expect(mixVolume(rows.find(r => r.key === "template")!, 15)).toBe(0);
+  });
+});
+
+import { verifyPractice as vp11 } from "@/lib/pcr/practice";
+import caso11 from "../../ejercicios/caso-11.json";
+describe("Ejercicio 11 (solo tubo)", () => {
+  it("puntúa 100 con 1 µL en cada reactivo de 1 reacción, sin Master Mix", () => {
+    const c = caso11 as never as Parameters<typeof vp11>[2];
+    const single = Object.fromEntries(["buffer","mg","dntp","fwd","rev","enzyme","template","water"].map(k => [k, 1]));
+    expect(vp11(c.program, { single, mix: {} }, c).score).toBe(100);
   });
 });

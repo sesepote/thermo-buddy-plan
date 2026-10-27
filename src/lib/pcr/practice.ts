@@ -69,9 +69,15 @@ export const mixVolume = (row: ReagentRow, tubes: number) => row.key === "templa
 const close = (actual: number | undefined, expected: number) =>
   actual !== undefined && Number.isFinite(actual) && Math.abs(actual - expected) <= Math.max(0.05, expected * 0.02);
 
+const hasData = (v: Partial<Record<ReagentKey, number>> | undefined) => !!v && Object.values(v).some(n => typeof n === "number" && n > 0);
+
+/** Corrige solo las pestañas con datos (1 reacción y/o master mix); si ninguna tiene datos, ambas. */
 function checkManual(answer: ManualAnswer | null, target: MasterMixSettings, checks: PracticeCheck[]) {
   const rows = expectedRows(target);
-  rows.forEach(r => checks.push({ label: `1 reacción · ${r.label}`, correct: close(answer?.single[r.key], r.per), detail: `${answer?.single[r.key] ?? "—"} µL · esperado ${r.per} µL` }));
+  const single = hasData(answer?.single), mix = hasData(answer?.mix);
+  const doSingle = single || !mix, doMix = mix || !single;
+  if (doSingle) rows.forEach(r => checks.push({ label: `1 reacción · ${r.label}`, correct: close(answer?.single[r.key], r.per), detail: `${answer?.single[r.key] ?? "—"} µL · esperado ${r.per} µL` }));
+  if (!doMix) return;
   checks.push({ label: "Master mix · nº de reacciones", correct: answer?.tubes === target.samples, detail: `${answer?.tubes ?? "—"} · esperado ${target.samples} (muestras + controles + pipeteo)` });
   rows.forEach(r => {
     const expected = mixVolume(r, target.samples);
@@ -114,7 +120,7 @@ const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFin
 export function isCase(v: unknown): v is PracticeCase {
   const c = v as PracticeCase;
   return !!c && typeof c.id === "string" && typeof c.title === "string" && Array.isArray(c.statement) && c.statement.every(l => typeof l === "string")
-    && !!c.program && Array.isArray(c.program.stages) && c.program.stages.length > 0
+    && !!c.program && Array.isArray(c.program.stages) && (c.program.stages.length > 0 || c.mode === "mix")
     && c.program.stages.every(s => isNum(s.repeats) && Array.isArray(s.steps) && s.steps.length > 0 && s.steps.every(p => isNum(p.temp) && isNum(p.time) && typeof p.label === "string"))
     && !!c.mix && isNum(c.mix.volume) && isNum(c.mix.samples) && !!c.mix.input && typeof c.mix.input.polymeraseId === "string" && !!c.mix.input.additives && !!c.mix.options;
 }
