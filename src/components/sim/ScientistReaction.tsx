@@ -6,6 +6,7 @@ import feliz from "@/assets/cientifica/feliz.webp";
 import extranada from "@/assets/cientifica/extranada.webp";
 import asqueada from "@/assets/cientifica/asqueada.webp";
 import tiznada from "@/assets/cientifica/tiznada.webp";
+import felizVideo from "@/assets/cientifica/feliz.webm.asset.json";
 
 export type ReactionTier = "perfect" | "odd" | "toxic" | "boom";
 
@@ -34,17 +35,13 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
   return <div role="dialog" aria-modal aria-label="Resultado de la mezcla" className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-sm">
     <div className="relative flex flex-col items-center gap-3 rounded-2xl border bg-card p-6 pt-16 shadow-xl">
       <Button variant="outline" size="icon" aria-label="Cerrar" className="absolute right-3 top-3 z-10 size-12" onClick={onClose}><X /></Button>
+      {tier === "perfect" ? <video src={felizVideo.url} autoPlay muted playsInline aria-label={CAPTION[tier]} className="h-80 w-auto sm:h-96" /> :
       <div className={`sci-stage sci-${end ? tier : "shake"} relative size-72 sm:size-80`}>
         {/* Las imágenes se apilan para que el cambio de expresión no parpadee. */}
         <img src={concentrada} alt="" className={`sci-img ${end ? "opacity-0" : ""}`} draggable={false} />
         <img src={FACE[tier]} alt={CAPTION[tier]} className={`sci-img ${end ? "sci-in" : "opacity-0"}`} draggable={false} />
         {/* Efectos sobre el tubo (≈32 % x, 47 % y de la ilustración). */}
         {end && <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 size-full overflow-visible" aria-hidden>
-          {tier === "perfect" && <g className="sci-sparkles">
-            <circle cx="33" cy="47" r="9" className="sci-glow fill-amber/40" />
-            {([[22, 32], [42, 30], [18, 50], [45, 48], [30, 22]] as const).map(([x, y], i) =>
-              <path key={i} d={`M${x} ${y - 4} L${x + 1} ${y - 1} L${x + 4} ${y} L${x + 1} ${y + 1} L${x} ${y + 4} L${x - 1} ${y + 1} L${x - 4} ${y} L${x - 1} ${y - 1} Z`} className="fill-amber" style={{ animationDelay: `${i * 0.15}s` }} />)}
-          </g>}
           {tier === "toxic" && <g className="sci-skull">
             <path d="M33 40 Q28 32 34 26 Q40 20 34 14" className="stroke-run/60" strokeWidth="2" fill="none" />
             <g transform="translate(34 8)">
@@ -57,7 +54,7 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
             <path d="M33 49 L37 39 L39 46 L46 42 L41 50 L46 54 L38 54 L39 61 L33 55 L28 60 L29 53 L22 51 L29 49 L26 41 Z" className="fill-amber" />
           </g>}
         </svg>}
-      </div>
+      </div>}
       <p className="font-display text-xl">{end ? CAPTION[tier] : "Agitando la mezcla…"}</p>
       <Button variant="outline" className="h-12" onClick={onClose}>Ver resultados</Button>
     </div>
