@@ -54,3 +54,13 @@ describe("modos de ejercicio", () => {
     expect(mixVolume(rows.find(r => r.key === "template")!, 15)).toBe(0);
   });
 });
+
+import { verifyPractice as vp11 } from "@/lib/pcr/practice";
+import caso11 from "../../ejercicios/caso-11.json";
+describe("Ejercicio 11 (solo tubo)", () => {
+  it("puntúa 100 con 1 µL en cada reactivo de 1 reacción, sin Master Mix", () => {
+    const c = caso11 as never as Parameters<typeof vp11>[2];
+    const single = Object.fromEntries(["buffer","mg","dntp","fwd","rev","enzyme","template","water"].map(k => [k, 1]));
+    expect(vp11(c.program, { single, mix: {} }, c).score).toBe(100);
+  });
+});
