@@ -7,6 +7,9 @@ import extranada from "@/assets/cientifica/extranada.webp";
 import asqueada from "@/assets/cientifica/asqueada.webp";
 import tiznada from "@/assets/cientifica/tiznada.webp";
 import felizVideo from "@/assets/cientifica/feliz.webm.asset.json";
+import extranadaVideo from "@/assets/cientifica/extranada.webm.asset.json";
+import asqueadaVideo from "@/assets/cientifica/asqueada.webm.asset.json";
+import tiznadaVideo from "@/assets/cientifica/tiznada.webm.asset.json";
 
 export type ReactionTier = "perfect" | "odd" | "toxic" | "boom";
 
@@ -24,6 +27,7 @@ const CAPTION: Record<ReactionTier, string> = {
   toxic: "¡Uy! Eso huele a error…",
   boom: "¡BUM! Revisa los cálculos.",
 };
+const VIDEO: Record<ReactionTier, string> = { perfect: felizVideo.url, odd: extranadaVideo.url, toxic: asqueadaVideo.url, boom: tiznadaVideo.url };
 const FACE: Record<ReactionTier, string> = { perfect: feliz, odd: extranada, toxic: asqueada, boom: tiznada };
 
 /** La científica agita el tubo ~1,6 s y reacciona; queda abierto hasta pulsar cerrar. */
@@ -35,7 +39,7 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
   return <div role="dialog" aria-modal aria-label="Resultado de la mezcla" className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-sm">
     <div className="relative flex flex-col items-center gap-3 rounded-2xl border bg-card p-6 pt-16 shadow-xl">
       <Button variant="outline" size="icon" aria-label="Cerrar" className="absolute right-3 top-3 z-10 size-12" onClick={onClose}><X /></Button>
-      {tier === "perfect" ? <video src={felizVideo.url} autoPlay muted playsInline aria-label={CAPTION[tier]} className="h-80 w-auto sm:h-96" /> :
+      {VIDEO[tier] ? <video src={VIDEO[tier]} autoPlay muted playsInline onEnded={() => setEnd(true)} aria-label={CAPTION[tier]} className="h-80 w-auto sm:h-96" /> :
       <div className={`sci-stage sci-${end ? tier : "shake"} relative size-72 sm:size-80`}>
         {/* Las imágenes se apilan para que el cambio de expresión no parpadee. */}
         <img src={concentrada} alt="" className={`sci-img ${end ? "opacity-0" : ""}`} draggable={false} />
