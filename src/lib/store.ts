@@ -34,6 +34,9 @@ interface AppState {
   /** Tema visual: oscuro por defecto, claro opcional. */
   theme: "dark" | "light";
   toggleTheme: () => void;
+  /** Sonido de las animaciones de ejercicios. */
+  muted: boolean;
+  toggleMuted: () => void;
   /** Idioma de la interfaz. */
   language: "es" | "en";
   setLanguage: (l: "es" | "en") => void;
@@ -61,6 +64,8 @@ export const useApp = create<AppState>()(
       addAttempt: (a) => set((s) => ({ attempts: [...s.attempts, a] })),
       theme: "dark",
       toggleTheme: () => set((s) => ({ theme: s.theme === "dark" ? "light" : "dark" })),
+      muted: false,
+      toggleMuted: () => set((s) => ({ muted: !s.muted })),
       language: "es",
       setLanguage: (language) => set({ language }),
     }),

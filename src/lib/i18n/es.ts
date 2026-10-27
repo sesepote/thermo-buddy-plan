@@ -1,6 +1,8 @@
 /** Diccionario base (español). Todos los idiomas deben tener esta misma forma. */
 export const es = {
-  common: { menu: "Menú", cancel: "Cancelar", language: "Cambiar idioma", toDark: "Cambiar a modo oscuro", toLight: "Cambiar a modo claro" },
+  common: {
+    mute: "Silenciar sonido",
+    unmute: "Activar sonido", menu: "Menú", cancel: "Cancelar", language: "Cambiar idioma", toDark: "Cambiar a modo oscuro", toLight: "Cambiar a modo claro" },
   menu: { nav: "Menú principal", calculator: ["Calculadora de", "protocolos"], cycler: ["Termociclador"], exercises: ["Ejercicios"], glossary: ["Glosario"], main: "Simulador principal" },
   sections: { menu: "MENÚ", cycler: "TERMOCICLADOR", calculator: "CALCULADORA", exercises: "EJERCICIOS", glossary: "GLOSARIO" },
   titles: { calculator: "Calculadora de protocolos", exercises: "Ejercicios", glossary: "Glosario" },

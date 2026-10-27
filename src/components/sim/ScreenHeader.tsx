@@ -4,9 +4,10 @@ import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
+import { SoundToggle } from "./SoundToggle";
 import { useT } from "@/lib/i18n";
 
-export function ScreenHeader({ title, subtitle, actions }: { title: string; subtitle?: string | undefined; actions?: ReactNode }) {
+export function ScreenHeader({ title, subtitle, actions, sound }: { title: string; subtitle?: string | undefined; actions?: ReactNode; sound?: boolean }) {
   const t = useT();
   return (
     <header className="flex items-center gap-4 border-b bg-panel px-4 py-3">
@@ -20,6 +21,7 @@ export function ScreenHeader({ title, subtitle, actions }: { title: string; subt
       <div className="ml-auto flex shrink-0 items-center gap-2">
         {actions}
         <LanguageToggle />
+        {sound && <SoundToggle />}
         <ThemeToggle />
       </div>
     </header>
