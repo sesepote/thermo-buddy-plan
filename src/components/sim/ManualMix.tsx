@@ -75,8 +75,9 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
                 className={cn("tube-layer w-full transition-[height,filter,opacity] duration-700 ease-out", focus && focus !== l.key && "opacity-50", focus === l.key && "brightness-125")}
                 style={{ height: `${l.v / total * 100}%`, minHeight: 1, background: color(l.key) }} />)}
             </div>
-            {/* Menisco con oleaje */}
-            {total > 0 && !overflow && <div key={`m-${total}`} className="tube-wave absolute inset-x-0 h-2 rounded-b-[50%] border-b border-foreground/30 transition-[bottom] duration-700" style={{ bottom: `calc(${fill * 100}% - 4px)` }} />}
+            {/* Menisco cóncavo: más hondo cuanto más ancho el tubo y más líquido (como en la realidad) */}
+            {total > 0 && !overflow && <div key={`m-${total}`} className="tube-wave absolute inset-x-0 rounded-b-[50%] border-b border-foreground/30 bg-background/80 transition-[top,height] duration-700"
+              style={{ top: `${(1 - fill) * 100}%`, height: (2 + tube.width / 18) * (0.5 + 0.5 * fill) }} />}
             {/* Burbujas de mezcla correcta */}
             {celebrate > 0 && <div key={celebrate} className="absolute inset-0">{[10, 24, 38, 52, 66, 80, 90, 30, 60].map((x, i) => <span key={i} className="tube-bubble absolute bottom-2 size-2 rounded-full border border-foreground/40 bg-background/40" style={{ left: `${x}%`, animationDelay: `${i * 0.15}s` }} />)}</div>}
           </div>
