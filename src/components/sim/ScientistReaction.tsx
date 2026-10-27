@@ -6,6 +6,7 @@ import feliz from "@/assets/cientifica/feliz.webp";
 import extranada from "@/assets/cientifica/extranada.webp";
 import asqueada from "@/assets/cientifica/asqueada.webp";
 import tiznada from "@/assets/cientifica/tiznada.webp";
+import felizVideo from "@/assets/cientifica/feliz.webm.asset.json";
 
 export type ReactionTier = "perfect" | "odd" | "toxic" | "boom";
 
@@ -58,7 +59,7 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
             <path d="M33 49 L37 39 L39 46 L46 42 L41 50 L46 54 L38 54 L39 61 L33 55 L28 60 L29 53 L22 51 L29 49 L26 41 Z" className="fill-amber" />
           </g>}
         </svg>}
-      </div>
+      </div>}
       <p className="font-display text-xl">{end ? CAPTION[tier] : "Agitando la mezcla…"}</p>
       <Button variant="outline" className="h-12" onClick={onClose}>Ver resultados</Button>
     </div>
