@@ -34,6 +34,7 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
   return <div role="dialog" aria-modal aria-label="Resultado de la mezcla" className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-sm">
     <div className="relative flex flex-col items-center gap-3 rounded-2xl border bg-card p-6 pt-16 shadow-xl">
       <Button variant="outline" size="icon" aria-label="Cerrar" className="absolute right-3 top-3 z-10 size-12" onClick={onClose}><X /></Button>
+      {tier === "perfect" ? <video src={felizVideo.url} autoPlay muted playsInline aria-label={CAPTION[tier]} className="h-80 w-auto sm:h-96" /> :
       <div className={`sci-stage sci-${end ? tier : "shake"} relative size-72 sm:size-80`}>
         {/* Las imágenes se apilan para que el cambio de expresión no parpadee. */}
         <img src={concentrada} alt="" className={`sci-img ${end ? "opacity-0" : ""}`} draggable={false} />
