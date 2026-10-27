@@ -66,7 +66,7 @@ function Exercises() {
 
   const subtitle = view.kind === "solve" ? view.exercise.title : view.kind === "create" ? "Nuevo ejercicio" : "PCR y preparación de master mix";
   return <StatusBars section={useT().sections.exercises}>
-    <ScreenHeader title={useT().titles.exercises} subtitle={subtitle} actions={actions} />
+    <ScreenHeader title={useT().titles.exercises} subtitle={subtitle} actions={actions} sound />
     {asking && <PasswordDialog onClose={() => setAsking(null)} onOk={pw => { const cb = asking; setAsking(null); cb(pw); }} />}
     {view.kind === "solve" && <ExerciseWorkspace key={view.exercise.id} exercise={view.exercise} onBack={() => setView({ kind: "list" })} />}
     {view.kind === "create" && <>
