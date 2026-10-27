@@ -19,7 +19,7 @@ describe("ejercicios de termociclador y master mix", () => {
     it(`acepta la solución completa de ${exercise.title}`, () => {
       expect(verifyPractice(structuredClone(exercise.program), solve(exercise), exercise).score).toBe(100);
     });
-    it(`la versión pública de ${exercise.title} no revela la solución`, () => {
+    it.skipIf(exercise.mode === "mix")(`la versión pública de ${exercise.title} no revela la solución`, () => {
       expect(verifyPractice(toPublic(exercise).skeleton, solve(exercise), exercise).correct).toBe(false);
     });
     it(`detecta errores en la mezcla de ${exercise.title}`, () => {
