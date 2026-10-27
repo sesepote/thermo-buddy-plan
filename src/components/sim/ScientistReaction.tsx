@@ -42,11 +42,6 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
         <img src={FACE[tier]} alt={CAPTION[tier]} className={`sci-img ${end ? "sci-in" : "opacity-0"}`} draggable={false} />
         {/* Efectos sobre el tubo (≈32 % x, 47 % y de la ilustración). */}
         {end && <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 size-full overflow-visible" aria-hidden>
-          {tier === "perfect" && <g className="sci-sparkles">
-            <circle cx="33" cy="47" r="9" className="sci-glow fill-amber/40" />
-            {([[22, 32], [42, 30], [18, 50], [45, 48], [30, 22]] as const).map(([x, y], i) =>
-              <path key={i} d={`M${x} ${y - 4} L${x + 1} ${y - 1} L${x + 4} ${y} L${x + 1} ${y + 1} L${x} ${y + 4} L${x - 1} ${y + 1} L${x - 4} ${y} L${x - 1} ${y - 1} Z`} className="fill-amber" style={{ animationDelay: `${i * 0.15}s` }} />)}
-          </g>}
           {tier === "toxic" && <g className="sci-skull">
             <path d="M33 40 Q28 32 34 26 Q40 20 34 14" className="stroke-run/60" strokeWidth="2" fill="none" />
             <g transform="translate(34 8)">
