@@ -1,0 +1,17 @@
+{
+  "id": "prueba-1",
+  "title": "Ejercicio 11",
+  "topic": "Prueba",
+  "mode": "mix",
+  "program": { "id": "prueba-1-ref", "name": "Prueba", "lidTemp": 105, "rampRate": 3, "stages": [] },
+  "mix": {
+    "volume": 8,
+    "samples": 1,
+    "options": { "enzymeStockU": 1, "enzymeUnits": 1, "primerStockUM": 10, "primerFinalUM": 1.25, "dntpStockMM": 10, "dntpFinalMM": 1.25, "mgStockMM": 25, "templateUL": 1, "bufferX": 8 },
+    "input": { "reaction": "standard", "polymeraseId": "taq", "fwdSeq": "", "revSeq": "", "fwdTm": 60, "revTm": 60, "ampliconBp": 500, "template": "plasmid", "highGC": false, "additives": { "dmso": 0, "formamide": 0, "extraMg": 3.125 }, "mgMM": 0 }
+  },
+  "statement": [
+    "Ejercicio de prueba para ver las animaciones de verificación.",
+    "a) Pon 1 µL en todos los reactivos (agua incluida) en «1 reacción». Total: 8 µL."
+  ]
+}
