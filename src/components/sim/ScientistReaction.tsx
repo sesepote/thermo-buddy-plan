@@ -37,7 +37,7 @@ export function preloadReactionVideos() {
   for (const src of Object.values(VIDEO)) {
     if (document.querySelector(`link[data-sci="${src}"]`)) continue;
     const l = document.createElement("link");
-    l.rel = "preload"; l.as = "video"; l.href = src; l.type = "video/webm"; l.dataset.sci = src;
+    l.rel = "preload"; l.as = "video"; l.href = src; l.type = "video/webm"; l.dataset["sci"] = src;
     document.head.appendChild(l);
     void fetch(src).catch(() => {});
   }
