@@ -31,7 +31,7 @@ export const Route = createFileRoute("/termociclador")({
     { property: "og:description", content: "Programa y ejecuta protocolos PCR en el termociclador táctil." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
-  ] }), loader: () => listProfiles(), component: Thermocycler,
+  ] }), loader: () => listProfiles(), staleTime: 5 * 60_000, component: Thermocycler,
 });
 
 const FACTORY = [
