@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, XCircle, ChevronLeft, ChevronRight, FlaskConical, Trophy, Lock, Trash2, Save } from "lucide-react";
 import { OptionPopup } from "@/components/sim/OptionPopup";
 import { listExercises, verifyExercise, createExercise, deleteExercise } from "@/lib/ejercicios.functions";
@@ -12,7 +12,7 @@ import { StatusBars } from "@/components/sim/StatusBars";
 import { ThermalProfile, type StepPosition } from "@/components/sim/ThermalProfile";
 import { MasterMixCalculator } from "@/components/sim/MasterMixCalculator";
 import { ManualMix } from "@/components/sim/ManualMix";
-import { ScientistReaction } from "@/components/sim/ScientistReaction";
+import { ScientistReaction, preloadReactionVideos } from "@/components/sim/ScientistReaction";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { useApp } from "@/lib/store";
 import { MODE_LABEL, type PracticeCase, type PracticeMode, type PublicCase, type MasterMixSettings, type ManualAnswer } from "@/lib/pcr/practice";
@@ -32,12 +32,14 @@ export const Route = createFileRoute("/entrenamiento")({
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
   loader: () => listExercises(),
+  staleTime: 5 * 60_000,
   component: Exercises,
 });
 
 type View = { kind: "list" } | { kind: "solve"; exercise: PublicCase } | { kind: "create" };
 
 function Exercises() {
+  useEffect(() => { const t = setTimeout(preloadReactionVideos, 800); return () => clearTimeout(t); }, []);
   const router = useRouter();
   const exercises = Route.useLoaderData();
   const [view, setView] = useState<View>({ kind: "list" });

@@ -75,10 +75,17 @@ export async function writeJsonGithub(cfg: GithubCfg, folder: string, prefix: st
  * Lectura/escritura de una carpeta JSON: GitHub si está configurado, si no el
  * disco local y, como último recurso, la copia incluida en la compilación.
  */
+/**
+ * Copia en memoria tras guardar: en producción se lee de aquí o de la copia
+ * incluida en la compilación (Cloudflare recompila con cada commit), sin
+ * esperar a la API de GitHub al abrir una pantalla.
+ */
+const memory = new Map<string, unknown[]>();
+
 export async function readJsonFolder(folder: string, prefix: string, bundled: Record<string, unknown>): Promise<unknown[]> {
-  const cfg = githubConfig();
-  if (cfg) {
-    try { return await readJsonGithub(cfg, folder, prefix); } catch { /* usa la copia incluida */ }
+  if (githubConfig()) {
+    const base = (k: string) => k.split("/").pop() ?? k;
+    return memory.get(folder) ?? Object.entries(bundled).sort(([x], [y]) => num(prefix, base(x)) - num(prefix, base(y))).map(([, c]) => c);
   }
   try {
     const fs = await import("node:fs/promises");
@@ -95,7 +102,7 @@ export async function readJsonFolder(folder: string, prefix: string, bundled: Re
 
 export async function writeJsonFolder(folder: string, prefix: string, items: unknown[], message: string) {
   const cfg = githubConfig();
-  if (cfg) return writeJsonGithub(cfg, folder, prefix, items, message);
+  if (cfg) { await writeJsonGithub(cfg, folder, prefix, items, message); memory.set(folder, items); return; }
   let fs, p;
   try { fs = await import("node:fs/promises"); p = await import("node:path"); } catch { throw new Error("Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO."); }
   const d = p.join(process.cwd(), folder);
@@ -126,15 +133,7 @@ function namedPaths(folder: string, names: string[]) {
 const jsonRe = /\.json$/i;
 
 export async function readNamedFolder(folder: string, bundled: Record<string, unknown>): Promise<unknown[]> {
-  const cfg = githubConfig();
-  if (cfg) {
-    try {
-      const ref = `?ref=${encodeURIComponent(cfg.branch)}`;
-      const items = await gh<{ name: string; path: string }[]>(cfg, `/contents/${folder}${ref}`);
-      const files = items.filter(i => jsonRe.test(i.name)).sort((a, b) => a.name.localeCompare(b.name));
-      return await Promise.all(files.map(async f => JSON.parse(b64((await gh<{ content: string }>(cfg, `/contents/${f.path}${ref}`)).content)) as unknown));
-    } catch { /* usa la copia incluida */ }
-  }
+  if (githubConfig()) return memory.get(folder) ?? Object.entries(bundled).sort(([x], [y]) => x.localeCompare(y)).map(([, c]) => c);
   try {
     const fs = await import("node:fs/promises");
     const p = await import("node:path");
@@ -162,6 +161,7 @@ export async function writeNamedFolder(folder: string, items: { name: string }[]
     const newTree = await gh<{ sha: string }>(cfg, `/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries }) });
     const newCommit = await gh<{ sha: string }>(cfg, `/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: newTree.sha, parents: [ref.object.sha] }) });
     await gh(cfg, `/git/refs/heads/${cfg.branch}`, { method: "PATCH", body: JSON.stringify({ sha: newCommit.sha }) });
+    memory.set(folder, items);
     return;
   }
   const err = "Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO.";

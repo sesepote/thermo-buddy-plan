@@ -31,6 +31,18 @@ const CAPTION: Record<ReactionTier, string> = {
 const VIDEO: Record<ReactionTier, string> = { perfect: felizVideo, odd: extranadaVideo, toxic: asqueadaVideo, boom: tiznadaVideo };
 const FACE: Record<ReactionTier, string> = { perfect: feliz, odd: extranada, toxic: asqueada, boom: tiznada };
 
+/** Descarga los cuatro vídeos en segundo plano para que «Verificar» arranque al instante. */
+export function preloadReactionVideos() {
+  if (typeof document === "undefined") return;
+  for (const src of Object.values(VIDEO)) {
+    if (document.querySelector(`link[data-sci="${src}"]`)) continue;
+    const l = document.createElement("link");
+    l.rel = "preload"; l.as = "video"; l.href = src; l.type = "video/webm"; l.dataset.sci = src;
+    document.head.appendChild(l);
+    void fetch(src).catch(() => {});
+  }
+}
+
 /** La científica agita el tubo ~1,6 s y reacciona; queda abierto hasta pulsar cerrar. */
 export function ScientistReaction({ score, onClose }: { score: number; onClose: () => void }) {
   const tier = reactionTier(score);
@@ -41,7 +53,7 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
   return <div role="dialog" aria-modal aria-label="Resultado de la mezcla" className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-sm">
     <div className="relative flex flex-col items-center gap-3 rounded-2xl border bg-card p-6 pt-16 shadow-xl">
       <Button variant="outline" size="icon" aria-label="Cerrar" className="absolute right-3 top-3 z-10 size-12" onClick={onClose}><X /></Button>
-      {VIDEO[tier] ? <video src={VIDEO[tier]} autoPlay muted={muted} playsInline onEnded={() => setEnd(true)} aria-label={CAPTION[tier]} className="h-80 w-auto sm:h-96" /> :
+      {VIDEO[tier] ? <video src={VIDEO[tier]} autoPlay preload="auto" muted={muted} playsInline onEnded={() => setEnd(true)} aria-label={CAPTION[tier]} className="h-80 w-auto sm:h-96" /> :
       <div className={`sci-stage sci-${end ? tier : "shake"} relative size-72 sm:size-80`}>
         {/* Las imágenes se apilan para que el cambio de expresión no parpadee. */}
         <img src={concentrada} alt="" className={`sci-img ${end ? "opacity-0" : ""}`} draggable={false} />
