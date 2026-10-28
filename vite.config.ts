@@ -27,7 +27,7 @@ export default defineConfig({
         manifest: false,
         workbox: {
           navigateFallback: null,
-          globPatterns: ["**/*.{js,css,woff,woff2,png,svg,ico,webmanifest}"],
+          globPatterns: ["**/*.{js,css,woff,woff2,png,svg,ico,webmanifest,webp,webm}"],
           runtimeCaching: [
             {
               // Páginas: primero red, si no hay conexión se sirve la copia guardada.

@@ -7,10 +7,10 @@ import feliz from "@/assets/cientifica/feliz.webp";
 import extranada from "@/assets/cientifica/extranada.webp";
 import asqueada from "@/assets/cientifica/asqueada.webp";
 import tiznada from "@/assets/cientifica/tiznada.webp";
-import felizVideo from "@/assets/cientifica/feliz.webm.asset.json";
-import extranadaVideo from "@/assets/cientifica/extranada.webm.asset.json";
-import asqueadaVideo from "@/assets/cientifica/asqueada.webm.asset.json";
-import tiznadaVideo from "@/assets/cientifica/tiznada.webm.asset.json";
+import felizVideo from "@/assets/cientifica/feliz.webm";
+import extranadaVideo from "@/assets/cientifica/extranada.webm";
+import asqueadaVideo from "@/assets/cientifica/asqueada.webm";
+import tiznadaVideo from "@/assets/cientifica/tiznada.webm";
 
 export type ReactionTier = "perfect" | "odd" | "toxic" | "boom";
 
@@ -28,7 +28,7 @@ const CAPTION: Record<ReactionTier, string> = {
   toxic: "¡Uy! Eso huele a error…",
   boom: "¡BUM! Revisa los cálculos.",
 };
-const VIDEO: Record<ReactionTier, string> = { perfect: felizVideo.url, odd: extranadaVideo.url, toxic: asqueadaVideo.url, boom: tiznadaVideo.url };
+const VIDEO: Record<ReactionTier, string> = { perfect: felizVideo, odd: extranadaVideo, toxic: asqueadaVideo, boom: tiznadaVideo };
 const FACE: Record<ReactionTier, string> = { perfect: feliz, odd: extranada, toxic: asqueada, boom: tiznada };
 
 /** La científica agita el tubo ~1,6 s y reacciona; queda abierto hasta pulsar cerrar. */
