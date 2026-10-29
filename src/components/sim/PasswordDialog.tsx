@@ -1,23 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { OptionPopup } from "@/components/sim/OptionPopup";
-import { listTeachers, loginTeacher, changeTeacherPassword } from "@/lib/docentes.functions";
+import { loginTeacher, changeTeacherPassword } from "@/lib/docentes.functions";
 import { useTeacher } from "@/lib/teacher-session";
 import type { Credentials } from "@/lib/docentes.types";
 
 const field = "h-12 rounded-md border bg-background px-3 text-base text-foreground";
 
-/** Inicio de sesión docente: elige su nombre y escribe su contraseña (se comprueba en el servidor). */
+/** El acceso no publica nombres ni permite enumerar las cuentas docentes. */
 export function PasswordDialog({ onOk, onClose, subtitle = "Identifícate para crear, editar o eliminar ejercicios." }: { onOk?: (auth: Credentials) => void; onClose: () => void; subtitle?: string | undefined }) {
-  const list = useServerFn(listTeachers);
   const check = useServerFn(loginTeacher);
   const login = useTeacher(s => s.login);
-  const [teachers, setTeachers] = useState<{ usuario: string; nombre: string }[]>([]);
   const [user, setUser] = useState("");
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
-  useEffect(() => { void list().then(t => { setTeachers(t); setUser(u => u || t[0]?.usuario || ""); }); }, [list]);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const auth = { user, password: value };
@@ -28,10 +25,8 @@ export function PasswordDialog({ onOk, onClose, subtitle = "Identifícate para c
   };
   return <OptionPopup onClose={onClose} content={{ title: "Acceso de docente", subtitle, body:
     <form onSubmit={e => void submit(e)} className="grid gap-3">
-      <select aria-label="Docente" value={user} onChange={e => { setUser(e.target.value); setError(false); }} className={field}>
-        {teachers.map(t => <option key={t.usuario} value={t.usuario}>{t.nombre}</option>)}
-      </select>
-      <input autoFocus type="password" autoComplete="off" value={value} onChange={e => { setValue(e.target.value); setError(false); }} aria-label="Contraseña" className={field} />
+      <input autoFocus type="text" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="Usuario" aria-label="Usuario" value={user} onChange={e => { setUser(e.target.value); setError(false); }} className={field} required />
+      <input type="password" autoComplete="off" placeholder="Contraseña" value={value} onChange={e => { setValue(e.target.value); setError(false); }} aria-label="Contraseña" className={field} required />
       {error && <p className="text-sm text-destructive">Usuario o contraseña incorrectos</p>}
       <Button type="submit" className="h-12 bg-run text-run-foreground">Entrar</Button>
     </form> }} />;

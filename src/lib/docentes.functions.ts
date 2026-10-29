@@ -1,11 +1,6 @@
-/** Acceso docente: lista de nombres, inicio de sesión y cambio de contraseña. */
+/** Acceso docente sin listado público de cuentas. */
 import { createServerFn } from "@tanstack/react-start";
 import type { Credentials } from "./docentes.types";
-
-export const listTeachers = createServerFn({ method: "GET" }).handler(async () => {
-  const { readTeachers } = await import("./docentes.server");
-  return (await readTeachers()).map(t => ({ usuario: t.usuario, nombre: t.nombre }));
-});
 
 export const loginTeacher = createServerFn({ method: "POST" })
   .inputValidator((d: Credentials) => d)

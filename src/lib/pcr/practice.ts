@@ -11,6 +11,8 @@ export interface MasterMixSettings {
   volume: number;
   samples: number;
   options: MixOptions;
+  /** Solución escrita por el docente en el editor de tubos; los casos antiguos usan química. */
+  manual?: { rows: ReagentRow[]; totals?: Partial<Record<ReagentKey, number>> | undefined } | undefined;
 }
 
 export interface PracticeCase {
@@ -45,6 +47,7 @@ const round3 = (v: number) => Math.round(v * 1000) / 1000;
 
 /** Volúmenes correctos para 1 reacción; el agua completa el volumen final. */
 export function expectedRows(mix: MasterMixSettings): ReagentRow[] {
+  if (mix.manual) return mix.manual.rows.map(r => ({ ...r }));
   const { pol, stockU, pStock, dStock, mgStock, bufferX, per } = reactionVolumes(mix.input, mix.volume, mix.options);
   const rows: ReagentRow[] = [
     { key: "buffer", label: `Tampón de reacción (${bufferX}×)`, per: per.buffer },
@@ -84,7 +87,7 @@ function checkManual(answer: ManualAnswer | null, target: MasterMixSettings, che
   if (!doMix) return;
   checks.push({ label: "Master mix · nº de reacciones", correct: answer?.tubes === target.samples, detail: `${answer?.tubes ?? "—"} · esperado ${target.samples} (muestras + controles + pipeteo)` });
   rows.forEach(r => {
-    const expected = mixVolume(r, target.samples);
+    const expected = target.manual?.totals?.[r.key] ?? mixVolume(r, target.samples);
     checks.push({ label: `Master mix · ${r.label}`, correct: close(answer?.mix[r.key] ?? (r.key === "template" ? 0 : undefined), expected), detail: `${answer?.mix[r.key] ?? "—"} µL · esperado ${expected} µL` });
   });
 }
@@ -120,13 +123,26 @@ export function verifyPractice(program: Program, answer: ManualAnswer | null, ex
 
 const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
+export const REAGENT_KEYS: ReagentKey[] = ["buffer", "mg", "dntp", "fwd", "rev", "dmso", "enzyme", "template", "water"];
+
+/** Valida las respuestas docentes antes de guardar un archivo. */
+export function isManualSolution(v: unknown): v is NonNullable<MasterMixSettings["manual"]> {
+  if (!v || typeof v !== "object") return false;
+  const { rows, totals } = v as NonNullable<MasterMixSettings["manual"]>;
+  return Array.isArray(rows) && rows.length > 0 && rows.length <= REAGENT_KEYS.length
+    && new Set(rows.map(r => r?.key)).size === rows.length
+    && rows.every(r => r && REAGENT_KEYS.includes(r.key) && typeof r.label === "string" && r.label.trim().length > 0 && isNum(r.per) && r.per >= 0 && r.per <= 5000)
+    && (totals === undefined || (!!totals && typeof totals === "object" && rows.every(r => isNum(totals[r.key]) && (totals[r.key] ?? -1) >= 0 && (totals[r.key] ?? Infinity) <= 5000) && (totals.template === undefined || totals.template === 0)));
+}
+
 /** Comprueba la forma mínima de un caso para no cargar archivos corruptos. */
 export function isCase(v: unknown): v is PracticeCase {
   const c = v as PracticeCase;
   return !!c && typeof c.id === "string" && typeof c.title === "string" && Array.isArray(c.statement) && c.statement.every(l => typeof l === "string")
     && !!c.program && Array.isArray(c.program.stages) && (c.program.stages.length > 0 || c.mode === "mix")
     && c.program.stages.every(s => isNum(s.repeats) && Array.isArray(s.steps) && s.steps.length > 0 && s.steps.every(p => isNum(p.temp) && isNum(p.time) && typeof p.label === "string"))
-    && !!c.mix && isNum(c.mix.volume) && isNum(c.mix.samples) && !!c.mix.input && typeof c.mix.input.polymeraseId === "string" && !!c.mix.input.additives && !!c.mix.options;
+    && !!c.mix && isNum(c.mix.volume) && c.mix.volume > 0 && isNum(c.mix.samples) && c.mix.samples > 0 && !!c.mix.input && typeof c.mix.input.polymeraseId === "string" && !!c.mix.input.additives && !!c.mix.options
+    && (c.mix.manual === undefined || isManualSolution(c.mix.manual));
 }
 
 /** Datos que puede ver el alumno: estructura del programa sin valores correctos. */

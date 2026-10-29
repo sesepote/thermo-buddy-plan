@@ -15,3 +15,5 @@
 - [x] Redistribuir Master Mix con parámetros principales arriba y concentraciones/resultados debajo, y verificar la edición táctil.
 - [x] Modo docente con cuentas en docentes.json, cambio de clave, cierre manual y automático (pausado en el editor).
 - [x] Ejercicios como archivos independientes; editar, clonar y borrar solo en modo docente.
+- [ ] Actualizar creador y editor con tubos y respuestas manuales, conservando los ejercicios anteriores.
+- [ ] Sustituir la lista pública de docentes por usuario y contraseña; comprobar acceso y edición.
