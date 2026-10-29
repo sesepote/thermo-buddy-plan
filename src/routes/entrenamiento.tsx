@@ -11,12 +11,13 @@ import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { useT } from "@/lib/i18n";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { ThermalProfile, type StepPosition } from "@/components/sim/ThermalProfile";
-import { MasterMixCalculator } from "@/components/sim/MasterMixCalculator";
+import { ManualMixEditor } from "@/components/sim/ManualMixEditor";
 import { ManualMix } from "@/components/sim/ManualMix";
 import { ScientistReaction, preloadReactionVideos } from "@/components/sim/ScientistReaction";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { useApp } from "@/lib/store";
-import { MODE_LABEL, type PracticeCase, type PracticeMode, type PublicCase, type MasterMixSettings, type ManualAnswer } from "@/lib/pcr/practice";
+import { MODE_LABEL, isManualSolution, type PracticeCase, type PracticeMode, type PublicCase, type MasterMixSettings, type ManualAnswer } from "@/lib/pcr/practice";
+import { editableMix } from "@/lib/pcr/manual-editor";
 import { cloneProgram, uid, type Program } from "@/lib/pcr/types";
 import { setLoopRange } from "@/lib/pcr/loops";
 import { StepNameDialog } from "@/components/sim/StepNameDialog";
@@ -185,17 +186,21 @@ function ExerciseWorkspace({ exercise, onBack }: { exercise: PublicCase; onBack:
 function ExerciseCreator({ onBack, onSave, initial }: { onBack: () => void; onSave: (c: PracticeCase) => void; initial?: PracticeCase | undefined }) {
   useHoldTeacherSession();
   const programs = useApp(s => s.programs);
-  const [program, setProgram] = useState<Program>(() => initial ? structuredClone(initial.program) : cloneProgram(programs[0]!));
-  const [mix, setMix] = useState<MasterMixSettings | null>(initial?.mix ?? null);
+  const [program, setProgram] = useState<Program>(() => {
+    if (initial) return structuredClone(initial.program);
+    const first = programs[0];
+    return first ? cloneProgram(first) : { id: uid(), name: "Nuevo programa", lidTemp: 105, rampRate: 3, stages: [] };
+  });
+  const [mix, setMix] = useState<MasterMixSettings>(() => editableMix(initial?.mix));
   const [title, setTitle] = useState(initial?.title ?? "");
   const [topic, setTopic] = useState(initial?.topic ?? "");
   const [statement, setStatement] = useState((initial?.statement ?? []).join("\n"));
   const [mode, setMode] = useState<PracticeMode>(initial?.mode ?? "both");
-  const reportMix = useCallback((next: MasterMixSettings) => setMix(next), []);
   const showCycler = mode !== "mix", showMix = mode !== "cycler";
+  const valid = !!title.trim() && (!showMix || isManualSolution(mix.manual)) && (!showCycler || program.stages.length > 0);
   const save = () => {
-    if (!mix || !title.trim()) return;
-    onSave({ id: initial?.id ?? `caso-${uid()}`, title: title.trim(), ...(topic.trim() ? { topic: topic.trim() } : {}), mode, statement: statement.split("\n").map(l => l.trim()).filter(Boolean), program: { ...program, name: title.trim() }, mix });
+    if (!valid) return;
+    onSave({ id: initial?.id ?? `caso-${uid()}`, title: title.trim(), ...(topic.trim() ? { topic: topic.trim() } : {}), mode, statement: statement.split("\n").map(l => l.trim()).filter(Boolean), program: { ...program, name: title.trim() }, mix, order: initial?.order, author: initial?.author });
   };
   return <div className="space-y-5 p-4 sm:p-6">
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -209,9 +214,8 @@ function ExerciseCreator({ onBack, onSave, initial }: { onBack: () => void; onSa
         </select>
       </label>}
     </div>
-    {showCycler && <EditableProfile program={program} onChange={setProgram} volume={mix?.volume} />}
-    {/* La mezcla se monta siempre: aporta volumen y muestras incluso en casos de solo termociclador. */}
-    <section aria-label="Master mix correcto" className={cn(showCycler && "border-t pt-5", !showMix && "hidden")}><MasterMixCalculator initial={initial?.mix} onChange={reportMix} /></section>
+    {showCycler && <EditableProfile program={program} onChange={setProgram} volume={mix.volume} />}
+    <ManualMixEditor mix={mix} onChange={setMix} showMix={showMix} />
     <section className="grid gap-4 border-y py-5">
       <label className="grid gap-2 text-sm">Título
         <input value={title} onChange={e => setTitle(e.target.value)} placeholder="p. ej. PCR de colonia con Taq" className="h-12 rounded-md border bg-panel px-3 text-base" />
@@ -223,7 +227,7 @@ function ExerciseCreator({ onBack, onSave, initial }: { onBack: () => void; onSa
         <textarea value={statement} onChange={e => setStatement(e.target.value)} rows={6} placeholder={"Polimerasa: Taq\nAmplicón: 700 pb\n25 µL por reacción · 6 muestras"} className="rounded-md border bg-panel p-3 text-base" />
       </label>
     </section>
-    <Button className="h-14 w-full bg-run text-lg text-run-foreground" disabled={!mix || !title.trim()} onClick={save}><Save /> Guardar ejercicio</Button>
+    <Button className="h-14 w-full bg-run text-lg text-run-foreground" disabled={!valid} onClick={save}><Save /> Guardar ejercicio</Button>
   </div>;
 }
 
