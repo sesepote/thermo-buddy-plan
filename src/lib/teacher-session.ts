@@ -4,7 +4,7 @@
  */
 import { create } from "zustand";
 import { useEffect } from "react";
-import type { Credentials } from "./docentes.server";
+import type { Credentials } from "./docentes.types";
 
 export const IDLE_LOGOUT_MS = 3 * 60_000;
 

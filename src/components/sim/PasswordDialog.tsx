@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { OptionPopup } from "@/components/sim/OptionPopup";
 import { listTeachers, loginTeacher, changeTeacherPassword } from "@/lib/docentes.functions";
 import { useTeacher } from "@/lib/teacher-session";
-import type { Credentials } from "@/lib/docentes.server";
+import type { Credentials } from "@/lib/docentes.types";
 
 const field = "h-12 rounded-md border bg-background px-3 text-base text-foreground";
 

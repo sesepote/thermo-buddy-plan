@@ -6,7 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { isCase, toPublic, verifyPractice, type ManualAnswer, type PracticeCase } from "./pcr/practice";
 import type { Program } from "./pcr/types";
-import type { Credentials } from "./docentes.server";
+import type { Credentials } from "./docentes.types";
 
 const denied = { ok: false as const, error: "Sesión docente no válida" };
 

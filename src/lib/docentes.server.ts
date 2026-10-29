@@ -4,7 +4,8 @@
  * Usa Web Crypto, disponible en Cloudflare Workers y en Node.
  */
 export interface Teacher { usuario: string; nombre: string; salt: string; iter: number; hash: string }
-export interface Credentials { user: string; password: string }
+import type { Credentials } from "./docentes.types";
+export type { Credentials };
 
 const bundled = import.meta.glob<Teacher[]>("/docentes/*.json", { eager: true, import: "default" });
 const FILE = "docentes.json";
