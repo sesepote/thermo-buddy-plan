@@ -82,7 +82,7 @@ function Exercises() {
     setView({ kind: "create", initial: clone ? { ...rest, id: `caso-${uid()}`, title: `${rest.title} (copia)` } : r.exercise });
   };
 
-  const subtitle = view.kind === "solve" ? view.exercise.title : view.kind === "create" ? "Nuevo ejercicio" : "PCR y preparación de master mix";
+  const subtitle = view.kind === "solve" ? view.exercise.title : view.kind === "create" ? (view.initial?.order ? "Editar ejercicio" : "Nuevo ejercicio") : "PCR y preparación de master mix";
   return <StatusBars section={useT().sections.exercises}>
     <ScreenHeader title={useT().titles.exercises} subtitle={subtitle} actions={actions} sound />
     {asking && <PasswordDialog onClose={() => setAsking(false)} onOk={() => setAsking(false)} />}
@@ -90,7 +90,7 @@ function Exercises() {
     {view.kind === "solve" && <ExerciseWorkspace key={view.exercise.id} exercise={view.exercise} onBack={() => setView({ kind: "list" })} />}
     {view.kind === "create" && <>
       {notice && !notice.ok && <p role="alert" className="px-6 pt-4 text-sm text-destructive">{notice.text}</p>}
-      <ExerciseCreator initial={view.initial} onBack={() => setView({ kind: "list" })} onSave={c => void save(c)} />
+      <ExerciseCreator key={view.initial?.id ?? "new"} initial={view.initial} onBack={() => setView({ kind: "list" })} onSave={c => void save(c)} />
     </>}
     {view.kind === "list" &&
       <div className="mx-auto w-full max-w-6xl p-6 sm:p-8">
