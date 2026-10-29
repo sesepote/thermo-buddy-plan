@@ -58,25 +58,26 @@ function Section({ title, children }: { title: string; children: React.ReactNode
  * Solo pide polimerasa, volumen, número de muestras y aditivos, y muestra
  * la tabla de volúmenes por reactivo con el 10 % extra habitual.
  */
-export function MasterMixCalculator({ onChange }: { onChange?: (value: MasterMixSettings) => void }) {
-  const [polymeraseId, setPolymeraseIdRaw] = useState(DEFAULT_INPUT.polymeraseId);
-  const [volume, setVolume] = useState(50);
-  const [samples, setSamples] = useState(8);
-  const [dmso, setDmso] = useState(0);
-  const [colony, setColony] = useState(false);
-  const [templateUL, setTemplateUL] = useState(1);
+export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: MasterMixSettings) => void; initial?: MasterMixSettings | undefined }) {
+  const o = initial?.options, ii = initial?.input;
+  const [polymeraseId, setPolymeraseIdRaw] = useState(ii?.polymeraseId ?? DEFAULT_INPUT.polymeraseId);
+  const [volume, setVolume] = useState(initial?.volume ?? 50);
+  const [samples, setSamples] = useState(initial?.samples ?? 8);
+  const [dmso, setDmso] = useState(ii?.additives.dmso ?? 0);
+  const [colony, setColony] = useState(ii?.template === "colony");
+  const [templateUL, setTemplateUL] = useState(o?.templateUL ?? 1);
   const initPol = (POLYMERASES.find((p) => p.id === DEFAULT_INPUT.polymeraseId) ?? POLYMERASES[0]);
-  const [enzymeStockU, setEnzymeStockU] = useState(initPol?.stockU ?? 5);
-  const [bufferX, setBufferX] = useState(initPol?.bufferX ?? 10);
-  const [enzymeUnits, setEnzymeUnits] = useState(initPol?.unitsPer50 ?? 1.25);
-  const [primerStockUM, setPrimerStockUM] = useState(10);
-  const [primerFinalUM, setPrimerFinalUM] = useState(0.5);
+  const [enzymeStockU, setEnzymeStockU] = useState(o?.enzymeStockU ?? initPol?.stockU ?? 5);
+  const [bufferX, setBufferX] = useState(o?.bufferX ?? initPol?.bufferX ?? 10);
+  const [enzymeUnits, setEnzymeUnits] = useState(o?.enzymeUnits ?? initPol?.unitsPer50 ?? 1.25);
+  const [primerStockUM, setPrimerStockUM] = useState(o?.primerStockUM ?? 10);
+  const [primerFinalUM, setPrimerFinalUM] = useState(o?.primerFinalUM ?? 0.5);
   // dNTPs (mM de cada nucleótido) y MgCl2 (mM).
-  const [dntpStockMM, setDntpStockMM] = useState(10);
-  const [dntpFinalMM, setDntpFinalMM] = useState(0.2);
-  const [bufferMg, setBufferMg] = useState(DEFAULT_INPUT.mgMM);
-  const [mgStockMM, setMgStockMM] = useState(25);
-  const [extraMg, setExtraMg] = useState(0);
+  const [dntpStockMM, setDntpStockMM] = useState(o?.dntpStockMM ?? 10);
+  const [dntpFinalMM, setDntpFinalMM] = useState(o?.dntpFinalMM ?? 0.2);
+  const [bufferMg, setBufferMg] = useState(ii?.mgMM ?? DEFAULT_INPUT.mgMM);
+  const [mgStockMM, setMgStockMM] = useState(o?.mgStockMM ?? 25);
+  const [extraMg, setExtraMg] = useState(ii?.additives.extraMg ?? 0);
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   /** Ventana emergente para las polimerasas menos habituales. */
   const [popupOpen, setPopupOpen] = useState(false);
