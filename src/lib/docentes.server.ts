@@ -36,7 +36,8 @@ export async function readTeachers(): Promise<Teacher[]> {
 /** Devuelve el docente si usuario y contraseña coinciden. */
 export async function authenticate(c: Credentials | undefined | null): Promise<Teacher | null> {
   if (!c || typeof c.user !== "string" || typeof c.password !== "string") return null;
-  const t = (await readTeachers()).find(x => x.usuario === c.user.trim().toLowerCase());
+  const user = c.user.trim().normalize("NFC").toLowerCase();
+  const t = (await readTeachers()).find(x => x.usuario.normalize("NFC").toLowerCase() === user);
   if (!t) { await derive(c.password, "00", ITER); return null; }
   return same(await derive(c.password, t.salt, t.iter), t.hash) ? t : null;
 }
