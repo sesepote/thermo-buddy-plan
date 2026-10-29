@@ -103,5 +103,6 @@
     "b) Calcula los volúmenes para una mastermix para 22 reacciones, sin añadir el ADN molde.",
     "c) Configura el termociclador para estos parámetros: desnaturalización inicial a 95 °C durante 3 min; 34 ciclos de desnaturalización a 95 °C durante 25 s, hibridación a 56 °C durante 35 s y extensión a 72 °C durante 60 s; extensión final a 72 °C durante 300 s."
   ],
-  "topic": "Tema 3"
+  "topic": "Tema 3",
+  "order": 9
 }
