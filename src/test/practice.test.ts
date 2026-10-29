@@ -34,6 +34,18 @@ describe("ejercicios de termociclador y master mix", () => {
 });
 
 describe("modos de ejercicio", () => {
+  it("acepta ADN sin introducir o en 0 en Master Mix y detecta ADN añadido", () => {
+    const c = CASES.find(x => x.title === "Ejercicio 1");
+    if (!c) throw new Error("Falta Ejercicio 1");
+    const answer = solve(c);
+    const dnaCheck = () => verifyPractice(c.program, answer, c).checks.find(check => check.label === "Master mix · ADN molde");
+    answer.mix.template = 0;
+    expect(dnaCheck()?.correct).toBe(true);
+    delete answer.mix.template;
+    expect(dnaCheck()?.correct).toBe(true);
+    answer.mix.template = 1;
+    expect(dnaCheck()?.correct).toBe(false);
+  });
   const base = CASES[0]!;
   it("solo termociclador ignora la mezcla", () => {
     const r = verifyPractice(base.program, null, { ...base, mode: "cycler" });
