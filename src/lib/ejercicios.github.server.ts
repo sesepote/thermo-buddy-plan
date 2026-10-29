@@ -172,3 +172,52 @@ export async function writeNamedFolder(folder: string, items: { name: string }[]
   for (const n of await fs.readdir(d)) if (jsonRe.test(n)) await fs.unlink(p.join(d, n));
   for (const [i, c] of items.entries()) await fs.writeFile(p.join(process.cwd(), paths[i]!), JSON.stringify(c, null, 2) + "\n");
 }
+
+/* ---- Archivos independientes: cada cambio toca solo un archivo ---- */
+
+/** Copia en memoria por carpeta (nombre de archivo → contenido) tras guardar en GitHub. */
+const fileMemory = new Map<string, Map<string, unknown>>();
+const bundledFiles = (bundled: Record<string, unknown>) => new Map(Object.entries(bundled).map(([k, v]) => [k.split("/").pop() ?? k, v]));
+
+/** Lee `folder/*.json` como pares { file, item }. */
+export async function readFileEntries(folder: string, bundled: Record<string, unknown>): Promise<{ file: string; item: unknown }[]> {
+  const toList = (m: Map<string, unknown>) => [...m].map(([file, item]) => ({ file, item }));
+  if (githubConfig()) return toList(fileMemory.get(folder) ?? bundledFiles(bundled));
+  try {
+    const fs = await import("node:fs/promises");
+    const p = await import("node:path");
+    const d = p.join(process.cwd(), folder);
+    await fs.mkdir(d, { recursive: true });
+    const names = (await fs.readdir(d)).filter(n => jsonRe.test(n));
+    return await Promise.all(names.map(async file => ({ file, item: JSON.parse(await fs.readFile(p.join(d, file), "utf8")) as unknown })));
+  } catch {
+    return toList(bundledFiles(bundled));
+  }
+}
+
+/** Crea, reemplaza (item) o elimina (null) un único archivo `folder/file`, en un commit. */
+export async function writeOneFile(folder: string, file: string, item: unknown, message: string, bundled: Record<string, unknown>) {
+  if (!/^[A-Za-z0-9._-]+\.json$/.test(file)) throw new Error("Nombre de archivo no válido");
+  const path = `${folder}/${file}`;
+  const content = item === null ? null : JSON.stringify(item, null, 2) + "\n";
+  const cfg = githubConfig();
+  if (cfg) {
+    const ref = await gh<{ object: { sha: string } }>(cfg, `/git/ref/heads/${cfg.branch}`);
+    const commit = await gh<{ tree: { sha: string } }>(cfg, `/git/commits/${ref.object.sha}`);
+    const entry = content === null ? { path, mode: "100644", type: "blob", sha: null } : { path, mode: "100644", type: "blob", content };
+    const newTree = await gh<{ sha: string }>(cfg, `/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: [entry] }) });
+    const newCommit = await gh<{ sha: string }>(cfg, `/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: newTree.sha, parents: [ref.object.sha] }) });
+    await gh(cfg, `/git/refs/heads/${cfg.branch}`, { method: "PATCH", body: JSON.stringify({ sha: newCommit.sha }) });
+    const mem = fileMemory.get(folder) ?? bundledFiles(bundled);
+    if (item === null) mem.delete(file); else mem.set(file, item);
+    fileMemory.set(folder, mem);
+    return;
+  }
+  const err = "Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO.";
+  let fs, p;
+  try { fs = await import("node:fs/promises"); p = await import("node:path"); } catch { throw new Error(err); }
+  const d = p.join(process.cwd(), folder);
+  try { await fs.mkdir(d, { recursive: true }); } catch { throw new Error(err); }
+  if (content === null) await fs.rm(p.join(d, file), { force: true });
+  else await fs.writeFile(p.join(d, file), content);
+}
