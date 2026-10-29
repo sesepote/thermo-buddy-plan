@@ -38,8 +38,7 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
   const [focus, setFocus] = useState<ReagentKey | null>(null);
 
   const values = kind === "single" ? answer.single : answer.mix;
-  const locked = (key: ReagentKey) => kind === "mix" && key === "template";
-  const layers = reagents.map(r => ({ ...r, v: locked(r.key) ? 0 : (values[r.key] ?? 0) })).filter(l => l.v > 0);
+  const layers = reagents.map(r => ({ ...r, v: values[r.key] ?? 0 })).filter(l => l.v > 0);
   const total = layers.reduce((a, l) => a + l.v, 0);
   const tube = TUBES.find(t => t.id === tubeBy[kind]) ?? TUBES[0];
   const fill = Math.min(total / tube.capacity, 1);
@@ -110,9 +109,7 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
         <thead><tr className="border-b text-left text-xs uppercase text-muted-foreground"><th className="py-2 font-normal">Reactivo</th><th className="py-2 text-right font-normal">VOLUMEN <span className="normal-case">(µL)</span></th></tr></thead>
         <tbody>{reagents.map(r => <tr key={r.key} className={cn("border-b", focus === r.key && "bg-panel")} onMouseEnter={() => setFocus(r.key)} onMouseLeave={() => setFocus(null)}>
           <td className="py-2"><span className="mr-3 inline-block size-3.5 rounded-sm align-middle" style={{ background: color(r.key) }} />{r.label}</td>
-          <td className="py-1.5 text-right">{locked(r.key)
-            ? <span className="inline-flex h-11 min-w-24 items-center justify-end px-3 font-mono text-muted-foreground">0 (aparte)</span>
-            : <Button variant="outline" aria-label={`Volumen de ${r.label}`} onClick={() => editRow(r.key, r.label)} className="h-11 min-w-24 justify-end bg-background px-3 font-mono">{values[r.key] !== undefined ? fmt(values[r.key] ?? 0) : "—"}</Button>}</td>
+          <td className="py-1.5 text-right"><Button variant="outline" aria-label={`Volumen de ${r.label}`} onClick={() => editRow(r.key, r.label)} className="h-11 min-w-24 justify-end bg-background px-3 font-mono">{values[r.key] !== undefined ? fmt(values[r.key] ?? 0) : "—"}</Button></td>
         </tr>)}</tbody>
         <tfoot><tr><td className="pt-3 font-medium">Suma total</td><td className={cn("pt-3 text-right font-mono", target !== undefined && Math.abs(total - target) > 0.01 && total > 0 ? "text-amber" : "")}>{fmt(total)}{target !== undefined && ` / ${target}`} µL</td></tr></tfoot>
       </table>
