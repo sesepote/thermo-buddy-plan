@@ -33,19 +33,6 @@ async function gh<T>(cfg: GithubCfg, path: string, init?: RequestInit): Promise<
   return res.json() as Promise<T>;
 }
 
-const fileRe = (prefix: string) => new RegExp(`^${prefix}-(\\d+)\\.json$`);
-const num = (prefix: string, n: string) => Number(fileRe(prefix).exec(n)?.[1] ?? 0);
-
-/** Decodifica base64 a UTF-8 (compatible con Workers). */
-function b64(s: string) {
-  const bin = atob(s.replace(/\n/g, ""));
-  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
-}
-
-/**
- * Lectura/escritura de una carpeta JSON: GitHub si está configurado, si no el
- * disco local y, como último recurso, la copia incluida en la compilación.
- */
 /**
  * Copia en memoria tras guardar: en producción se lee de aquí o de la copia
  * incluida en la compilación (Cloudflare recompila con cada commit), sin
