@@ -7,6 +7,7 @@ import { useState } from "react";
 import type { ManualAnswer, ReagentKey } from "@/lib/pcr/practice";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type Kind = "single" | "mix";
 
@@ -98,12 +99,12 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
     {/* Tabla de volúmenes */}
     <div className="space-y-4">
       <div role="tablist" aria-label="Tipo de preparación" className="inline-flex rounded-full border bg-panel p-1">
-        {(["single", "mix"] as const).map(k => <button key={k} role="tab" aria-selected={kind === k} onClick={() => { setKind(k); setFocus(null); }}
-          className={cn("h-10 rounded-full px-4 text-sm transition-colors", kind === k ? "bg-ice text-background" : "text-muted-foreground")}>{k === "single" ? "1 reacción (1 tubo)" : "Master mix (N tubos)"}</button>)}
+        {(["single", "mix"] as const).map(k => <Button variant="ghost" key={k} role="tab" aria-selected={kind === k} onClick={() => { setKind(k); setFocus(null); }}
+          className={cn("h-10 rounded-full px-4 text-sm transition-colors", kind === k ? "bg-ice text-background" : "text-muted-foreground")}>{k === "single" ? "1 reacción (1 tubo)" : "Master mix (N tubos)"}</Button>)}
       </div>
       {kind === "mix" && <div className="flex items-center justify-between gap-3 rounded-md border bg-panel px-4 py-2">
         <span className="text-sm">Nº total de reacciones</span>
-        <button onClick={editTubes} className="h-11 min-w-24 rounded-md border bg-background px-3 font-mono">{answer.tubes ?? "—"} tubos</button>
+        <Button variant="outline" onClick={editTubes} className="h-11 min-w-24 bg-background px-3 font-mono">{answer.tubes ?? "—"} tubos</Button>
       </div>}
       <table className="w-full text-sm">
         <thead><tr className="border-b text-left text-xs uppercase text-muted-foreground"><th className="py-2 font-normal">Reactivo</th><th className="py-2 text-right font-normal">VOLUMEN <span className="normal-case">(µL)</span></th></tr></thead>
@@ -111,7 +112,7 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
           <td className="py-2"><span className="mr-3 inline-block size-3.5 rounded-sm align-middle" style={{ background: color(r.key) }} />{r.label}</td>
           <td className="py-1.5 text-right">{locked(r.key)
             ? <span className="inline-flex h-11 min-w-24 items-center justify-end px-3 font-mono text-muted-foreground">0 (aparte)</span>
-            : <button onClick={() => editRow(r.key, r.label)} className="h-11 min-w-24 rounded-md border bg-background px-3 text-right font-mono">{values[r.key] !== undefined ? fmt(values[r.key]!) : "—"}</button>}</td>
+            : <Button variant="outline" aria-label={`Volumen de ${r.label}`} onClick={() => editRow(r.key, r.label)} className="h-11 min-w-24 justify-end bg-background px-3 font-mono">{values[r.key] !== undefined ? fmt(values[r.key] ?? 0) : "—"}</Button>}</td>
         </tr>)}</tbody>
         <tfoot><tr><td className="pt-3 font-medium">Suma total</td><td className={cn("pt-3 text-right font-mono", target !== undefined && Math.abs(total - target) > 0.01 && total > 0 ? "text-amber" : "")}>{fmt(total)}{target !== undefined && ` / ${target}`} µL</td></tr></tfoot>
       </table>

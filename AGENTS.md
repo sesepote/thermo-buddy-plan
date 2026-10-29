@@ -22,3 +22,5 @@
 - Loop ranges use global column indices and a shared pure regrouping function in src/lib/pcr/ so graphical resizing and the dialog preserve identical step order and stage semantics.
 - Master mix controls are shared by the calculator and exercises, reporting settings to pure practice evaluation so both screens use identical chemistry and volume calculations.
 - Exercise drafts stay local to their workspace and do not modify the active instrument program, so practice cannot interrupt a thermocycler run.
+- Exercise authoring uses the shared ManualMix tube UI and optional teacher-authored rows/totals; legacy calculator-derived solutions are converted only in the editor, so old JSON remains compatible and public exercise data never includes solution volumes.
+- Teacher login accepts typed credentials without a public account-list server function, so signed-out visitors cannot enumerate teacher names through the app.
