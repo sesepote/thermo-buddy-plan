@@ -1,9 +1,10 @@
 /**
  * Funciones de servidor de los perfiles del termociclador. Leer es libre;
- * guardar y eliminar piden la contraseña de docente.
+ * guardar y eliminar piden sesión de docente.
  */
 import { createServerFn } from "@tanstack/react-start";
 import type { Program } from "./pcr/types";
+import type { Credentials } from "./docentes.types";
 
 export const listProfiles = createServerFn({ method: "GET" }).handler(async () => {
   const { readProfiles } = await import("./perfiles.server");
@@ -11,11 +12,11 @@ export const listProfiles = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const saveProfile = createServerFn({ method: "POST" })
-  .inputValidator((d: { password: string; program: Program }) => d)
+  .inputValidator((d: { auth: Credentials; program: Program }) => d)
   .handler(async ({ data }) => {
-    const { passwordMatches } = await import("./ejercicios.server");
+    const { authenticate } = await import("./docentes.server");
     const { isProgram, readProfiles, writeProfiles } = await import("./perfiles.server");
-    if (!passwordMatches(String(data.password))) return { ok: false as const, error: "Contraseña incorrecta" };
+    if (!(await authenticate(data.auth))) return { ok: false as const, error: "Sesión docente no válida" };
     if (!isProgram(data.program)) return { ok: false as const, error: "Programa no válido" };
     try {
       const all = await readProfiles();
@@ -27,11 +28,11 @@ export const saveProfile = createServerFn({ method: "POST" })
   });
 
 export const deleteProfile = createServerFn({ method: "POST" })
-  .inputValidator((d: { password: string; id: string }) => d)
+  .inputValidator((d: { auth: Credentials; id: string }) => d)
   .handler(async ({ data }) => {
-    const { passwordMatches } = await import("./ejercicios.server");
+    const { authenticate } = await import("./docentes.server");
     const { readProfiles, writeProfiles } = await import("./perfiles.server");
-    if (!passwordMatches(String(data.password))) return { ok: false as const, error: "Contraseña incorrecta" };
+    if (!(await authenticate(data.auth))) return { ok: false as const, error: "Sesión docente no válida" };
     try { await writeProfiles((await readProfiles()).filter(p => p.id !== data.id), "chore: eliminar perfil y renumerar"); } catch (e) { return { ok: false as const, error: (e as Error).message }; }
     return { ok: true as const };
   });

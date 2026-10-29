@@ -33,83 +33,12 @@ async function gh<T>(cfg: GithubCfg, path: string, init?: RequestInit): Promise<
   return res.json() as Promise<T>;
 }
 
-const fileRe = (prefix: string) => new RegExp(`^${prefix}-(\\d+)\\.json$`);
-const num = (prefix: string, n: string) => Number(fileRe(prefix).exec(n)?.[1] ?? 0);
-
-/** Decodifica base64 a UTF-8 (compatible con Workers). */
-function b64(s: string) {
-  const bin = atob(s.replace(/\n/g, ""));
-  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
-}
-
-/** Lee `folder/prefix-N.json` ordenados por N. */
-export async function readJsonGithub(cfg: GithubCfg, folder: string, prefix: string): Promise<unknown[]> {
-  const ref = `?ref=${encodeURIComponent(cfg.branch)}`;
-  let items: { name: string; path: string }[];
-  try { items = await gh(cfg, `/contents/${folder}${ref}`); } catch { return []; }
-  const files = items.filter(i => fileRe(prefix).test(i.name)).sort((a, b) => num(prefix, a.name) - num(prefix, b.name));
-  return Promise.all(files.map(async f => {
-    const r = await gh<{ content: string }>(cfg, `/contents/${f.path}${ref}`);
-    return JSON.parse(b64(r.content)) as unknown;
-  }));
-}
-
-/** Reescribe la carpeta como prefix-1.json … prefix-N.json en un solo commit. */
-export async function writeJsonGithub(cfg: GithubCfg, folder: string, prefix: string, items: unknown[], message: string) {
-  const ref = await gh<{ object: { sha: string } }>(cfg, `/git/ref/heads/${cfg.branch}`);
-  const commit = await gh<{ tree: { sha: string } }>(cfg, `/git/commits/${ref.object.sha}`);
-  const tree = await gh<{ tree: { path: string; type: string }[] }>(cfg, `/git/trees/${commit.tree.sha}?recursive=1`);
-  const path = (i: number) => `${folder}/${prefix}-${i + 1}.json`;
-  const keep = new Set(items.map((_, i) => path(i)));
-  const inFolder = new RegExp(`^${folder}/${prefix}-\\d+\\.json$`);
-  const entries: Record<string, unknown>[] = tree.tree
-    .filter(t => t.type === "blob" && inFolder.test(t.path) && !keep.has(t.path))
-    .map(t => ({ path: t.path, mode: "100644", type: "blob", sha: null }));
-  items.forEach((c, i) => entries.push({ path: path(i), mode: "100644", type: "blob", content: JSON.stringify(c, null, 2) + "\n" }));
-  const newTree = await gh<{ sha: string }>(cfg, `/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries }) });
-  const newCommit = await gh<{ sha: string }>(cfg, `/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: newTree.sha, parents: [ref.object.sha] }) });
-  await gh(cfg, `/git/refs/heads/${cfg.branch}`, { method: "PATCH", body: JSON.stringify({ sha: newCommit.sha }) });
-}
-
-/**
- * Lectura/escritura de una carpeta JSON: GitHub si está configurado, si no el
- * disco local y, como último recurso, la copia incluida en la compilación.
- */
 /**
  * Copia en memoria tras guardar: en producción se lee de aquí o de la copia
  * incluida en la compilación (Cloudflare recompila con cada commit), sin
  * esperar a la API de GitHub al abrir una pantalla.
  */
 const memory = new Map<string, unknown[]>();
-
-export async function readJsonFolder(folder: string, prefix: string, bundled: Record<string, unknown>): Promise<unknown[]> {
-  if (githubConfig()) {
-    const base = (k: string) => k.split("/").pop() ?? k;
-    return memory.get(folder) ?? Object.entries(bundled).sort(([x], [y]) => num(prefix, base(x)) - num(prefix, base(y))).map(([, c]) => c);
-  }
-  try {
-    const fs = await import("node:fs/promises");
-    const p = await import("node:path");
-    const d = p.join(process.cwd(), folder);
-    await fs.mkdir(d, { recursive: true });
-    const names = (await fs.readdir(d)).filter(n => fileRe(prefix).test(n)).sort((x, y) => num(prefix, x) - num(prefix, y));
-    return await Promise.all(names.map(async n => JSON.parse(await fs.readFile(p.join(d, n), "utf8")) as unknown));
-  } catch {
-    const base = (k: string) => k.split("/").pop() ?? k;
-    return Object.entries(bundled).sort(([x], [y]) => num(prefix, base(x)) - num(prefix, base(y))).map(([, c]) => c);
-  }
-}
-
-export async function writeJsonFolder(folder: string, prefix: string, items: unknown[], message: string) {
-  const cfg = githubConfig();
-  if (cfg) { await writeJsonGithub(cfg, folder, prefix, items, message); memory.set(folder, items); return; }
-  let fs, p;
-  try { fs = await import("node:fs/promises"); p = await import("node:path"); } catch { throw new Error("Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO."); }
-  const d = p.join(process.cwd(), folder);
-  try { await fs.mkdir(d, { recursive: true }); } catch { throw new Error("Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO."); }
-  for (const n of await fs.readdir(d)) if (fileRe(prefix).test(n)) await fs.unlink(p.join(d, n));
-  for (const [i, c] of items.entries()) await fs.writeFile(p.join(d, `${prefix}-${i + 1}.json`), JSON.stringify(c, null, 2) + "\n");
-}
 
 /* ---- Carpetas con archivos nombrados (p. ej. perfiles/<nombre>.json) ---- */
 
@@ -171,4 +100,53 @@ export async function writeNamedFolder(folder: string, items: { name: string }[]
   try { await fs.mkdir(d, { recursive: true }); } catch { throw new Error(err); }
   for (const n of await fs.readdir(d)) if (jsonRe.test(n)) await fs.unlink(p.join(d, n));
   for (const [i, c] of items.entries()) await fs.writeFile(p.join(process.cwd(), paths[i]!), JSON.stringify(c, null, 2) + "\n");
+}
+
+/* ---- Archivos independientes: cada cambio toca solo un archivo ---- */
+
+/** Copia en memoria por carpeta (nombre de archivo → contenido) tras guardar en GitHub. */
+const fileMemory = new Map<string, Map<string, unknown>>();
+const bundledFiles = (bundled: Record<string, unknown>) => new Map(Object.entries(bundled).map(([k, v]) => [k.split("/").pop() ?? k, v]));
+
+/** Lee `folder/*.json` como pares { file, item }. */
+export async function readFileEntries(folder: string, bundled: Record<string, unknown>): Promise<{ file: string; item: unknown }[]> {
+  const toList = (m: Map<string, unknown>) => [...m].map(([file, item]) => ({ file, item }));
+  if (githubConfig()) return toList(fileMemory.get(folder) ?? bundledFiles(bundled));
+  try {
+    const fs = await import("node:fs/promises");
+    const p = await import("node:path");
+    const d = p.join(process.cwd(), folder);
+    await fs.mkdir(d, { recursive: true });
+    const names = (await fs.readdir(d)).filter(n => jsonRe.test(n));
+    return await Promise.all(names.map(async file => ({ file, item: JSON.parse(await fs.readFile(p.join(d, file), "utf8")) as unknown })));
+  } catch {
+    return toList(bundledFiles(bundled));
+  }
+}
+
+/** Crea, reemplaza (item) o elimina (null) un único archivo `folder/file`, en un commit. */
+export async function writeOneFile(folder: string, file: string, item: unknown, message: string, bundled: Record<string, unknown>) {
+  if (!/^[A-Za-z0-9._-]+\.json$/.test(file)) throw new Error("Nombre de archivo no válido");
+  const path = `${folder}/${file}`;
+  const content = item === null ? null : JSON.stringify(item, null, 2) + "\n";
+  const cfg = githubConfig();
+  if (cfg) {
+    const ref = await gh<{ object: { sha: string } }>(cfg, `/git/ref/heads/${cfg.branch}`);
+    const commit = await gh<{ tree: { sha: string } }>(cfg, `/git/commits/${ref.object.sha}`);
+    const entry = content === null ? { path, mode: "100644", type: "blob", sha: null } : { path, mode: "100644", type: "blob", content };
+    const newTree = await gh<{ sha: string }>(cfg, `/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: [entry] }) });
+    const newCommit = await gh<{ sha: string }>(cfg, `/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: newTree.sha, parents: [ref.object.sha] }) });
+    await gh(cfg, `/git/refs/heads/${cfg.branch}`, { method: "PATCH", body: JSON.stringify({ sha: newCommit.sha }) });
+    const mem = fileMemory.get(folder) ?? bundledFiles(bundled);
+    if (item === null) mem.delete(file); else mem.set(file, item);
+    fileMemory.set(folder, mem);
+    return;
+  }
+  const err = "Este servidor no permite guardar archivos y faltan GITHUB_TOKEN / GITHUB_REPO.";
+  let fs, p;
+  try { fs = await import("node:fs/promises"); p = await import("node:path"); } catch { throw new Error(err); }
+  const d = p.join(process.cwd(), folder);
+  try { await fs.mkdir(d, { recursive: true }); } catch { throw new Error(err); }
+  if (content === null) await fs.rm(p.join(d, file), { force: true });
+  else await fs.writeFile(p.join(d, file), content);
 }

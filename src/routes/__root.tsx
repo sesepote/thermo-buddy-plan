@@ -10,6 +10,7 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
+import { useTeacherIdleWatcher } from "@/lib/teacher-session";
 
 // Fuentes empaquetadas localmente (@fontsource): no se descargan de internet.
 import "@fontsource/ibm-plex-sans/400.css";
@@ -131,6 +132,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
+  useTeacherIdleWatcher();
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {

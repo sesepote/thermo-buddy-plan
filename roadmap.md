@@ -13,3 +13,5 @@
 - [x] Animar algo más el fondo del menú: hélice lejana, halos y burbujas que suben despacio.
 - [x] Convertir las burbujas del fondo en moléculas: átomos unidos por enlaces, con giro muy lento.
 - [x] Redistribuir Master Mix con parámetros principales arriba y concentraciones/resultados debajo, y verificar la edición táctil.
+- [x] Modo docente con cuentas en docentes.json, cambio de clave, cierre manual y automático (pausado en el editor).
+- [x] Ejercicios como archivos independientes; editar, clonar y borrar solo en modo docente.

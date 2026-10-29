@@ -1,0 +1,9 @@
+[
+  {
+    "usuario": "mario",
+    "nombre": "Mario Miranda",
+    "salt": "54972e3cd0490c82ebaef70735573636",
+    "iter": 100000,
+    "hash": "eac90d30be36e72e2037be06a4b8005757b0aba8356f8d103ac6f7453d357eac"
+  }
+]

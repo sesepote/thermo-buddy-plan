@@ -26,6 +26,10 @@ export interface PracticeCase {
   mix: MasterMixSettings;
   /** Parte evaluada; sin valor equivale a "both" (casos antiguos). */
   mode?: PracticeMode | undefined;
+  /** Posición en la lista (cada ejercicio es un archivo independiente). */
+  order?: number | undefined;
+  /** Docente que lo creó. */
+  author?: string | undefined;
 }
 
 export type PracticeMode = "both" | "cycler" | "mix";
