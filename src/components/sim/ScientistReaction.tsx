@@ -6,11 +6,11 @@ import concentrada from "@/assets/cientifica/concentrada.webp";
 import feliz from "@/assets/cientifica/feliz.webp";
 import extranada from "@/assets/cientifica/extranada.webp";
 import asqueada from "@/assets/cientifica/asqueada.webp";
-import tiznada from "@/assets/cientifica/tiznada.webp";
+import explosion from "@/assets/cientifica/explosion.webp";
 import felizVideo from "@/assets/cientifica/feliz.webm";
 import extranadaVideo from "@/assets/cientifica/extranada.webm";
 import asqueadaVideo from "@/assets/cientifica/asqueada.webm";
-import tiznadaVideo from "@/assets/cientifica/tiznada.webm";
+import explosionVideo from "@/assets/cientifica/explosion.webm";
 
 export type ReactionTier = "perfect" | "odd" | "toxic" | "boom";
 
@@ -28,8 +28,8 @@ const CAPTION: Record<ReactionTier, string> = {
   toxic: "¡Uy! Eso huele a error…",
   boom: "¡BUM! Revisa los cálculos.",
 };
-const VIDEO: Record<ReactionTier, string> = { perfect: felizVideo, odd: extranadaVideo, toxic: asqueadaVideo, boom: tiznadaVideo };
-const FACE: Record<ReactionTier, string> = { perfect: feliz, odd: extranada, toxic: asqueada, boom: tiznada };
+const VIDEO: Record<ReactionTier, string> = { perfect: felizVideo, odd: extranadaVideo, toxic: asqueadaVideo, boom: explosionVideo };
+const FACE: Record<ReactionTier, string> = { perfect: feliz, odd: extranada, toxic: asqueada, boom: explosion };
 
 /** Descarga los cuatro vídeos en segundo plano para que «Verificar» arranque al instante. */
 export function preloadReactionVideos() {
