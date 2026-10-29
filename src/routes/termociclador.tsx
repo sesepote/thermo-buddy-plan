@@ -2,6 +2,8 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listProfiles, saveProfile, deleteProfile } from "@/lib/perfiles.functions";
 import { PasswordDialog } from "@/components/sim/PasswordDialog";
+import { useTeacher } from "@/lib/teacher-session";
+import type { Credentials } from "@/lib/docentes.types";
 import { useMemo, useState, useEffect } from "react";
 import { Play, Pause, Square, FolderOpen, Copy, Trash2, Plus, Save, X, Thermometer, Clock3, Repeat2, Settings2, SkipForward, Download, Upload, Check, Pencil, ChevronLeft } from "lucide-react";
 import { z } from "zod";
@@ -115,18 +117,18 @@ function Thermocycler() {
   const profiles = Route.useLoaderData();
   const saveFile = useServerFn(saveProfile);
   const removeFile = useServerFn(deleteProfile);
-  const [asking, setAsking] = useState<null | ((pw: string) => void)>(null);
+  const [asking, setAsking] = useState<null | ((auth: Credentials) => void)>(null);
   const [fileMsg, setFileMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  /** Cada guardado o borrado en `perfiles/` pide siempre la contraseña (no se recuerda). */
-  const withPassword = (then: (pw: string) => void) => setAsking(() => then);
+  /** Guardar o borrar en `perfiles/` requiere sesión docente (se pide si no hay). */
+  const withPassword = (then: (auth: Credentials) => void) => { const a = useTeacher.getState().auth; if (a) then(a); else setAsking(() => then); };
   const storeProfile = (p: Program) => withPassword(async pw => {
-    const r = await saveFile({ data: { password: pw, program: p } });
+    const r = await saveFile({ data: { auth: pw, program: p } });
     setFileMsg(r.ok ? { ok: true, text: `«${p.name}» guardado en perfiles` } : { ok: false, text: r.error });
     if (r.ok) await router.invalidate();
   });
   const removeProfile = (p: Program) => withPassword(async pw => {
     if (!confirm(`¿Eliminar el perfil «${p.name}»?`)) return;
-    const r = await removeFile({ data: { password: pw, id: p.id } });
+    const r = await removeFile({ data: { auth: pw, id: p.id } });
     setFileMsg(r.ok ? { ok: true, text: "Perfil eliminado" } : { ok: false, text: r.error });
     if (r.ok) await router.invalidate();
   });
@@ -240,7 +242,7 @@ function Thermocycler() {
     {modal === "cycles" && <ModalShell title="Configuración de ciclos PCR" onClose={() => setModal(null)} chassis={chassis}><div className="space-y-5"><div><p className="mb-2 font-mono text-xs text-muted-foreground">NÚMERO DE CICLOS</p><div className="flex items-center justify-center gap-4"><Button variant="outline" size="icon" className="size-12" aria-label="Reducir ciclos" onClick={() => setCycleCount(Math.max(1,cycleCount-1))}>−</Button><Button variant="outline" className="h-14 min-w-24 font-mono text-2xl" onClick={() => setPad({title:"Número de ciclos",value:cycleCount,unit:"×",min:1,max:99,onConfirm:v=>setCycleCount(Math.round(v))})}>{cycleCount}×</Button><Button variant="outline" size="icon" className="size-12" aria-label="Aumentar ciclos" onClick={() => setCycleCount(Math.min(99,cycleCount+1))}>+</Button></div><div className="mt-3 flex flex-wrap justify-center gap-1">{[25,30,32,35,40].map(v => <Button key={v} variant="outline" className={cn("h-10",cycleCount===v && "border-amber text-amber")} onClick={() => setCycleCount(v)}>{v}×</Button>)}</div></div><div className="grid grid-cols-2 gap-3">{(["Columna inicial","Columna final"] as const).map((label,i) => <label key={label} className="text-xs text-muted-foreground">{label}<select className="mt-1 h-12 w-full border border-input bg-background px-2 text-foreground" value={i ? cycleEnd : cycleStart} onChange={e => { const value = Number(e.target.value); if (i) { setCycleEnd(value); setCycleStart(Math.min(cycleStart, value)); } else { setCycleStart(value); setCycleEnd(Math.max(cycleEnd, value)); } }}>{columnSteps.map((s,index) => <option key={s.id} value={index}>Col. {index+1} · {s.temp.toFixed(1)}° · {formatTime(s.time)}</option>)}</select></label>)}</div><p className="font-mono text-xs text-muted-foreground">Se repetirá el rango elegido {cycleCount} veces.</p><div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">{confirmCycleDelete ? <div className="flex flex-wrap items-center gap-2"><span className="font-mono text-xs text-destructive">¿Eliminar esta etapa y sus pasos?</span><Button variant="destructive" className="h-12" onClick={removeCycleStage}><Trash2 /> Sí, eliminar</Button><Button variant="outline" className="h-12" onClick={() => setConfirmCycleDelete(false)}>Conservar</Button></div> : <><Button variant="outline" className="h-12 text-destructive" disabled={program.stages.length <= 1} title={program.stages.length <= 1 ? "El programa necesita al menos una etapa" : undefined} onClick={() => setConfirmCycleDelete(true)}><Trash2 /> Eliminar ciclo</Button><div className="flex gap-2"><Button variant="outline" className="h-12" onClick={() => setModal(null)}>Cancelar</Button><Button className="h-12" onClick={applyCycles}><Check /> Guardar ciclo</Button></div></>}</div></div></ModalShell>}
     {modal === "stop" && <ModalShell title="¿Detener la ejecución?" onClose={() => setModal(null)} chassis={chassis}><p className="mb-6 text-sm text-muted-foreground">Se perderá el progreso de esta corrida.</p><div className="flex justify-end gap-2"><Button variant="outline" className="h-12" onClick={() => setModal(null)}>Cancelar</Button><Button variant="destructive" className="h-12" onClick={() => {stop();setModal(null);}}><Square /> Detener</Button></div></ModalShell>}
     {renaming && <StepNameDialog current={program.stages[renaming.si]?.steps[renaming.pi]?.label ?? ""} suggestion={suggestionFor(program, renaming.si, renaming.pi)} onPick={applyName} onClose={() => setRenaming(null)} />}
-    {asking && <PasswordDialog subtitle="Introduce la contraseña para guardar o eliminar perfiles." onClose={() => setAsking(null)} onOk={pw => { const cb = asking; setAsking(null); cb(pw); }} />}
+    {asking && <PasswordDialog subtitle="Identifícate para guardar o eliminar perfiles." onClose={() => setAsking(null)} onOk={pw => { const cb = asking; setAsking(null); cb(pw); }} />}
     {fileMsg && modal !== "library" && <p role="status" className={cn("fixed bottom-16 left-1/2 z-30 -translate-x-1/2 rounded-md border bg-panel px-4 py-2 text-sm", fileMsg.ok ? "text-run" : "text-destructive")} onClick={() => setFileMsg(null)}>{fileMsg.text}</p>}
     <NumPad req={pad} onClose={() => setPad(null)} />
   </StatusBars>;
