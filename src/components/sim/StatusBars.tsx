@@ -1,5 +1,5 @@
 /** Barras compartidas: muestran la misma sesión del termociclador en todas las pantallas. */
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useApp } from "@/lib/store";
 import { useThermocyclerSession } from "@/lib/thermocycler-session";
 import { AMBIENT, buildSegments, stateAt, totalDuration } from "@/lib/pcr/simulation";
@@ -9,6 +9,27 @@ import { cn } from "@/lib/utils";
 
 export function StatusBars({ section, menu = false, children }: { section: string; menu?: boolean; children: ReactNode }) {
   const t = useT();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // Teclado físico: el body está bloqueado (anti-rebote táctil), así que las flechas desplazan el contenedor interno.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = scrollRef.current;
+      if (!el || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], [role='slider']")) return;
+      const page = el.clientHeight * 0.9;
+      const map: Record<string, number> = { ArrowDown: 60, ArrowUp: -60, PageDown: page, PageUp: -page, " ": e.shiftKey ? -page : page };
+      if (e.key === "Home") el.scrollTo({ top: 0, behavior: "smooth" });
+      else if (e.key === "End") el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      else if (e.key in map) {
+        if (e.key === " " && target?.closest("button, a")) return;
+        el.scrollBy({ top: map[e.key], behavior: "smooth" });
+      } else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   const programs = useApp((s) => s.programs);
   const activeId = useApp((s) => s.activeId);
   const { status, simTime, lid } = useThermocyclerSession();
@@ -37,7 +58,7 @@ export function StatusBars({ section, menu = false, children }: { section: strin
         </div>
       </header>
 
-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-none">
+      <div ref={scrollRef} className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-none">
         {children}
       </div>
 
