@@ -23,7 +23,7 @@ export function StatusBars({ section, menu = false, children }: { section: strin
       else if (e.key === "End") el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
       else if (e.key in map) {
         if (e.key === " " && target?.closest("button, a")) return;
-        el.scrollBy({ top: map[e.key], behavior: "smooth" });
+        el.scrollBy({ top: map[e.key] ?? 0, behavior: "smooth" });
       } else return;
       e.preventDefault();
     };
