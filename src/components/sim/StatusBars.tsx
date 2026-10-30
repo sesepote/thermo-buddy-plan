@@ -58,7 +58,8 @@ export function StatusBars({ section, menu = false, children }: { section: strin
         </div>
       </header>
 
-      <div ref={scrollRef} className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-none">
+      {/* touch-pan-y: en portátiles táctiles (Chrome/Edge/Firefox) el arrastre del dedo desplaza este contenedor. */}
+      <div ref={scrollRef} className="relative flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-none touch-pan-y">
         {children}
       </div>
 
