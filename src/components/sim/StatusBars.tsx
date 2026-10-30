@@ -18,12 +18,12 @@ export function StatusBars({ section, menu = false, children }: { section: strin
       const target = e.target as HTMLElement | null;
       if (target?.closest("input, textarea, select, [contenteditable='true'], [role='dialog'], [role='slider']")) return;
       const page = el.clientHeight * 0.9;
-      const map: Record<string, number> = { ArrowDown: 60, ArrowUp: -60, PageDown: page, PageUp: -page, " ": e.shiftKey ? -page : page };
-      if (e.key === "Home") el.scrollTo({ top: 0, behavior: "smooth" });
-      else if (e.key === "End") el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      const map: Record<string, number> = { ArrowDown: 40, ArrowUp: -40, PageDown: page, PageUp: -page, " ": e.shiftKey ? -page : page };
+      if (e.key === "Home") el.scrollTo({ top: 0 });
+      else if (e.key === "End") el.scrollTo({ top: el.scrollHeight });
       else if (e.key in map) {
         if (e.key === " " && target?.closest("button, a")) return;
-        el.scrollBy({ top: map[e.key] ?? 0, behavior: "smooth" });
+        el.scrollBy({ top: map[e.key] ?? 0 });
       } else return;
       e.preventDefault();
     };
