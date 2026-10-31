@@ -4,6 +4,7 @@ import { AlertTriangle, Send, Info, ChevronRight, ChevronDown, Timer } from "luc
 import { MasterMixCalculator } from "@/components/sim/MasterMixCalculator";
 import { ScreenHeader } from "@/components/sim/ScreenHeader";
 import { useT } from "@/lib/i18n";
+import { useTr } from "@/lib/i18n/tr";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
 import { OptionPopup } from "@/components/sim/OptionPopup";
@@ -46,9 +47,10 @@ function Choice({ active, onClick, children }: { active: boolean; onClick: () =>
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const tr = useTr();
   return (
     <div className="space-y-2">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h2>
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tr(title)}</h2>
       {children}
     </div>
   );
@@ -56,13 +58,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 /** Fila compacta de configuración: muestra el valor actual y abre una ventana emergente. */
 function Field({ label, value, onClick }: { label: string; value: string; onClick: () => void }) {
+  const tr = useTr();
   return (
     <button
       onClick={onClick}
       className="hw-key flex min-h-14 w-full items-center justify-between gap-3 rounded-md px-4 text-left"
     >
       <span className="min-w-0">
-        <span className="block text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className="block text-[11px] uppercase tracking-wider text-muted-foreground">{tr(label)}</span>
         <span className="block truncate text-base">{value}</span>
       </span>
       <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
@@ -83,6 +86,8 @@ function Calculator() {
   const [showWhy, setShowWhy] = useState(false);
   const { saveProgram, setActive } = useApp();
   const navigate = useNavigate();
+  const tr = useTr();
+  const t = useT();
 
   const set = (patch: Partial<CalcInput>) => setInput((i) => ({ ...i, ...patch }));
   const setAdd = (patch: Partial<CalcInput["additives"]>) => setInput((i) => ({ ...i, additives: { ...i.additives, ...patch } }));
@@ -101,9 +106,9 @@ function Calculator() {
   const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
     <button
       className="hw-key flex min-h-12 flex-col items-start justify-center rounded-md px-3 py-1"
-      onClick={() => setPad({ title: label, value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}
+      onClick={() => setPad({ title: tr(label), value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}
     >
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs text-muted-foreground">{tr(label)}</span>
       <span className="font-mono text-lg">{value} {unit}</span>
     </button>
   );
@@ -114,20 +119,20 @@ function Calculator() {
     const tm = calcTm(seq, { mgMM: input.mgMM + input.additives.extraMg });
     return (
       <div className="space-y-1">
-        <label className="text-sm text-muted-foreground">{label} (5′→3′)</label>
+        <label className="text-sm text-muted-foreground">{tr(label)} (5′→3′)</label>
         <textarea
           value={seq}
           onChange={(e) => set({ [key]: e.target.value.toUpperCase() } as Partial<CalcInput>)}
           rows={2}
           className="w-full resize-none rounded-md border bg-input/40 p-2 font-mono text-sm tracking-wider"
-          placeholder="Secuencia (opcional)"
+          placeholder={tr("Secuencia (opcional)")}
         />
         {Number.isFinite(tm) ? (
           <p className="font-mono text-sm text-lcd-foreground">{cleanSeq(seq).length} nt · Tm {round1(tm)} °C · GC {round1(gcContent(seq))} %</p>
         ) : (
           <div className="flex items-center gap-2">
-            {num(`Tm manual ${label.toLowerCase()}`, input[tmKey], "°C", (v) => set({ [tmKey]: v } as Partial<CalcInput>), { min: 30, max: 85 })}
-            <span className="text-xs text-muted-foreground">Sin secuencia válida: se usa la Tm manual.</span>
+            {num(tr("Tm manual {p}", { p: tr(label).toLowerCase() }), input[tmKey], "°C", (v) => set({ [tmKey]: v } as Partial<CalcInput>), { min: 30, max: 85 })}
+            <span className="text-xs text-muted-foreground">{tr("Sin secuencia válida: se usa la Tm manual.")}</span>
           </div>
         )}
       </div>
@@ -136,14 +141,14 @@ function Calculator() {
 
   /** Resumen compacto de los aditivos para la fila de configuración. */
   const additiveSummary = [
-    `MgCl₂ ${round2(input.mgMM + input.additives.extraMg)} mM (tampón ${input.mgMM} + extra ${input.additives.extraMg})`,
+    tr("MgCl₂ {t} mM (tampón {b} + extra {e})", { t: round2(input.mgMM + input.additives.extraMg), b: input.mgMM, e: input.additives.extraMg }),
     `DMSO ${input.additives.dmso} %`,
-    `Formamida ${input.additives.formamide} %`,
+    `${tr("Formamida")} ${input.additives.formamide} %`,
   ].join(" · ");
 
   return (
-    <StatusBars section={useT().sections.calculator}>
-      <ScreenHeader title={useT().titles.calculator} />
+    <StatusBars section={t.sections.calculator}>
+      <ScreenHeader title={t.titles.calculator} />
       {/* Pestañas táctiles: protocolo completo o solo master mix. */}
       <div className="flex gap-2 px-4 pt-3">
         {([["protocolo", "Protocolo PCR"], ["mastermix", "Master mix"]] as const).map(([id, label]) => (
@@ -155,7 +160,7 @@ function Calculator() {
               tab === id && "bg-none bg-amber text-amber-foreground",
             )}
           >
-            {label}
+            {tr(label)}
           </button>
         ))}
       </div>
@@ -168,7 +173,7 @@ function Calculator() {
           {/* Cada bloque es una fila que abre su ventana emergente. */}
           <Field
             label="Tipo de reacción"
-            value={reaction.name}
+            value={tr(reaction.name)}
             onClick={() => setPopup("reaction")}
           />
           <Field
@@ -187,7 +192,7 @@ function Calculator() {
 
           <Field
             label="Molde y amplicón"
-            value={`${template.name} · ${input.ampliconBp} pb${input.highGC ? " · alto GC" : ""}`}
+            value={`${tr(template.name)} · ${input.ampliconBp} ${tr("pb")}${input.highGC ? ` · ${tr("alto GC")}` : ""}`}
             onClick={() => setPopup("template")}
           />
           <Field
@@ -201,22 +206,22 @@ function Calculator() {
         <section className="space-y-4">
           <div className="lcd space-y-3 rounded-xl p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="lcd-glow text-lg">PROGRAMA CALCULADO</p>
-              <p className="text-sm text-lcd-dim">Ta {result.ta} °C · {result.cycles} ciclos · ext {formatTime(result.extTime)}</p>
+              <p className="lcd-glow text-lg">{tr("PROGRAMA CALCULADO")}</p>
+              <p className="text-sm text-lcd-dim">Ta {result.ta} °C · {result.cycles} {tr("ciclos")} · ext {formatTime(result.extTime)}</p>
             </div>
             {/* Tiempo total estimado, calculado con el mismo motor que la simulación. */}
             <div className="flex items-center gap-2 border-t border-lcd-dim/30 pt-2 text-sm">
               <Timer className="size-4 shrink-0 text-lcd-dim" />
               <span className="font-mono lcd-glow">{formatTime(totalTime)}</span>
-              <span className="text-lcd-dim">tiempo total (rampas incluidas a {result.program.rampRate} °C/s; el hold a 4 °C no cuenta)</span>
+              <span className="text-lcd-dim">{tr("tiempo total (rampas incluidas a {r} °C/s; el hold a 4 °C no cuenta)", { r: result.program.rampRate })}</span>
             </div>
             <table className="w-full text-sm">
-              <thead className="text-lcd-dim"><tr><th className="py-1 text-left">Etapa</th><th className="text-left">Paso</th><th className="text-right">°C</th><th className="text-right">Tiempo</th></tr></thead>
+              <thead className="text-lcd-dim"><tr><th className="py-1 text-left">{tr("Etapa")}</th><th className="text-left">{tr("Paso")}</th><th className="text-right">°C</th><th className="text-right">{tr("Tiempo")}</th></tr></thead>
               <tbody>
                 {result.program.stages.flatMap((st, si) => st.steps.map((s, pi) => (
                   <tr key={s.id} className="border-t border-lcd-dim/30">
                     <td className="py-1.5">{pi === 0 ? `${si + 1}${st.repeats > 1 ? ` · ${st.repeats}×` : ""}` : ""}</td>
-                    <td>{s.label}{s.deltaPerCycle ? ` (${s.deltaPerCycle} °C/ciclo)` : ""}</td>
+                    <td>{tr(s.label)}{s.deltaPerCycle ? ` (${s.deltaPerCycle} °C/${tr("ciclo")})` : ""}</td>
                     <td className="text-right">{s.temp}</td>
                     <td className="text-right">{formatTime(s.time)}</td>
                   </tr>
@@ -232,13 +237,13 @@ function Calculator() {
                 navigate({ to: "/termociclador" });
               }}
             >
-              <Send className="size-5" /> Enviar al termociclador
+              <Send className="size-5" /> {tr("Enviar al termociclador")}
             </button>
           </div>
 
           {result.warnings.length > 0 && (
             <div className="space-y-2 rounded-xl border border-amber/50 bg-amber/10 p-4">
-              {result.warnings.map((w) => <p key={w} className="flex gap-2 text-sm"><AlertTriangle className="size-4 shrink-0 text-amber" />{w}</p>)}
+              {result.warnings.map((w) => <p key={w} className="flex gap-2 text-sm"><AlertTriangle className="size-4 shrink-0 text-amber" />{tr(w)}</p>)}
             </div>
           )}
 
@@ -248,12 +253,12 @@ function Calculator() {
               className="hw-key flex min-h-12 w-full items-center justify-between rounded-md px-4 text-sm font-medium"
               onClick={() => setShowWhy((s) => !s)}
             >
-              Por qué estos valores ({result.explanations.length})
+              {tr("Por qué estos valores")} ({result.explanations.length})
               <ChevronDown className={cn("size-5 text-muted-foreground transition-transform", showWhy && "rotate-180")} />
             </button>
             {showWhy && (
               <div className="mt-2 space-y-2 rounded-xl border bg-panel p-4">
-                {result.explanations.map((e) => <p key={e} className="flex gap-2 text-sm"><Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />{e}</p>)}
+                {result.explanations.map((e) => <p key={e} className="flex gap-2 text-sm"><Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />{tr(e)}</p>)}
               </div>
             )}
           </div>
@@ -265,14 +270,14 @@ function Calculator() {
               {num("Nº de muestras", samples, "", (v) => setSamples(Math.round(v)), { min: 1, max: 384, allowDecimal: false })}
             </div>
             <table className="w-full font-mono text-sm">
-              <thead className="text-muted-foreground"><tr><th className="py-1 text-left font-sans">Reactivo</th><th className="text-right">1×</th><th className="text-right">{round1(mix.factor)}×</th></tr></thead>
+              <thead className="text-muted-foreground"><tr><th className="py-1 text-left font-sans">{tr("Reactivo")}</th><th className="text-right">1×</th><th className="text-right">{round1(mix.factor)}×</th></tr></thead>
               <tbody>
                 {mix.rows.map((r) => (
-                  <tr key={r.name} className="border-t"><td className="py-1.5 font-sans">{r.name}</td><td className="text-right">{round1(r.per)}</td><td className="text-right">{round1(r.total)}</td></tr>
+                  <tr key={r.name} className="border-t"><td className="py-1.5 font-sans">{tr(r.name)}</td><td className="text-right">{round1(r.per)}</td><td className="text-right">{round1(r.total)}</td></tr>
                 ))}
               </tbody>
             </table>
-            <p className="text-xs text-muted-foreground">Volúmenes en µL, incluye 10 % extra. {mix.template ? `Añade ${mix.template} µL de molde por tubo (dentro del agua).` : "Toca la colonia con la punta y resuspende en cada tubo."}</p>
+            <p className="text-xs text-muted-foreground">{tr("Volúmenes en µL, incluye 10 % extra.")} {mix.template ? tr("Añade {v} µL de molde por tubo (dentro del agua).", { v: mix.template }) : tr("Toca la colonia con la punta y resuspende en cada tubo.")}</p>
           </div>
         </section>
       </div>
@@ -284,8 +289,8 @@ function Calculator() {
         <OptionPopup
           onClose={() => setPopup(null)}
           content={{
-            title: "Tipo de reacción",
-            subtitle: REACTION_TYPES.find((r) => r.id === input.reaction)?.desc,
+            title: tr("Tipo de reacción"),
+            subtitle: tr(REACTION_TYPES.find((r) => r.id === input.reaction)?.desc ?? ""),
             body: (
               <div className="space-y-2">
                 {REACTION_TYPES.map((r) => (
@@ -297,7 +302,7 @@ function Calculator() {
                       setPopup(null);
                     }}
                   >
-                    {r.name}
+                    {tr(r.name)}
                   </Choice>
                 ))}
               </div>
@@ -309,8 +314,8 @@ function Calculator() {
         <OptionPopup
           onClose={() => setPopup(null)}
           content={{
-            title: "Polimerasa",
-            subtitle: pol.note,
+            title: tr("Polimerasa"),
+            subtitle: tr(pol.note),
             body: (
               <div className="space-y-2">
                 {POLYMERASES.map((p) => (
@@ -325,9 +330,9 @@ function Calculator() {
                       input.polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
                     )}
                   >
-                    <span className="block text-sm font-medium">{p.name}</span>
+                    <span className="block text-sm font-medium">{tr(p.name)}</span>
                     <span className={cn("block text-xs text-muted-foreground", input.polymeraseId === p.id && "text-amber-foreground/70")}>
-                      {p.note}
+                      {tr(p.note)}
                     </span>
                   </button>
                 ))}
@@ -340,19 +345,19 @@ function Calculator() {
         <OptionPopup
           onClose={() => setPopup(null)}
           content={{
-            title: "Molde y amplicón",
+            title: tr("Molde y amplicón"),
             body: (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   {TEMPLATES.map((t) => (
                     <Choice key={t.id} active={input.template === t.id} onClick={() => set({ template: t.id })}>
-                      {t.name}
+                      {tr(t.name)}
                     </Choice>
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {num("Amplicón", input.ampliconBp, "pb", (v) => set({ ampliconBp: Math.round(v) }), { min: 50, max: 40000, allowDecimal: false })}
-                  <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>Alto GC (&gt; 65 %)</Choice>
+                  <Choice active={input.highGC} onClick={() => set({ highGC: !input.highGC })}>{tr("Alto GC")} (&gt; 65 %)</Choice>
                 </div>
               </div>
             ),
@@ -363,8 +368,8 @@ function Calculator() {
         <OptionPopup
           onClose={() => setPopup(null)}
           content={{
-            title: "Tampón y aditivos",
-            subtitle: `MgCl₂ del tampón ${input.mgMM} mM`,
+            title: tr("Tampón y aditivos"),
+            subtitle: `${tr("MgCl₂ del tampón")} ${input.mgMM} mM`,
             body: (
               <div className="flex flex-wrap gap-2">
                 {num("MgCl₂ del tampón", input.mgMM, "mM", (v) => set({ mgMM: v }), { max: 10 })}
