@@ -53,7 +53,7 @@ export const useThermocyclerSession = create<Session>((set) => ({
     const app = useApp.getState();
     const program = app.programs.find(p => p.id === app.activeId);
     if (!program || s.status !== "running") return s;
-    const segments = buildSegments(program);
+    const segments = segmentsFor(program);
     const current = stateAt(segments, s.simTime).segment;
     const next = segments.find(seg => seg.start > s.simTime + 0.001 && (seg.stageIndex !== current?.stageIndex || seg.stepIndex !== current?.stepIndex || seg.cycle !== current?.cycle));
     const last = segments.at(-1);
@@ -69,7 +69,7 @@ export const useThermocyclerSession = create<Session>((set) => ({
       return { lid, status: lid >= program.lidTemp - 0.5 ? "running" : "preheating" };
     }
     const simTime = s.simTime + seconds * s.speed;
-    const finished = stateAt(buildSegments(program), simTime).finished;
+    const finished = stateAt(segmentsFor(program), simTime).finished;
     return {
       simTime,
       lid: program.lidHeatingEnabled === false ? AMBIENT : program.lidTemp,
