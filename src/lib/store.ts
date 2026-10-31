@@ -38,8 +38,8 @@ interface AppState {
   muted: boolean;
   toggleMuted: () => void;
   /** Idioma de la interfaz. */
-  language: "es" | "en";
-  setLanguage: (l: "es" | "en") => void;
+  language: "es" | "en" | "gl";
+  setLanguage: (l: "es" | "en" | "gl") => void;
 }
 
 export const useApp = create<AppState>()(

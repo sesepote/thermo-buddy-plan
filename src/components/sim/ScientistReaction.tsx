@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTr } from "@/lib/i18n/tr";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/lib/store";
@@ -47,16 +48,17 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
   const tier = reactionTier(score);
   const [end, setEnd] = useState(false);
   const muted = useApp((s) => s.muted);
+  const tr = useTr();
   useEffect(() => { const t = setTimeout(() => setEnd(true), 1600); return () => clearTimeout(t); }, []);
 
-  return <div role="dialog" aria-modal aria-label="Resultado de la mezcla" className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-sm">
+  return <div role="dialog" aria-modal aria-label={tr("Resultado de la mezcla")} className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-sm">
     <div className="relative flex flex-col items-center gap-3 rounded-2xl border bg-card p-6 pt-16 shadow-xl">
-      <Button variant="outline" size="icon" aria-label="Cerrar" className="absolute right-3 top-3 z-10 size-12" onClick={onClose}><X /></Button>
-      {VIDEO[tier] ? <video src={VIDEO[tier]} autoPlay preload="auto" muted={muted} playsInline onEnded={() => setEnd(true)} aria-label={CAPTION[tier]} className="h-80 w-auto sm:h-96" /> :
+      <Button variant="outline" size="icon" aria-label={tr("Cerrar")} className="absolute right-3 top-3 z-10 size-12" onClick={onClose}><X /></Button>
+      {VIDEO[tier] ? <video src={VIDEO[tier]} autoPlay preload="auto" muted={muted} playsInline onEnded={() => setEnd(true)} aria-label={tr(CAPTION[tier])} className="h-80 w-auto sm:h-96" /> :
       <div className={`sci-stage sci-${end ? tier : "shake"} relative size-72 sm:size-80`}>
         {/* Las imágenes se apilan para que el cambio de expresión no parpadee. */}
         <img src={concentrada} alt="" className={`sci-img ${end ? "opacity-0" : ""}`} draggable={false} />
-        <img src={FACE[tier]} alt={CAPTION[tier]} className={`sci-img ${end ? "sci-in" : "opacity-0"}`} draggable={false} />
+        <img src={FACE[tier]} alt={tr(CAPTION[tier])} className={`sci-img ${end ? "sci-in" : "opacity-0"}`} draggable={false} />
         {/* Efectos sobre el tubo (≈32 % x, 47 % y de la ilustración). */}
         {end && <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 size-full overflow-visible" aria-hidden>
           {tier === "toxic" && <g className="sci-skull">
@@ -72,8 +74,8 @@ export function ScientistReaction({ score, onClose }: { score: number; onClose: 
           </g>}
         </svg>}
       </div>}
-      <p className="font-display text-xl">{end ? CAPTION[tier] : "Agitando la mezcla…"}</p>
-      <Button variant="outline" className="h-12" onClick={onClose}>Ver resultados</Button>
+      <p className="font-display text-xl">{tr(end ? CAPTION[tier] : "Agitando la mezcla…")}</p>
+      <Button variant="outline" className="h-12" onClick={onClose}>{tr("Ver resultados")}</Button>
     </div>
   </div>;
 }

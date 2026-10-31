@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTr } from "@/lib/i18n/tr";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NumPad, type NumPadRequest } from "./NumPad";
@@ -27,16 +28,17 @@ function Choice({ active, onClick, children }: { active: boolean; onClick: () =>
 
 /** Interruptor pequeño y discreto para activar o desactivar el cálculo del error de pipeteo. */
 function PipetteSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  const tr = useTr();
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label="Error de pipeteo"
+      aria-label={tr("Error de pipeteo")}
       onClick={() => onChange(!checked)}
       className="flex items-center gap-2 py-1.5"
     >
-      <span className="text-xs text-muted-foreground">Error de pipeteo</span>
+      <span className="text-xs text-muted-foreground">{tr("Error de pipeteo")}</span>
       <span className={cn("relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-border transition-colors", checked ? "bg-amber" : "bg-muted")}>
         <span className={cn("absolute left-0.5 size-4 rounded-full bg-amber-foreground shadow transition-transform", checked && "translate-x-4")} />
       </span>
@@ -45,9 +47,10 @@ function PipetteSwitch({ checked, onChange }: { checked: boolean; onChange: (v: 
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const tr = useTr();
   return (
     <div className="space-y-2">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h2>
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tr(title)}</h2>
       {children}
     </div>
   );
@@ -83,6 +86,7 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
   const [popupOpen, setPopupOpen] = useState(false);
   /** Extra del 10 % para compensar el error de pipeteo; se puede desactivar. */
   const [pipetting, setPipetting] = useState(false);
+  const tr = useTr();
 
   // Al cambiar de polimerasa se cargan su stock y unidades recomendadas.
   const setPolymeraseId = (id: string) => {
@@ -117,9 +121,9 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
   const num = (label: string, value: number, unit: string, onConfirm: (v: number) => void, opts: Partial<NumPadRequest> = {}) => (
     <Button variant="outline"
       className="hw-key flex min-h-14 flex-1 flex-col items-start justify-center rounded-md px-4 py-1"
-      onClick={() => setPad({ title: label, value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}
+      onClick={() => setPad({ title: tr(label), value, unit, onConfirm, allowDecimal: true, min: 0, ...opts })}
     >
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs text-muted-foreground">{tr(label)}</span>
       <span className="font-mono text-xl">{value} {unit}</span>
     </Button>
   );
@@ -127,7 +131,7 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
   return (
     <div className="flex flex-1 flex-col gap-5 p-4">
       {/* Franja superior: selección de enzima y parámetros de la reacción. */}
-      <section aria-label="Parámetros principales" className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+      <section aria-label={tr("Parámetros principales")} className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
         <Section title="Polimerasa">
           <div className="grid gap-2 sm:grid-cols-3">
             {/* Polimerasas habituales directamente; las demás en "Más polimerasas…". */}
@@ -140,9 +144,9 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
                   polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
                 )}
               >
-                <span className="block text-sm font-medium">{p.name}</span>
+                <span className="block text-sm font-medium">{tr(p.name)}</span>
                 <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
-                  Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
+                  {tr("Tampón {x}x · {u} U por 50 µL", { x: p.bufferX, u: p.unitsPer50 })}
                 </span>
               </Button>
             ))}
@@ -154,9 +158,9 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
               )}
             >
               <span className="min-w-0">
-                <span className="block text-sm font-medium">Más polimerasas…</span>
+                <span className="block text-sm font-medium">{tr("Más polimerasas…")}</span>
                 <span className={cn("block truncate text-xs text-muted-foreground", !["taq", "hs-taq"].includes(polymeraseId) && "text-amber-foreground/70")}>
-                  {pol.name}
+                  {tr(pol.name)}
                 </span>
               </span>
               <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
@@ -171,14 +175,14 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
             {!colony && num("Molde por reacción", templateUL, "µL", (v) => setTemplateUL(v), { min: 0, max: 20 })}
           </div>
           <Choice active={colony} onClick={() => setColony((c) => !c)}>
-            PCR de colonia (sin molde medido)
+            {tr("PCR de colonia (sin molde medido)")}
           </Choice>
         </Section>
       </section>
 
       <div className="grid min-w-0 gap-5 border-t pt-5 lg:grid-cols-2">
       {/* Concentraciones a la izquierda; resultados a la derecha. */}
-      <section aria-label="Concentraciones y stocks" className="grid min-w-0 content-start gap-4 sm:grid-cols-2">
+      <section aria-label={tr("Concentraciones y stocks")} className="grid min-w-0 content-start gap-4 sm:grid-cols-2">
         <Section title="Polimerasa: stock y unidades">
           <div className="flex flex-wrap gap-2">
             {num("Stock de enzima", enzymeStockU, "U/µL", (v) => setEnzymeStockU(v), { min: 0.1, max: 100 })}
@@ -204,29 +208,29 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
             {num("MgCl₂ extra a añadir", extraMg, "mM", (v) => setExtraMg(v), { max: 5 })}
             {num("Stock de MgCl₂", mgStockMM, "mM", (v) => setMgStockMM(v), { min: 1, max: 1000 })}
           </div>
-          <p className="text-xs text-muted-foreground">Mg²⁺ final: {round2(bufferMg + extraMg)} mM (óptimo habitual 1,5–2,5 mM).</p>
+          <p className="text-xs text-muted-foreground">{tr("Mg²⁺ final: {v} mM (óptimo habitual 1,5–2,5 mM).", { v: round2(bufferMg + extraMg) })}</p>
         </Section></div>
       </section>
 
       {/* Tabla de volúmenes */}
-      <section aria-label="Resultados del master mix" className="min-w-0 space-y-3 self-start border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
+      <section aria-label={tr("Resultados del master mix")} className="min-w-0 space-y-3 self-start border-t pt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {pol.name}</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Master mix · {tr(pol.name)}</h2>
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm text-muted-foreground">
-              {samples} muestras {pipetting ? `+ 10 % extra = ${round1(mix.factor)}×` : `= ${samples}×`}
+              {samples} {tr("muestras")} {pipetting ? `+ 10 % extra = ${round1(mix.factor)}×` : `= ${samples}×`}
             </p>
             <PipetteSwitch checked={pipetting} onChange={setPipetting} />
           </div>
         </div>
         <table className="w-full font-mono text-sm">
           <thead className="text-muted-foreground">
-            <tr><th className="py-1 text-left font-sans">Reactivo</th><th className="text-right">1× (µL)</th><th className="text-right">Total (µL)</th></tr>
+            <tr><th className="py-1 text-left font-sans">{tr("Reactivo")}</th><th className="text-right">1× (µL)</th><th className="text-right">Total (µL)</th></tr>
           </thead>
           <tbody>
             {mix.rows.map((r) => (
               <tr key={r.name} className="border-t">
-                <td className="py-1.5 font-sans">{r.name}</td>
+                <td className="py-1.5 font-sans">{tr(r.name)}</td>
                 <td className="text-right">{fmt2(r.per)}</td>
                 <td className="text-right">{fmt2(pipetting ? r.total : r.per * samples)}</td>
               </tr>
@@ -234,15 +238,15 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
           </tbody>
         </table>
         {mix.overflow && (
-          <p className="text-sm text-destructive">Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.</p>
+          <p className="text-sm text-destructive">{tr("Los reactivos superan el volumen de reacción: reduce el molde o aumenta el volumen.")}</p>
         )}
         <p className="text-xs text-muted-foreground">
-          Volúmenes en µL {pipetting ? "con 10 % extra para compensar pérdidas al pipetear" : "sin extra por pipeteo (volúmenes exactos)"}. dNTPs: stock {dntpStockMM} mM de cada
-          nucleótido ({round2(dntpStockMM * 4)} mM total) → {dntpFinalMM} mM finales de cada uno. Mg²⁺ final{" "}
-          {round2(bufferMg + extraMg)} mM.{" "}
+          {tr(pipetting ? "Volúmenes en µL con 10 % extra para compensar pérdidas al pipetear." : "Volúmenes en µL sin extra por pipeteo (volúmenes exactos).")}{" "}
+          {tr("dNTPs: stock {s} mM de cada nucleótido ({t} mM total) → {f} mM finales de cada uno.", { s: dntpStockMM, t: round2(dntpStockMM * 4), f: dntpFinalMM })}{" "}
+          {tr("Mg²⁺ final {v} mM.", { v: round2(bufferMg + extraMg) })}{" "}
           {mix.template
-            ? `Añade ${fmt2(mix.template)} µL de molde por tubo (descontado del agua).`
-            : "Toca la colonia con la punta y resuspende en cada tubo."}
+            ? tr("Añade {v} µL de molde por tubo (descontado del agua).", { v: fmt2(mix.template) })
+            : tr("Toca la colonia con la punta y resuspende en cada tubo.")}
         </p>
       </section>
       </div>
@@ -252,8 +256,8 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
         <OptionPopup
           onClose={() => setPopupOpen(false)}
           content={{
-            title: "Más polimerasas",
-            subtitle: "Enzimas especiales o de uso menos frecuente.",
+            title: tr("Más polimerasas"),
+            subtitle: tr("Enzimas especiales o de uso menos frecuente."),
             body: (
               <div className="space-y-2">
                 {POLYMERASES.filter((p) => p.id !== "taq" && p.id !== "hs-taq").map((p) => (
@@ -268,9 +272,9 @@ export function MasterMixCalculator({ onChange, initial }: { onChange?: (value: 
                       polymeraseId === p.id && "bg-none bg-amber text-amber-foreground",
                     )}
                   >
-                    <span className="block text-sm font-medium">{p.name}</span>
+                    <span className="block text-sm font-medium">{tr(p.name)}</span>
                     <span className={cn("block text-xs text-muted-foreground", polymeraseId === p.id && "text-amber-foreground/70")}>
-                      Tampón {p.bufferX}x · {p.unitsPer50} U por 50 µL
+                      {tr("Tampón {x}x · {u} U por 50 µL", { x: p.bufferX, u: p.unitsPer50 })}
                     </span>
                   </Button>
                 ))}

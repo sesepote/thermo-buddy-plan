@@ -3,6 +3,7 @@
  * sistema en el kiosco: botones grandes y unidades claras.
  * Para tiempos permite introducir en segundos o minutos.
  */
+import { useTr } from "@/lib/i18n/tr";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export function NumPad({ req, onClose }: { req: NumPadRequest | null; onClose: (
   const [text, setText] = useState("");
   const [minutes, setMinutes] = useState(false);
   const [error, setError] = useState("");
+  const tr = useTr();
 
   // Al abrir, carga el valor actual.
   useEffect(() => {
@@ -46,10 +48,10 @@ export function NumPad({ req, onClose }: { req: NumPadRequest | null; onClose: (
 
   const confirm = () => {
     let v = parseFloat(text || "0");
-    if (Number.isNaN(v)) return setError("Valor no válido");
+    if (Number.isNaN(v)) return setError(tr("Valor no válido"));
     if (req.time && minutes) v = v * 60;
-    if (req.min !== undefined && v < req.min) return setError(`Mínimo ${req.min} ${req.unit}`);
-    if (req.max !== undefined && v > req.max) return setError(`Máximo ${req.max} ${req.unit}`);
+    if (req.min !== undefined && v < req.min) return setError(`${tr("Mínimo")} ${req.min} ${req.unit}`);
+    if (req.max !== undefined && v > req.max) return setError(`${tr("Máximo")} ${req.max} ${req.unit}`);
     req.onConfirm(Math.round(v * 100) / 100);
     onClose();
   };
@@ -61,7 +63,7 @@ export function NumPad({ req, onClose }: { req: NumPadRequest | null; onClose: (
       <DialogContent className="max-w-sm bg-panel">
         <DialogHeader>
           <DialogTitle>{req.title}</DialogTitle>
-          <DialogDescription>{req.time ? "0 = indefinido (∞)" : `Unidad: ${req.unit}`}</DialogDescription>
+          <DialogDescription>{req.time ? tr("0 = indefinido (∞)") : `${tr("Unidad")}: ${req.unit}`}</DialogDescription>
         </DialogHeader>
         <div className="lcd lcd-glow flex h-20 items-center justify-end rounded-md px-4 text-4xl">
           {text || "0"}
@@ -76,7 +78,7 @@ export function NumPad({ req, onClose }: { req: NumPadRequest | null; onClose: (
                 onClick={() => setMinutes(m)}
                 className={cn("hw-key h-12 rounded-md font-mono", minutes === m && "bg-none bg-amber text-amber-foreground")}
               >
-                {m ? "Minutos" : "Segundos"}
+                {tr(m ? "Minutos" : "Segundos")}
               </button>
             ))}
           </div>
@@ -93,9 +95,9 @@ export function NumPad({ req, onClose }: { req: NumPadRequest | null; onClose: (
           )}
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <button onClick={onClose} className="hw-key h-14 rounded-md text-lg">Cancelar</button>
+          <button onClick={onClose} className="hw-key h-14 rounded-md text-lg">{tr("Cancelar")}</button>
           <button onClick={confirm} className="h-14 rounded-md bg-run text-lg font-semibold text-run-foreground active:translate-y-0.5">
-            Aceptar
+            {tr("Aceptar")}
           </button>
         </div>
       </DialogContent>
