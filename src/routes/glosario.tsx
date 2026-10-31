@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/components/sim/ThemeToggle";
 import { StatusBars } from "@/components/sim/StatusBars";
 import { GLOSSARY, GLOSSARY_CATEGORIES, GLOSSARY_SOURCE } from "@/lib/pcr/glossary";
 import { FORMULAS } from "@/lib/pcr/formulas";
+import { glossEntry, formulaText, type GlossLang } from "@/lib/pcr/glossary.i18n";
+import { useApp } from "@/lib/store";
 
 export const Route = createFileRoute("/glosario")({
   head: () => ({
@@ -32,6 +34,7 @@ function GlossaryPage() {
   const t = useT();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
+  const lang = useApp((s) => s.language) as GlossLang;
 
   // Filtra por texto (término o definición) y categoría, en orden alfabético.
   const groups = useMemo(() => {
@@ -39,11 +42,12 @@ function GlossaryPage() {
     return GLOSSARY_CATEGORIES.filter((c) => !category || c === category)
       .map((c) => ({
         category: c,
-        items: GLOSSARY.filter((g) => g.category === c && (!q || norm(g.term + " " + g.def).includes(q)))
-          .sort((a, b) => a.term.localeCompare(b.term, "es")),
+        items: GLOSSARY.filter((g) => g.category === c).map((g) => glossEntry(lang, g.term, g.def))
+          .filter((g) => !q || norm(g.term + " " + g.def).includes(q))
+          .sort((a, b) => a.term.localeCompare(b.term, lang)),
       }))
       .filter((g) => g.items.length > 0);
-  }, [query, category]);
+  }, [query, category, lang]);
   const count = groups.reduce((n, g) => n + g.items.length, 0);
 
   return (
@@ -130,22 +134,24 @@ function GlossaryPage() {
 /** Tarjetas de fórmulas: fórmula grande, variables y ejemplo práctico. */
 function FormulaSheet() {
   const tr = useTr();
+  const lang = useApp((s) => s.language) as GlossLang;
+  const f = (s: string) => formulaText(lang, s);
   return (
     <div className="flex flex-col gap-6">
       {FORMULAS.map((g) => (
         <section key={g.group} className="flex flex-col gap-2">
-          <h2 className="font-mono text-sm uppercase tracking-wider text-primary">{g.group}</h2>
+          <h2 className="font-mono text-sm uppercase tracking-wider text-primary">{f(g.group)}</h2>
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {g.cards.map((c) => (
               <article key={c.title} className="flex flex-col gap-3 rounded-lg border bg-panel p-4">
-                <h3 className="font-semibold">{c.title}</h3>
+                <h3 className="font-semibold">{f(c.title)}</h3>
                 <p className="overflow-x-auto rounded-md bg-background px-3 py-3 text-center font-mono text-lg font-semibold text-primary">{c.formula}</p>
                 <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
                   {c.vars.map((v) => (
-                    <li key={v.sym}><span className="font-mono font-semibold text-foreground">{v.sym}</span> — {v.desc}</li>
+                    <li key={v.sym}><span className="font-mono font-semibold text-foreground">{v.sym}</span> — {f(v.desc)}</li>
                   ))}
                 </ul>
-                <p className="mt-auto border-t pt-2 text-sm"><span className="font-semibold text-amber">{tr("Ejemplo")}:</span> {c.example}</p>
+                <p className="mt-auto border-t pt-2 text-sm"><span className="font-semibold text-amber">{tr("Ejemplo")}:</span> {f(c.example)}</p>
               </article>
             ))}
           </div>
