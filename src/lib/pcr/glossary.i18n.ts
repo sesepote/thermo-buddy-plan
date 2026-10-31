@@ -187,6 +187,8 @@ export const FORMULAS_I18N: Record<string, [string, string]> = {
   "el cálculo se hace por nucleótido": ["calculated per nucleotide", "o cálculo faise por nucleótido"],
   "200 µM desde 10 mM en 25 µL: 0,2 × 25 / 10 = 0,5 µL": ["200 µM from 10 mM in 25 µL: 0.2 × 25 / 10 = 0.5 µL", "200 µM desde 10 mM en 25 µL: 0,2 × 25 / 10 = 0,5 µL"],
   "Volumen": ["Volume", "Volume"],
+  "0,05 mL = 50 µL": ["0.05 mL = 50 µL", "0,05 mL = 50 µL"],
+  "5 min = 300 s": ["5 min = 300 s", "5 min = 300 s"],
   "unidad habitual de pipeteo": ["usual pipetting unit", "unidade habitual de pipeteo"],
   "Tiempo": ["Time", "Tempo"],
   "unidad de los pasos del termociclador": ["unit of thermal cycler steps", "unidade dos pasos do termociclador"],
