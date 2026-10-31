@@ -33,7 +33,7 @@ const cache: Record<PhraseLang, Map<string, string>> = { es: new Map(), en: new 
 export function translate(lang: PhraseLang, text: string, vars?: Vars): string {
   if (lang === "es" || !text) return fill(text, vars);
   const exact = PHRASES[text];
-  if (exact) return fill(exact[lang], vars);
+  if (exact) return fill(exact[lang === "en" ? 0 : 1], vars);
   if (vars) return fill(text, vars);
   const hit = cache[lang].get(text);
   if (hit !== undefined) return hit;
@@ -43,7 +43,7 @@ export function translate(lang: PhraseLang, text: string, vars?: Vars): string {
     if (!m) continue;
     const captured: Vars = {};
     t.names.forEach((n, i) => { captured[n] = translate(lang, m[i + 1] ?? ""); });
-    out = fill(PHRASES[t.key]![lang], captured);
+    out = fill(PHRASES[t.key]![lang === "en" ? 0 : 1], captured);
     break;
   }
   cache[lang].set(text, out);
