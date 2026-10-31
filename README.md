@@ -4,7 +4,7 @@
 
 ### Simulador educativo de termociclador para el laboratorio de Biología Molecular
 
-*Aprende PCR tocando: programa el termociclador, calcula tu Master Mix y ponte a prueba con ejercicios prácticos.*
+_Aprende PCR tocando: programa el termociclador, calcula tu Master Mix y ponte a prueba con ejercicios prácticos._
 
 ![Estado](https://img.shields.io/badge/estado-activo-brightgreen)
 ![Offline](https://img.shields.io/badge/PWA-funciona%20sin%20conexión-blue)
@@ -17,7 +17,7 @@
 
 ## ✨ ¿Qué es SIM-PCR?
 
-SIM-PCR es una aplicación web pensada para **aulas y laboratorios docentes**. Reproduce la pantalla de un termociclador real, ayuda a calcular las mezclas de reacción y propone ejercicios prácticos con corrección automática.
+SIM-PCR es una aplicación web pensada para **aulas y laboratorios docentes**. Reproduce la pantalla de un termociclador real, ayuda a calcular las mezclas de reacción y dispone de ejercicios prácticos con corrección basada en puntaje por nuestra ¡¡¡cientifica favorita!!!.
 
 Funciona en ordenador, tablet, móvil y **pantallas táctiles tipo quiosco**, incluso **sin conexión a Internet**.
 
@@ -25,12 +25,12 @@ Funciona en ordenador, tablet, móvil y **pantallas táctiles tipo quiosco**, in
 
 ## 🧭 Pantallas principales
 
-| | Pantalla | Para qué sirve |
-|:-:|---|---|
-| 🌡️ | **Termociclador** | Pantalla inspirada en equipos reales. Programa etapas, bucles y temperaturas y observa la simulación ciclo a ciclo a distintas velocidades. |
-| 🧮 | **Calculadora** | Calcula la Tm de los cebadores, genera protocolos y prepara el Master Mix según la polimerasa, el tampón y el número de reacciones. |
-| 🎯 | **Entrenamiento** | Ejercicios prácticos: prepara la mezcla en un tubo virtual, programa el termociclador y comprueba tu respuesta. |
-| 📖 | **Glosario** | Más de 140 términos de PCR y biología molecular con buscador. |
+|     | Pantalla          | Para qué sirve                                                                                                                              |
+| :-: | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🌡️  | **Termociclador** | Pantalla inspirada en equipos reales. Programa etapas, bucles y temperaturas y observa la simulación ciclo a ciclo a distintas velocidades. |
+| 🧮  | **Calculadora**   | Calcula la Tm de los cebadores, genera protocolos y prepara el Master Mix según la polimerasa, el tampón y el número de reacciones.         |
+| 🎯  | **Entrenamiento** | Ejercicios prácticos: prepara la mezcla en un tubo virtual, programa el termociclador y comprueba tu respuesta.                             |
+| 📖  | **Glosario**      | Más de 140 términos de PCR y biología molecular con buscador.                                                                               |
 
 ---
 
