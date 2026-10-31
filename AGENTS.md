@@ -24,3 +24,4 @@
 - Exercise drafts stay local to their workspace and do not modify the active instrument program, so practice cannot interrupt a thermocycler run.
 - Exercise authoring uses the shared ManualMix tube UI and optional teacher-authored rows/totals; legacy calculator-derived solutions are converted only in the editor, so old JSON remains compatible and public exercise data never includes solution volumes.
 - Teacher login accepts typed credentials without a public account-list server function, so signed-out visitors cannot enumerate teacher names through the app.
+- UI text goes through `useTr()` (`src/lib/i18n/tr.ts`) with Spanish phrases as keys and `{x}` templates in `phrases.ts` ([en, gl]); dynamic strings from `src/lib/pcr/` are translated at render by template matching, so the PCR engine stays language-free. A test fails if a literal `tr("…")` lacks a translation.

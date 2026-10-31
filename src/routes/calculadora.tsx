@@ -178,7 +178,7 @@ function Calculator() {
           />
           <Field
             label="Polimerasa"
-            value={pol.name}
+            value={tr(pol.name)}
             onClick={() => setPopup("polymerase")}
           />
 
