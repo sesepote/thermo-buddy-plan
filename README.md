@@ -41,7 +41,7 @@ Funciona en ordenador, tablet, móvil y **pantallas táctiles tipo quiosco**, in
                     (volúmenes a mano)     (etapas y ciclos)
 ```
 
-El tubo se dibuja en capas de colores con la proporción de cada reactivo y en distintos tamaños estándar. Al verificar… ¡llévate una sorpresa! 🎉
+El tubo se dibuja en capas de colores con la proporción de cada reactivo y en distintos tamaños estándar.
 
 ---
 
