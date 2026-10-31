@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useTr } from "@/lib/i18n/tr";
 import { useMemo, useState } from "react";
 import { ChevronLeft, Search, X } from "lucide-react";
 import { useT } from "@/lib/i18n";
@@ -27,6 +28,8 @@ const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").t
 
 function GlossaryPage() {
   const [tab, setTab] = useState<"terms" | "formulas">("terms");
+  const tr = useTr();
+  const t = useT();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
 
@@ -44,33 +47,33 @@ function GlossaryPage() {
   const count = groups.reduce((n, g) => n + g.items.length, 0);
 
   return (
-    <StatusBars section={useT().sections.glossary}>
+    <StatusBars section={t.sections.glossary}>
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4">
         <div className="flex items-center gap-3">
           <Link to="/" className="hw-key flex h-12 items-center gap-1 rounded-md px-4 text-base">
-            <ChevronLeft className="size-5" /> Menú
+            <ChevronLeft className="size-5" /> {t.common.menu}
           </Link>
-          <h1 className="font-display text-2xl font-bold tracking-tight">{useT().titles.glossary}</h1>
-          <span className="ml-auto font-mono text-sm text-muted-foreground">{count} términos</span>
+          <h1 className="font-display text-2xl font-bold tracking-tight">{t.titles.glossary}</h1>
+          <span className="ml-auto font-mono text-sm text-muted-foreground">{count} {tr("términos")}</span>
           <LanguageToggle />
           <ThemeToggle />
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Fuente de datos:{" "}
+          {tr("Fuente de datos")}:{" "}
           <a href={GLOSSARY_SOURCE.url} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">INCUAL</a>
         </p>
 
         <div className="flex gap-2" role="tablist">
-          {(["terms", "formulas"] as const).map((t) => (
+          {(["terms", "formulas"] as const).map((k) => (
             <button
-              key={t}
+              key={k}
               role="tab"
-              aria-selected={tab === t}
-              onClick={() => setTab(t)}
-              className={`min-h-12 flex-1 rounded-lg border px-4 font-display text-base font-semibold ${tab === t ? "border-primary bg-primary text-primary-foreground" : "bg-panel"}`}
+              aria-selected={tab === k}
+              onClick={() => setTab(k)}
+              className={`min-h-12 flex-1 rounded-lg border px-4 font-display text-base font-semibold ${tab === k ? "border-primary bg-primary text-primary-foreground" : "bg-panel"}`}
             >
-              {t === "terms" ? "Términos" : "Fórmulas y conversiones"}
+              {tr(k === "terms" ? "Términos" : "Fórmulas y conversiones")}
             </button>
           ))}
         </div>
@@ -81,11 +84,11 @@ function GlossaryPage() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar término o definición…"
+            placeholder={tr("Buscar término o definición…")}
             className="h-full min-w-0 flex-1 bg-transparent text-lg outline-none"
           />
           {query && (
-            <button className="flex size-10 items-center justify-center" onClick={() => setQuery("")} aria-label="Borrar búsqueda">
+            <button className="flex size-10 items-center justify-center" onClick={() => setQuery("")} aria-label={tr("Borrar búsqueda")}>
               <X className="size-5" />
             </button>
           )}
@@ -98,16 +101,16 @@ function GlossaryPage() {
               onClick={() => setCategory(c)}
               className={`min-h-11 rounded-full border px-4 text-sm ${category === c ? "border-primary bg-primary text-primary-foreground" : "bg-panel"}`}
             >
-              {c ?? "Todas"}
+              {c ? tr(c) : tr("Todas")}
             </button>
           ))}
         </div>
 
-        {groups.length === 0 && <p className="py-10 text-center text-muted-foreground">Sin resultados para “{query}”.</p>}
+        {groups.length === 0 && <p className="py-10 text-center text-muted-foreground">{tr("Sin resultados para “{q}”.", { q: query })}</p>}
 
         {groups.map((g) => (
           <section key={g.category} className="flex flex-col gap-2">
-            <h2 className="sticky top-0 z-10 bg-background py-2 font-mono text-sm uppercase tracking-wider text-primary">{g.category}</h2>
+            <h2 className="sticky top-0 z-10 bg-background py-2 font-mono text-sm uppercase tracking-wider text-primary">{tr(g.category)}</h2>
             <dl className="grid gap-2 md:grid-cols-2">
               {g.items.map((item) => (
                 <div key={item.term} className="rounded-lg border bg-panel p-4">
@@ -126,6 +129,7 @@ function GlossaryPage() {
 
 /** Tarjetas de fórmulas: fórmula grande, variables y ejemplo práctico. */
 function FormulaSheet() {
+  const tr = useTr();
   return (
     <div className="flex flex-col gap-6">
       {FORMULAS.map((g) => (
@@ -141,7 +145,7 @@ function FormulaSheet() {
                     <li key={v.sym}><span className="font-mono font-semibold text-foreground">{v.sym}</span> — {v.desc}</li>
                   ))}
                 </ul>
-                <p className="mt-auto border-t pt-2 text-sm"><span className="font-semibold text-amber">Ejemplo:</span> {c.example}</p>
+                <p className="mt-auto border-t pt-2 text-sm"><span className="font-semibold text-amber">{tr("Ejemplo")}:</span> {c.example}</p>
               </article>
             ))}
           </div>

@@ -1,4 +1,5 @@
 /** Perfil térmico táctil: siete columnas visibles; el modelo Program/Segment no cambia. */
+import { useTr } from "@/lib/i18n/tr";
 import { Button } from "@/components/ui/button";
 import type { Program } from "@/lib/pcr/types";
 import { formatTime } from "@/lib/pcr/types";
@@ -17,6 +18,7 @@ export function ThermalProfile({ program, selected, current, cycle, playhead, on
   const graph = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ si: number; edge: "start" | "end"; start: number; end: number } | null>(null);
   const [drag, setDrag] = useState<typeof dragRef.current>(null);
+  const tr = useTr();
   const steps = program.stages.flatMap((stage, si) => stage.steps.map((step, pi) => ({ stage, step, si, pi })));
   // El ancho mínimo siempre corresponde a siete pasos. Los adicionales se recorren horizontalmente.
   const columns = Math.max(7, steps.length);
@@ -40,14 +42,14 @@ export function ThermalProfile({ program, selected, current, cycle, playhead, on
     dragRef.current = next; setDrag(next);
   };
 
-  return <div className="min-w-0 overflow-hidden border border-border bg-lcd" aria-label="Perfil térmico">
+  return <div className="min-w-0 overflow-hidden border border-border bg-lcd" aria-label={tr("Perfil térmico")}>
     {showHeader && <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 font-mono text-xs">
-      <span className="text-lcd-foreground">● PERFIL TÉRMICO <span className="ml-2 text-muted-foreground">{steps.length} PASOS · {program.sampleVolume ?? 25} µL</span></span>
-      <div className="flex flex-wrap gap-2">{loops.map(loop => <Button key={loop.stage.id} variant="outline" className="h-9 border-amber/40 bg-amber/10 text-amber" disabled={locked} onClick={() => onCycles(loop.si)}><Repeat2 /> Columnas {loop.start + 1}–{loop.end + 1}: {loop.stage.repeats}×</Button>)}</div>
+      <span className="text-lcd-foreground">● {tr("PERFIL TÉRMICO")} <span className="ml-2 text-muted-foreground">{steps.length} {tr("PASOS")} · {program.sampleVolume ?? 25} µL</span></span>
+      <div className="flex flex-wrap gap-2">{loops.map(loop => <Button key={loop.stage.id} variant="outline" className="h-9 border-amber/40 bg-amber/10 text-amber" disabled={locked} onClick={() => onCycles(loop.si)}><Repeat2 /> {tr("Columnas")} {loop.start + 1}–{loop.end + 1}: {loop.stage.repeats}×</Button>)}</div>
     </div>}
     <div className="overflow-x-auto">
       <div ref={graph} className="relative h-[424px] w-full" style={{ minWidth: width }}>
-        <svg viewBox={`0 0 ${width} 424`} className="h-full w-full" preserveAspectRatio="none" role="img" aria-label="Curva de temperaturas por pasos, siete columnas visibles">
+        <svg viewBox={`0 0 ${width} 424`} className="h-full w-full" preserveAspectRatio="none" role="img" aria-label={tr("Curva de temperaturas por pasos, siete columnas visibles")}>
           {Array.from({ length: columns }, (_, i) => <line key={`col-${i}`} x1={left + i * span} x2={left + i * span} y1="44" y2="342" stroke="var(--border)" strokeOpacity="0.55" />)}
           {[4, 37, 55, 72, 95, 105].map(t => <g key={t}><line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeDasharray="4 5" /><text x={left - 8} y={y(t) + 5} textAnchor="end" fill="var(--lcd-foreground)" fontSize="15">{t}°</text></g>)}
           {loops.map(loop => <rect key={loop.stage.id} x={left + loop.start * span} y="43" width={(loop.end - loop.start + 1) * span} height="300" fill="var(--amber)" fillOpacity="0.045" stroke="var(--amber)" strokeOpacity="0.7" strokeDasharray="4 4" rx="5" />)}
@@ -67,7 +69,7 @@ export function ThermalProfile({ program, selected, current, cycle, playhead, on
             </g>;
           })}
         </svg>
-        {loops.flatMap(loop => (["start", "end"] as const).map(edge => <Button key={`${loop.stage.id}-${edge}`} variant="ghost" disabled={locked} aria-label={`${edge === "start" ? "Inicio" : "Final"} del bucle de columnas ${loop.start + 1} a ${loop.end + 1}`} className="absolute top-[43px] z-10 h-[300px] w-12 -translate-x-1/2 touch-none cursor-ew-resize rounded-none p-0 text-amber hover:bg-transparent hover:text-amber" style={{ left: percent(left + (edge === "start" ? loop.start : loop.end + 1) * span) }}
+        {loops.flatMap(loop => (["start", "end"] as const).map(edge => <Button key={`${loop.stage.id}-${edge}`} variant="ghost" disabled={locked} aria-label={tr(edge === "start" ? "Inicio del bucle de columnas {a} a {b}" : "Final del bucle de columnas {a} a {b}", { a: loop.start + 1, b: loop.end + 1 })} className="absolute top-[43px] z-10 h-[300px] w-12 -translate-x-1/2 touch-none cursor-ew-resize rounded-none p-0 text-amber hover:bg-transparent hover:text-amber" style={{ left: percent(left + (edge === "start" ? loop.start : loop.end + 1) * span) }}
           onPointerDown={e => { if (locked) return; e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); const next = { si: loop.si, edge, start: loop.start, end: loop.end }; dragRef.current = next; setDrag(next); }}
           onPointerMove={e => { if (e.currentTarget.hasPointerCapture(e.pointerId)) moveEdge(e.clientX); }}
           onPointerUp={e => { const moving = dragRef.current; if (!moving) return; e.currentTarget.releasePointerCapture(e.pointerId); dragRef.current = null; setDrag(null); onLoopRange(moving.si, moving.start, moving.end); }}
@@ -79,21 +81,21 @@ export function ThermalProfile({ program, selected, current, cycle, playhead, on
           const center = percent((point.x1 + point.x2) / 2);
           return <div key={step.id}>
             {/* Toda la columna es táctil: selecciona el paso y muestra la barra azul. */}
-            <button type="button" aria-label={`Seleccionar columna ${i + 1}: ${step.label}`} className="absolute top-[43px] h-[300px] cursor-pointer bg-transparent" style={{ left: percent(left + i * span), width: percent(span) }} onClick={() => onSelect(pos)} />
+            <button type="button" aria-label={`${tr("Seleccionar columna")} ${i + 1}: ${tr(step.label)}`} className="absolute top-[43px] h-[300px] cursor-pointer bg-transparent" style={{ left: percent(left + i * span), width: percent(span) }} onClick={() => onSelect(pos)} />
             {/* Nombre del paso bajo cada columna, con la columna número como referencia. */}
             <div className="absolute top-[349px] px-1 text-center" style={{ left: percent(left + i * span), width: percent(span) }}>
-              <span className="block font-mono text-[11px] leading-none text-muted-foreground">Col. {i + 1}</span>
+              <span className="block font-mono text-[11px] leading-none text-muted-foreground">{tr("Col.")} {i + 1}</span>
               {onRename
-                ? <button type="button" aria-label={`Cambiar el nombre de la columna ${i + 1}: ${step.label}`} className="mt-1 line-clamp-2 block w-full cursor-pointer font-mono text-[12px] leading-tight text-lcd-foreground" onClick={() => onRename(pos)}>{step.label}</button>
-                : <span className="mt-1 line-clamp-2 block font-mono text-[12px] leading-tight text-lcd-foreground">{step.label}</span>}
+                ? <button type="button" aria-label={`${tr("Cambiar el nombre de la columna")} ${i + 1}: ${tr(step.label)}`} className="mt-1 line-clamp-2 block w-full cursor-pointer font-mono text-[12px] leading-tight text-lcd-foreground" onClick={() => onRename(pos)}>{tr(step.label)}</button>
+                : <span className="mt-1 line-clamp-2 block font-mono text-[12px] leading-tight text-lcd-foreground">{tr(step.label)}</span>}
             </div>
-            {pi === 0 && stage.repeats > 1 && <Button variant="ghost" disabled={locked} aria-label={`Ciclos etapa ${si + 1}: ${stage.repeats}`} className="absolute top-0 h-10 -translate-x-1/2 px-2 font-mono text-base font-bold text-amber" style={{ left: percent((point.x1 + (points[i + stage.steps.length - 1]?.x2 ?? point.x2)) / 2) }} onClick={() => onCycles(si)}>{stage.repeats}× <Repeat2 /></Button>}
-            <Button variant="ghost" disabled={locked} aria-label={`Temperatura ${step.label}: ${step.temp.toFixed(1)} grados`} className="absolute h-11 -translate-x-1/2 px-2 font-mono text-xl font-bold tabular-nums text-lcd-foreground" style={{ left: center, top: point.y - 59 }} onClick={() => { onSelect(pos); onTemperature(pos); }}>{step.temp.toFixed(1)}°</Button>
-            <Button variant="ghost" disabled={locked} aria-label={`Tiempo ${step.label}: ${formatTime(step.time)}`} className="absolute h-11 -translate-x-1/2 px-2 font-mono text-lg font-semibold tabular-nums text-ice" style={{ left: center, top: point.y + 11 }} onClick={() => { onSelect(pos); onTime(pos); }}>{formatTime(step.time)}</Button>
+            {pi === 0 && stage.repeats > 1 && <Button variant="ghost" disabled={locked} aria-label={`${tr("Ciclos etapa")} ${si + 1}: ${stage.repeats}`} className="absolute top-0 h-10 -translate-x-1/2 px-2 font-mono text-base font-bold text-amber" style={{ left: percent((point.x1 + (points[i + stage.steps.length - 1]?.x2 ?? point.x2)) / 2) }} onClick={() => onCycles(si)}>{stage.repeats}× <Repeat2 /></Button>}
+            <Button variant="ghost" disabled={locked} aria-label={`${tr("Temperatura")} ${tr(step.label)}: ${step.temp.toFixed(1)} °C`} className="absolute h-11 -translate-x-1/2 px-2 font-mono text-xl font-bold tabular-nums text-lcd-foreground" style={{ left: center, top: point.y - 59 }} onClick={() => { onSelect(pos); onTemperature(pos); }}>{step.temp.toFixed(1)}°</Button>
+            <Button variant="ghost" disabled={locked} aria-label={`${tr("Tiempo")} ${tr(step.label)}: ${formatTime(step.time)}`} className="absolute h-11 -translate-x-1/2 px-2 font-mono text-lg font-semibold tabular-nums text-ice" style={{ left: center, top: point.y + 11 }} onClick={() => { onSelect(pos); onTime(pos); }}>{formatTime(step.time)}</Button>
           </div>;
         })}
       </div>
     </div>
-    {cycle && <p className="border-t border-border px-4 py-2 font-mono text-xs text-amber">CICLO {cycle}</p>}
+    {cycle && <p className="border-t border-border px-4 py-2 font-mono text-xs text-amber">{tr("CICLO")} {cycle}</p>}
   </div>;
 }

@@ -3,6 +3,7 @@
  * El selector alterna entre 1 reacción y master mix; el tubo muestra cada
  * reactivo como una capa de color proporcional a su volumen.
  */
+import { useTr } from "@/lib/i18n/tr";
 import { useState } from "react";
 import type { ManualAnswer, ReagentKey } from "@/lib/pcr/practice";
 import { NumPad, type NumPadRequest } from "@/components/sim/NumPad";
@@ -36,6 +37,7 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
   const [tubeBy, setTubeBy] = useState<Record<Kind, string>>({ single: "pcr02", mix: "epp15" });
   const [pad, setPad] = useState<NumPadRequest | null>(null);
   const [focus, setFocus] = useState<ReagentKey | null>(null);
+  const tr = useTr();
 
   const values = kind === "single" ? answer.single : answer.mix;
   const layers = reagents.map(r => ({ ...r, v: values[r.key] ?? 0 })).filter(l => l.v > 0);
@@ -47,17 +49,17 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
   const target = kind === "single" ? volume : undefined;
 
   const setValue = (key: ReagentKey, v: number) => onChange({ ...answer, [kind]: { ...values, [key]: v } });
-  const editRow = (key: ReagentKey, label: string) => setPad({ title: `${label} · ${kind === "single" ? "1 reacción" : "master mix"}`, value: values[key] ?? 0, unit: "µL", allowDecimal: true, min: 0, max: 5000, onConfirm: v => setValue(key, v) });
-  const editTubes = () => setPad({ title: "Nº total de reacciones", value: answer.tubes ?? 0, unit: "tubos", min: 1, max: 200, onConfirm: v => onChange({ ...answer, tubes: Math.round(v) }) });
+  const editRow = (key: ReagentKey, label: string) => setPad({ title: `${tr(label)} · ${tr(kind === "single" ? "1 reacción" : "master mix")}`, value: values[key] ?? 0, unit: "µL", allowDecimal: true, min: 0, max: 5000, onConfirm: v => setValue(key, v) });
+  const editTubes = () => setPad({ title: tr("Nº total de reacciones"), value: answer.tubes ?? 0, unit: tr("tubos"), min: 1, max: 200, onConfirm: v => onChange({ ...answer, tubes: Math.round(v) }) });
 
   return <div className="grid gap-6 md:grid-cols-[minmax(220px,280px)_1fr]">
     {/* Tubo virtual */}
     <div className="flex flex-col gap-3 rounded-lg border bg-panel p-4">
-      <label className="text-xs font-mono uppercase text-muted-foreground" htmlFor="tube-size">Tamaño de tubo</label>
+      <label className="text-xs font-mono uppercase text-muted-foreground" htmlFor="tube-size">{tr("Tamaño de tubo")}</label>
       <select id="tube-size" value={tube.id} onChange={e => setTubeBy({ ...tubeBy, [kind]: e.target.value })} className="h-11 rounded-md border bg-background px-3 text-sm">
-        {TUBES.map(t => <option key={t.id} value={t.id}>{t.label} ({t.capacity} µL)</option>)}
+        {TUBES.map(t => <option key={t.id} value={t.id}>{tr(t.label)} ({t.capacity} µL)</option>)}
       </select>
-      <p className={cn("text-xs", overflow ? "text-destructive" : "text-muted-foreground")}>Llenado: {fmt(total)} / {tube.capacity} µL ({Math.round(total / tube.capacity * 100)} %)</p>
+      <p className={cn("text-xs", overflow ? "text-destructive" : "text-muted-foreground")}>{tr("Llenado")}: {fmt(total)} / {tube.capacity} µL ({Math.round(total / tube.capacity * 100)} %)</p>
 
       <div className={cn("relative mx-auto mt-2 flex h-72 flex-col items-center", overflow && "tube-shake")} aria-hidden>
         {/* Gota que cae al añadir volumen */}
@@ -89,29 +91,29 @@ export function ManualMix({ reagents, volume, answer, onChange, celebrate }: {
       </div>
 
       <div className="min-h-12 rounded-md border bg-background p-2 text-xs" aria-live="polite">
-        {overflow ? <p className="font-medium text-destructive">Desborde: +{fmt(total - tube.capacity)} µL sobre la capacidad del tubo.</p>
-          : focused ? <p><span className="mr-2 inline-block size-3 rounded-sm align-middle" style={{ background: color(focused.key) }} /><b>{focused.label}</b>: {fmt(focused.v)} µL · {(focused.v / total * 100).toFixed(1)} % de la mezcla · {(focused.v / tube.capacity * 100).toFixed(2)} % del tubo</p>
-          : <p className="text-muted-foreground">Toca o pasa el ratón por una capa para ver su proporción.</p>}
+        {overflow ? <p className="font-medium text-destructive">{tr("Desborde: +{v} µL sobre la capacidad del tubo.", { v: fmt(total - tube.capacity) })}</p>
+          : focused ? <p><span className="mr-2 inline-block size-3 rounded-sm align-middle" style={{ background: color(focused.key) }} /><b>{tr(focused.label)}</b>: {fmt(focused.v)} µL · {(focused.v / total * 100).toFixed(1)} % {tr("de la mezcla")} · {(focused.v / tube.capacity * 100).toFixed(2)} % {tr("del tubo")}</p>
+          : <p className="text-muted-foreground">{tr("Toca o pasa el ratón por una capa para ver su proporción.")}</p>}
       </div>
     </div>
 
     {/* Tabla de volúmenes */}
     <div className="space-y-4">
-      <div role="tablist" aria-label="Tipo de preparación" className="inline-flex rounded-full border bg-panel p-1">
+      <div role="tablist" aria-label={tr("Tipo de preparación")} className="inline-flex rounded-full border bg-panel p-1">
         {(["single", "mix"] as const).map(k => <Button variant="ghost" key={k} role="tab" aria-selected={kind === k} onClick={() => { setKind(k); setFocus(null); }}
-          className={cn("h-10 rounded-full px-4 text-sm transition-colors", kind === k ? "bg-ice text-background" : "text-muted-foreground")}>{k === "single" ? "1 reacción (1 tubo)" : "Master mix (N tubos)"}</Button>)}
+          className={cn("h-10 rounded-full px-4 text-sm transition-colors", kind === k ? "bg-ice text-background" : "text-muted-foreground")}>{tr(k === "single" ? "1 reacción (1 tubo)" : "Master mix (N tubos)")}</Button>)}
       </div>
       {kind === "mix" && <div className="flex items-center justify-between gap-3 rounded-md border bg-panel px-4 py-2">
-        <span className="text-sm">Nº total de reacciones</span>
-        <Button variant="outline" onClick={editTubes} className="h-11 min-w-24 bg-background px-3 font-mono">{answer.tubes ?? "—"} tubos</Button>
+        <span className="text-sm">{tr("Nº total de reacciones")}</span>
+        <Button variant="outline" onClick={editTubes} className="h-11 min-w-24 bg-background px-3 font-mono">{answer.tubes ?? "—"} {tr("tubos")}</Button>
       </div>}
       <table className="w-full text-sm">
-        <thead><tr className="border-b text-left text-xs uppercase text-muted-foreground"><th className="py-2 font-normal">Reactivo</th><th className="py-2 text-right font-normal">VOLUMEN <span className="normal-case">(µL)</span></th></tr></thead>
+        <thead><tr className="border-b text-left text-xs uppercase text-muted-foreground"><th className="py-2 font-normal">{tr("Reactivo")}</th><th className="py-2 text-right font-normal">{tr("VOLUMEN")} <span className="normal-case">(µL)</span></th></tr></thead>
         <tbody>{reagents.map(r => <tr key={r.key} className={cn("border-b", focus === r.key && "bg-panel")} onMouseEnter={() => setFocus(r.key)} onMouseLeave={() => setFocus(null)}>
-          <td className="py-2"><span className="mr-3 inline-block size-3.5 rounded-sm align-middle" style={{ background: color(r.key) }} />{r.label}</td>
-          <td className="py-1.5 text-right"><Button variant="outline" aria-label={`Volumen de ${r.label}`} onClick={() => editRow(r.key, r.label)} className="h-11 min-w-24 justify-end bg-background px-3 font-mono">{values[r.key] !== undefined ? fmt(values[r.key] ?? 0) : "—"}</Button></td>
+          <td className="py-2"><span className="mr-3 inline-block size-3.5 rounded-sm align-middle" style={{ background: color(r.key) }} />{tr(r.label)}</td>
+          <td className="py-1.5 text-right"><Button variant="outline" aria-label={`${tr("Volumen")}: ${tr(r.label)}`} onClick={() => editRow(r.key, r.label)} className="h-11 min-w-24 justify-end bg-background px-3 font-mono">{values[r.key] !== undefined ? fmt(values[r.key] ?? 0) : "—"}</Button></td>
         </tr>)}</tbody>
-        <tfoot><tr><td className="pt-3 font-medium">Suma total</td><td className={cn("pt-3 text-right font-mono", target !== undefined && Math.abs(total - target) > 0.01 && total > 0 ? "text-amber" : "")}>{fmt(total)}{target !== undefined && ` / ${target}`} µL</td></tr></tfoot>
+        <tfoot><tr><td className="pt-3 font-medium">{tr("Suma total")}</td><td className={cn("pt-3 text-right font-mono", target !== undefined && Math.abs(total - target) > 0.01 && total > 0 ? "text-amber" : "")}>{fmt(total)}{target !== undefined && ` / ${target}`} µL</td></tr></tfoot>
       </table>
     </div>
     <NumPad req={pad} onClose={() => setPad(null)} />
