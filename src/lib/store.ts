@@ -38,7 +38,7 @@ interface AppState {
   muted: boolean;
   toggleMuted: () => void;
   /** Idioma de la interfaz. */
-  language: "es" | "en";
+  language: "es" | "en" | "gl";
   setLanguage: (l: "es" | "en") => void;
 }
 
