@@ -39,7 +39,7 @@ interface AppState {
   toggleMuted: () => void;
   /** Idioma de la interfaz. */
   language: "es" | "en" | "gl";
-  setLanguage: (l: "es" | "en") => void;
+  setLanguage: (l: "es" | "en" | "gl") => void;
 }
 
 export const useApp = create<AppState>()(
