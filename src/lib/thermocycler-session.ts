@@ -7,6 +7,17 @@ import { AMBIENT, buildSegments, stateAt } from "./pcr/simulation";
 
 type Status = "idle" | "preheating" | "running" | "paused" | "done";
 
+/** Segmentos memorizados por programa: el store es inmutable, así que la referencia cambia solo al editar. */
+const segmentCache = new WeakMap<object, ReturnType<typeof buildSegments>>();
+export function segmentsFor(program: Parameters<typeof buildSegments>[0]) {
+  let segments = segmentCache.get(program);
+  if (!segments) {
+    segments = buildSegments(program);
+    segmentCache.set(program, segments);
+  }
+  return segments;
+}
+
 interface Session {
   status: Status;
   simTime: number;
